@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scroll of Seven Seals - Bible Mystery Puzzle Game</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(135deg, #2c1810, #4a3425, #6b4d37);
+            color: #f4f1e8;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 177, 66, 0.3) 0%, transparent 50%),
+                url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="crosses" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M50 20 L50 80 M20 50 L80 50" stroke="%23f4f1e8" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23crosses)"/></svg>');
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        .title {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 3em;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2em;
+            color: #f4f1e8;
+            opacity: 0.9;
+        }
+        
+        .team-setup {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #8b7355;
+        }
+        
+        .seals-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .seal {
+            background: linear-gradient(145deg, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4));
+            border: 2px solid #8b7355;
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .seal:hover {
+            border-color: #d4af37;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .seal.completed {
+            border-color: #228b22;
+            background: linear-gradient(145deg, rgba(34, 139, 34, 0.3), rgba(34, 139, 34, 0.1));
+        }
+        
+        .seal.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .seal-number {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: #d4af37;
+            color: #2c1810;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+        
+        .seal-title {
+            font-size: 1.4em;
+            color: #d4af37;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .seal-theme {
+            color: #f4f1e8;
+            opacity: 0.8;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        
+        .seal-description {
+            color: #f4f1e8;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .puzzle-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background: linear-gradient(145deg, #2c1810, #4a3425);
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #d4af37;
+            position: relative;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 2em;
+            color: #d4af37;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+        
+        .puzzle-content {
+            margin-top: 20px;
+        }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #d4af37;
+            font-weight: 600;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #8b7355;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #f4f1e8;
+            font-family: 'Cinzel', serif;
+        }
+        
+        .btn {
+            background: linear-gradient(145deg, #d4af37, #b8941f);
+            color: #2c1810;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(145deg, #e6c757, #d4af37);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .drag-drop-area {
+            min-height: 200px;
+            border: 2px dashed #8b7355;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .draggable-item {
+            background: linear-gradient(145deg, #6b4d37, #4a3425);
+            border: 1px solid #8b7355;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 5px;
+            cursor: grab;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .draggable-item:hover {
+            border-color: #d4af37;
+            background: linear-gradient(145deg, #8b7355, #6b4d37);
+        }
+        
+        .draggable-item.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d4af37, #e6c757);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .final-challenge {
+            background: linear-gradient(145deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1));
+            border: 3px solid #d4af37;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .hidden-word {
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 2.5em;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            margin: 20px 0;
+        }
+        
+        .team-score {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid #8b7355;
+        }
+        
+        @media (max-width: 768px) {
+            .title {
+                font-size: 2em;
+            }
+            
+            .seals-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                margin: 20px;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">🔮 The Scroll of Seven Seals</h1>
+            <p class="subtitle">A Bible Mystery Puzzle Game for Groups</p>
+        </div>
+        
+        <div class="team-setup">
+            <h3>Team Setup</h3>
+            <div class="input-group">
+                <label for="teamName">Team Name:</label>
+                <input type="text" id="teamName" placeholder="Enter your team name">
+            </div>
+            <div class="input-group">
+                <label for="teamSize">Team Size:</label>
+                <select id="teamSize">
+                    <option value="3">3 players</option>
+                    <option value="4">4 players</option>
+                    <option value="5">5 players</option>
+                    <option value="6">6 players</option>
+                </select>
+            </div>
+            <button class="btn" onclick="startGame()">Begin the Quest</button>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        
+        <div class="seals-container" id="sealsContainer">
+            <!-- Seals will be generated by JavaScript -->
+        </div>
+        
+        <div class="final-challenge" id="finalChallenge">
+            <h2>🕹️ The Final Challenge: The Hidden Word</h2>
+            <p>Combine all seven keywords to decipher the Hidden Word!</p>
+            <div id="collectedKeywords"></div>
+            <div class="input-group">
+                <label for="finalAnswer">Enter the Hidden Word:</label>
+                <input type="text" id="finalAnswer" placeholder="THE KINGDOM IS WITHIN YOU">
+            </div>
+            <button class="btn" onclick="checkFinalAnswer()">Reveal the Mystery</button>
+            <div class="hidden-word" id="hiddenWordResult"></div>
+            <div style="margin-top: 20px;">
+                <button class="btn" onclick="newGame()" style="background: linear-gradient(145deg, #228b22, #1e7b1e);">🔄 Play New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Puzzle Modals -->
+    <div class="puzzle-modal" id="puzzleModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closePuzzle()">&times;</button>
+            <h2 id="modalTitle"></h2>
+            <div class="puzzle-content" id="puzzleContent">
+                <!-- Puzzle content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game state
+        let gameState = {
+            teamName: '',
+            teamSize: 3,
+            completedSeals: [],
+            keywords: [],
+            startTime: null,
+            currentSeal: null,
+            puzzleVariants: {}, // Store selected variants for this game
+            gameId: null
+        };
+
+        // Puzzle variations for each seal
+        const puzzleVariations = {
+            gardenCipher: [
+                {
+                    keyword: "INNOCENCE",
+                    events: [
+                        {text: "In the beginning God created light", letter: "I", order: 1},
+                        {text: "Next God separated the waters above from below", letter: "N", order: 2},
+                        {text: "Now dry land appeared and was called Earth", letter: "N", order: 3},
+                        {text: "On the fourth day God made sun and moon", letter: "O", order: 4},
+                        {text: "Creatures of the sea were brought forth", letter: "C", order: 5},
+                        {text: "Every beast of the earth was created", letter: "E", order: 6},
+                        {text: "Now man was formed from dust of the ground", letter: "N", order: 7},
+                        {text: "Carefully God formed woman from man's rib", letter: "C", order: 8},
+                        {text: "Evil entered when serpent tempted Eve", letter: "E", order: 9}
+                    ]
+                },
+                {
+                    keyword: "BEGINNING",
+                    events: [
+                        {text: "Before anything existed, God was", letter: "B", order: 1},
+                        {text: "Earth was formless and empty", letter: "E", order: 2},
+                        {text: "God's Spirit moved over the waters", letter: "G", order: 3},
+                        {text: "Into darkness God spoke 'Let there be light'", letter: "I", order: 4},
+                        {text: "Night and day were separated", letter: "N", order: 5},
+                        {text: "Next came the expanse called Heaven", letter: "N", order: 6},
+                        {text: "Initially plants and trees were made", letter: "I", order: 7},
+                        {text: "Nature received the gift of man", letter: "N", order: 8},
+                        {text: "Grace was given through the breath of life", letter: "G", order: 9}
+                    ]
+                },
+                {
+                    keyword: "PARADISE",
+                    events: [
+                        {text: "Perfect harmony existed in the beginning", letter: "P", order: 1},
+                        {text: "All was very good in God's sight", letter: "A", order: 2},
+                        {text: "Rivers watered the garden of Eden", letter: "R", order: 3},
+                        {text: "Animals came to Adam to be named", letter: "A", order: 4},
+                        {text: "Deep sleep fell upon the man", letter: "D", order: 5},
+                        {text: "Into being came woman as helper", letter: "I", order: 6},
+                        {text: "Serpent was more cunning than any beast", letter: "S", order: 7},
+                        {text: "Eve saw the fruit was good for food", letter: "E", order: 8}
+                    ]
+                }
+            ],
+            bloodTrail: [
+                {
+                    keyword: "GRACE",
+                    riddles: [
+                        {question: "The lamb whose blood saved Israel's firstborn (Exodus 12)", answer: "PASSOVER", placeholder: "P_______"},
+                        {question: "The goat that carried sins into the wilderness (Leviticus 16)", answer: "SCAPEGOAT", placeholder: "S________"},
+                        {question: "Isaac's substitute on Mount Moriah (Genesis 22)", answer: "RAM", placeholder: "R__"},
+                        {question: "Daily offering in the tabernacle", answer: "ALTAR", placeholder: "A____"},
+                        {question: "Offering for unintentional sin (Leviticus 4)", answer: "GUILT", placeholder: "G____"}
+                    ]
+                },
+                {
+                    keyword: "MERCY",
+                    riddles: [
+                        {question: "The bronze serpent that healed (Numbers 21)", answer: "MOSES", placeholder: "M____"},
+                        {question: "Sacrifice Abraham almost made (Genesis 22)", answer: "EPHOD", placeholder: "E____"},
+                        {question: "The ark's cover where blood was sprinkled", answer: "MERCY", placeholder: "M____"},
+                        {question: "City of refuge for the innocent", answer: "CITIES", placeholder: "C_____"},
+                        {question: "The high priest's yearly entrance", answer: "YEAR", placeholder: "Y___"}
+                    ]
+                },
+                {
+                    keyword: "BLOOD",
+                    riddles: [
+                        {question: "What Abel offered that pleased God", answer: "BLOOD", placeholder: "B____"},
+                        {question: "Life is in this according to Leviticus 17:11", answer: "LIFE", placeholder: "L___"},
+                        {question: "What Jesus shed on the cross", answer: "OIL", placeholder: "O__"},
+                        {question: "What was sprinkled on the altar", answer: "OIL", placeholder: "O__"},
+                        {question: "The covenant was sealed with this", answer: "DEATH", placeholder: "D____"}
+                    ]
+                }
+            ],
+            prophetsPuzzle: [
+                {
+                    keyword: "LIGHT",
+                    prophecies: [
+                        {prophecy: "Born in Bethlehem (Micah 5:2)", fulfillment: "Jesus born in Bethlehem (Luke 2:4-7)", id: 1},
+                        {prophecy: "Born of a virgin (Isaiah 7:14)", fulfillment: "Jesus born of Mary (Luke 1:27-31)", id: 2},
+                        {prophecy: "Betrayed for 30 pieces (Zechariah 11:12)", fulfillment: "Judas' betrayal (Matthew 26:14-16)", id: 3},
+                        {prophecy: "Pierced hands and feet (Psalm 22:16)", fulfillment: "Jesus crucified (John 19:18)", id: 4},
+                        {prophecy: "None of his bones broken (Psalm 34:20)", fulfillment: "Soldiers don't break Jesus' legs (John 19:33)", id: 5},
+                        {prophecy: "Rise from the dead (Psalm 16:10)", fulfillment: "Jesus rises on third day (Luke 24:6-7)", id: 6}
+                    ]
+                },
+                {
+                    keyword: "TRUTH",
+                    prophecies: [
+                        {prophecy: "Suffering servant (Isaiah 53:3)", fulfillment: "Jesus despised and rejected (John 1:11)", id: 1},
+                        {prophecy: "Silent before accusers (Isaiah 53:7)", fulfillment: "Jesus silent before Pilate (Matthew 27:14)", id: 2},
+                        {prophecy: "Divided garments (Psalm 22:18)", fulfillment: "Soldiers cast lots for Jesus' clothes (John 19:24)", id: 3},
+                        {prophecy: "Given vinegar to drink (Psalm 69:21)", fulfillment: "Jesus given sour wine (John 19:29)", id: 4},
+                        {prophecy: "Buried with the rich (Isaiah 53:9)", fulfillment: "Jesus buried in Joseph's tomb (Matthew 27:57-60)", id: 5},
+                        {prophecy: "Ascended on high (Psalm 68:18)", fulfillment: "Jesus ascends to heaven (Acts 1:9)", id: 6}
+                    ]
+                },
+                {
+                    keyword: "GLORY",
+                    prophecies: [
+                        {prophecy: "Triumphal entry (Zechariah 9:9)", fulfillment: "Jesus rides into Jerusalem (Matthew 21:5)", id: 1},
+                        {prophecy: "Called Emmanuel (Isaiah 7:14)", fulfillment: "God with us (Matthew 1:23)", id: 2},
+                        {prophecy: "From the tribe of Judah (Genesis 49:10)", fulfillment: "Jesus from Judah (Luke 3:33)", id: 3},
+                        {prophecy: "Son of David (2 Samuel 7:12)", fulfillment: "Jesus son of David (Matthew 1:1)", id: 4},
+                        {prophecy: "Light to the Gentiles (Isaiah 42:6)", fulfillment: "Jesus light of the world (John 8:12)", id: 5},
+                        {prophecy: "Wonderful Counselor (Isaiah 9:6)", fulfillment: "Jesus the teacher (Matthew 7:28-29)", id: 6}
+                    ]
+                }
+            ],
+            parableLabyrinth: [
+                {
+                    keyword: "TRUTH",
+                    questions: [
+                        {question: "In the Parable of the Sower, what represents the Word of God?", options: ["The sower", "The soil", "The birds", "The seed"], correct: 3, code: "4"},
+                        {question: "In the Parable of the Lost Sheep, how many sheep were safe?", options: ["98", "100", "99", "97"], correct: 2, code: "3"},
+                        {question: "In the Parable of the Talents, what happened to the servant who buried his talent?", options: ["Rewarded", "Punished", "Forgiven", "Promoted"], correct: 1, code: "1"}
+                    ]
+                },
+                {
+                    keyword: "WISDOM",
+                    questions: [
+                        {question: "In the Parable of the Wise and Foolish Builders, what destroyed the foolish man's house?", options: ["Fire", "Flood", "Earthquake", "Wind"], correct: 1, code: "2"},
+                        {question: "In the Parable of the Ten Virgins, how many were wise?", options: ["Three", "Five", "Seven", "Ten"], correct: 1, code: "5"},
+                        {question: "In the Parable of the Pearl, what did the merchant do?", options: ["Kept searching", "Sold everything", "Shared it", "Hid it"], correct: 1, code: "2"}
+                    ]
+                },
+                {
+                    keyword: "KINGDOM",
+                    questions: [
+                        {question: "The Parable of the Mustard Seed teaches about what?", options: ["Faith", "Growth", "Harvest", "Seeds"], correct: 1, code: "2"},
+                        {question: "In the Parable of the Wedding Feast, who was invited first?", options: ["The poor", "The invited guests", "The servants", "Everyone"], correct: 1, code: "2"},
+                        {question: "The Parable of the Good Samaritan teaches about being a what?", options: ["Priest", "Neighbor", "Traveler", "Helper"], correct: 1, code: "2"}
+                    ]
+                }
+            ],
+            upperRoomLockbox: [
+                {
+                    keyword: "UNITY",
+                    clues: [
+                        {text: "The doubting apostle's number in alphabetical order (Thomas = ?)", answer: "12"},
+                        {text: "Number of disciples at the Last Supper", answer: "12"},
+                        {text: "Days Jesus was in the tomb", answer: "3"},
+                        {text: "Number of denials by Peter", answer: "3"}
+                    ],
+                    code: "1233"
+                },
+                {
+                    keyword: "PEACE",
+                    clues: [
+                        {text: "Number of pieces of silver Judas received", answer: "30"},
+                        {text: "Hour Jesus was crucified (Roman time)", answer: "6"},
+                        {text: "Number of hours of darkness", answer: "3"},
+                        {text: "Number of crosses on Calvary", answer: "3"}
+                    ],
+                    code: "6333"
+                },
+                {
+                    keyword: "BREAD",
+                    clues: [
+                        {text: "Number of loaves in the feeding of 5000", answer: "5"},
+                        {text: "Number of fish in the same miracle", answer: "2"},
+                        {text: "Number of baskets left over", answer: "12"},
+                        {text: "Number of words Jesus spoke about bread ('This is my body')", answer: "4"}
+                    ],
+                    code: "5212"
+                }
+            ],
+            churchUnderground: [
+                {
+                    keyword: "POWER",
+                    letters: [
+                        {sender: "Paul", cipher: "Caesar +3", encrypted: "XQLWB LV SRZHU", decrypted: "UNITY IS POWER"},
+                        {sender: "Peter", cipher: "Reverse", encrypted: "EVOL SI DOG", decrypted: "GOD IS LOVE"},
+                        {sender: "John", cipher: "Atbash", encrypted: "OLEV", decrypted: "LOVE"}
+                    ]
+                },
+                {
+                    keyword: "FAITH",
+                    letters: [
+                        {sender: "Paul", cipher: "Caesar +2", encrypted: "HCKVJ KU NKXG", decrypted: "FAITH IS LIFE"},
+                        {sender: "Peter", cipher: "Reverse", encrypted: "ECAEP EHT EVAH", decrypted: "HAVE THE PEACE"},
+                        {sender: "John", cipher: "Atbash", encrypted: "SVKVI", decrypted: "LIGHT"}
+                    ]
+                },
+                {
+                    keyword: "HOPE",
+                    letters: [
+                        {sender: "Paul", cipher: "Caesar +1", encrypted: "IPQF JT MJGF", decrypted: "HOPE IS LIFE"},
+                        {sender: "Peter", cipher: "Reverse", encrypted: "ECARG DNA EVOL", decrypted: "LOVE AND GRACE"},
+                        {sender: "John", cipher: "Atbash", encrypted: "KFHFH", decrypted: "JESUS"}
+                    ]
+                }
+            ],
+            apocalypseMap: [
+                {
+                    keyword: "AWAKEN",
+                    puzzles: [
+                        {question: "7 Churches + 7 Seals + 7 Trumpets + 4 Horsemen = ?", answer: "25"},
+                        {question: "What does the number 666 represent?", options: ["The number of God", "The number of the beast", "The number of angels"], correct: "The number of the beast"},
+                        {question: "What city is called 'Babylon the Great'?", options: ["Jerusalem", "Rome", "Athens"], correct: "Rome"}
+                    ]
+                },
+                {
+                    keyword: "VISION",
+                    puzzles: [
+                        {question: "7 Spirits + 24 Elders + 4 Living Creatures + 144,000 = ?", answer: "144035"},
+                        {question: "What does the Lamb represent?", options: ["Jesus Christ", "The Church", "Israel"], correct: "Jesus Christ"},
+                        {question: "How many years is the millennium?", options: ["100", "1000", "10000"], correct: "1000"}
+                    ]
+                },
+                {
+                    keyword: "OMEGA",
+                    puzzles: [
+                        {question: "Alpha + Omega + 7 Stars + 7 Lampstands = ?", answer: "16"},
+                        {question: "What is the New Jerusalem made of?", options: ["Gold", "Silver", "Bronze"], correct: "Gold"},
+                        {question: "How many gates does the New Jerusalem have?", options: ["4", "12", "7"], correct: "12"}
+                    ]
+                }
+            ]
+        };
+
+        // Seal definitions
+        const seals = [
+            {
+                id: 1,
+                title: "The Garden Cipher",
+                theme: "Eden & Temptation", 
+                description: "Find the correct order of events in Genesis 1–3 to unlock a cipher.",
+                puzzle: "gardenCipher"
+            },
+            {
+                id: 2,
+                title: "The Blood Trail",
+                theme: "Old Testament Sacrifices",
+                description: "Solve riddles to reveal a hidden acrostic.",
+                puzzle: "bloodTrail"
+            },
+            {
+                id: 3,
+                title: "The Prophets' Puzzle",
+                theme: "Messianic Prophecies",
+                description: "Match OT prophecies with NT fulfillments.",
+                puzzle: "prophetsPuzzle"
+            },
+            {
+                id: 4,
+                title: "The Parable Labyrinth", 
+                theme: "Teachings of Jesus",
+                description: "Follow the right path using parable interpretation.",
+                puzzle: "parableLabyrinth"
+            },
+            {
+                id: 5,
+                title: "The Upper Room Lockbox",
+                theme: "Disciples & the Last Supper",
+                description: "Identify clues to unlock a 4-digit lock.",
+                puzzle: "upperRoomLockbox"
+            },
+            {
+                id: 6,
+                title: "The Church Underground",
+                theme: "Acts & Early Church", 
+                description: "Decode apostolic letters.",
+                puzzle: "churchUnderground"
+            },
+            {
+                id: 7,
+                title: "The Apocalypse Map",
+                theme: "Revelation Symbols",
+                description: "Solve symbolic map puzzle.",
+                puzzle: "apocalypseMap"
+            }
+        ];
+
+        // Utility function to get random element from array
+        function getRandomElement(array) {
+            return array[Math.floor(Math.random() * array.length)];
+        }
+
+        // Initialize puzzle variants for this game session
+        function initializePuzzleVariants() {
+            gameState.gameId = Date.now(); // Unique game ID
+            gameState.puzzleVariants = {};
+            
+            // Select random variant for each puzzle type
+            Object.keys(puzzleVariations).forEach(puzzleType => {
+                gameState.puzzleVariants[puzzleType] = getRandomElement(puzzleVariations[puzzleType]);
+            });
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            renderSeals();
+            updateProgress();
+        }
+
+        function renderSeals() {
+            const container = document.getElementById('sealsContainer');
+            container.innerHTML = '';
+            
+            seals.forEach(seal => {
+                const sealElement = document.createElement('div');
+                sealElement.className = `seal ${gameState.completedSeals.includes(seal.id) ? 'completed' : ''} ${seal.id > 1 && !gameState.completedSeals.includes(seal.id - 1) ? 'locked' : ''}`;
+                sealElement.onclick = () => openSeal(seal.id);
+                
+                sealElement.innerHTML = `
+                    <div class="seal-number">${seal.id}</div>
+                    <h3 class="seal-title">${seal.title}</h3>
+                    <p class="seal-theme">${seal.theme}</p>
+                    <p class="seal-description">${seal.description}</p>
+                    ${gameState.completedSeals.includes(seal.id) ? '<p style="color: #228b22; font-weight: bold;">✓ COMPLETED</p>' : ''}
+                `;
+                
+                container.appendChild(sealElement);
+            });
+        }
+
+        function startGame() {
+            const teamName = document.getElementById('teamName').value;
+            const teamSize = document.getElementById('teamSize').value;
+            
+            if (!teamName.trim()) {
+                alert('Please enter a team name!');
+                return;
+            }
+            
+            gameState.teamName = teamName;
+            gameState.teamSize = parseInt(teamSize);
+            gameState.startTime = Date.now();
+            
+            // Initialize random puzzle variants for this game
+            initializePuzzleVariants();
+            
+            document.querySelector('.team-setup').style.display = 'none';
+            renderSeals();
+        }
+
+        function openSeal(sealId) {
+            const seal = seals.find(s => s.id === sealId);
+            
+            // Check if seal is locked
+            if (sealId > 1 && !gameState.completedSeals.includes(sealId - 1)) {
+                alert('You must complete the previous seal first!');
+                return;
+            }
+            
+            // Check if already completed
+            if (gameState.completedSeals.includes(sealId)) {
+                alert('This seal has already been broken!');
+                return;
+            }
+            
+            gameState.currentSeal = sealId;
+            document.getElementById('modalTitle').textContent = `Seal ${sealId}: ${seal.title}`;
+            document.getElementById('puzzleContent').innerHTML = getPuzzleContent(seal.puzzle);
+            document.getElementById('puzzleModal').style.display = 'block';
+        }
+
+        function closePuzzle() {
+            document.getElementById('puzzleModal').style.display = 'none';
+            gameState.currentSeal = null;
+        }
+
+        function completeSeal(sealId) {
+            if (!gameState.completedSeals.includes(sealId)) {
+                gameState.completedSeals.push(sealId);
+                const seal = seals.find(s => s.id === sealId);
+                
+                // Get the keyword from the current variant
+                const puzzleType = seal.puzzle;
+                const variant = gameState.puzzleVariants[puzzleType];
+                const keyword = variant.keyword;
+                
+                gameState.keywords.push(keyword);
+                
+                updateProgress();
+                renderSeals();
+                closePuzzle();
+                
+                // Show success message
+                alert(`Seal ${sealId} broken! Keyword revealed: ${keyword}`);
+                
+                // Check if all seals are complete
+                if (gameState.completedSeals.length === 7) {
+                    showFinalChallenge();
+                }
+            }
+        }
+
+        function updateProgress() {
+            const progress = (gameState.completedSeals.length / 7) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function showFinalChallenge() {
+            document.getElementById('finalChallenge').style.display = 'block';
+            document.getElementById('collectedKeywords').innerHTML = 
+                '<h3>Collected Keywords:</h3><p>' + gameState.keywords.join(', ') + '</p>';
+        }
+
+        function checkFinalAnswer() {
+            const answer = document.getElementById('finalAnswer').value.toUpperCase().trim();
+            
+            // Create a possible final answer from the collected keywords
+            // In a real implementation, this could be more sophisticated
+            const keywordString = gameState.keywords.join(' ');
+            const possibleAnswers = [
+                "THE KINGDOM IS WITHIN YOU",
+                "GOD IS LOVE AND TRUTH",
+                "FAITH HOPE AND LOVE",
+                keywordString
+            ];
+            
+            const isCorrect = possibleAnswers.some(possible => answer === possible.toUpperCase());
+            
+            if (isCorrect) {
+                const endTime = Date.now();
+                const duration = Math.round((endTime - gameState.startTime) / 1000 / 60);
+                
+                document.getElementById('hiddenWordResult').innerHTML = `
+                    <div style="color: #228b22;">
+                        🎉 VICTORY! 🎉<br>
+                        "${answer}"<br>
+                        <small>Completed in ${duration} minutes</small><br>
+                        <small>Game ID: ${gameState.gameId}</small>
+                    </div>
+                `;
+            } else {
+                alert('Not quite right. Use the collected keywords to find the hidden message in Scripture.');
+            }
+        }
+
+        function newGame() {
+            if (confirm('Start a new game with different puzzles? This will reset all progress.')) {
+                // Reset game state
+                gameState = {
+                    teamName: '',
+                    teamSize: 3,
+                    completedSeals: [],
+                    keywords: [],
+                    startTime: null,
+                    currentSeal: null,
+                    puzzleVariants: {},
+                    gameId: null
+                };
+                
+                // Show team setup again
+                document.querySelector('.team-setup').style.display = 'block';
+                document.getElementById('finalChallenge').style.display = 'none';
+                document.getElementById('teamName').value = '';
+                document.getElementById('teamSize').value = '3';
+                
+                // Reset progress and seals
+                updateProgress();
+                renderSeals();
+                
+                // Close any open modals
+                closePuzzle();
+            }
+        }
+
+        // Puzzle content generators
+        function getPuzzleContent(puzzleType) {
+            switch(puzzleType) {
+                case 'gardenCipher':
+                    return getGardenCipherContent();
+                case 'bloodTrail':
+                    return getBloodTrailContent();
+                case 'prophetsPuzzle':
+                    return getProphetsPuzzleContent();
+                case 'parablLabyrinth':
+                    return getParableLabyrinthContent();
+                case 'upperRoomLockbox':
+                    return getUpperRoomContent();
+                case 'churchUnderground':
+                    return getChurchUndergroundContent();
+                case 'apocalypseMap':
+                    return getApocalypseMapContent();
+                default:
+                    return '<p>Puzzle not found</p>';
+            }
+        }
+
+        function getGardenCipherContent() {
+            const variant = gameState.puzzleVariants.gardenCipher;
+            let eventsHtml = '';
+            
+            // Shuffle the events for display
+            const shuffledEvents = [...variant.events].sort(() => Math.random() - 0.5);
+            
+            shuffledEvents.forEach(event => {
+                eventsHtml += `<div class="draggable-item" draggable="true" ondragstart="drag(event)" data-order="${event.order}">${event.text}</div>`;
+            });
+            
+            return `
+                <h3>🌿 Arrange the Genesis events in correct order:</h3>
+                <p><strong>Goal:</strong> When arranged correctly, the first letters will spell: <strong>${variant.keyword}</strong></p>
+                <div class="drag-drop-area" id="sortableList" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <p>Drag the events here in chronological order:</p>
+                </div>
+                <div class="draggable-items">
+                    ${eventsHtml}
+                </div>
+                <button class="btn" onclick="checkGardenOrder()">Check Order</button>
+            `;
+        }
+
+        function getBloodTrailContent() {
+            const variant = gameState.puzzleVariants.bloodTrail;
+            let riddlesHtml = '';
+            
+            variant.riddles.forEach((riddle, index) => {
+                riddlesHtml += `
+                    <div class="input-group">
+                        <label>${index + 1}. ${riddle.question}</label>
+                        <input type="text" id="riddle${index + 1}" placeholder="${riddle.placeholder}">
+                    </div>
+                `;
+            });
+            
+            return `
+                <h3>🩸 Solve the sacrifice riddles:</h3>
+                <p><strong>Goal:</strong> First letters of answers spell: <strong>${variant.keyword}</strong></p>
+                <div class="riddles">
+                    ${riddlesHtml}
+                </div>
+                <button class="btn" onclick="checkBloodTrail()">Check Answers</button>
+                <div id="bloodTrailResult"></div>
+            `;
+        }
+
+        function getProphetsPuzzleContent() {
+            const variant = gameState.puzzleVariants.prophetsPuzzle;
+            let prophecyCards = '';
+            let fulfillmentCards = '';
+            
+            // Shuffle the fulfillments for display
+            const shuffledFulfillments = [...variant.prophecies].sort(() => Math.random() - 0.5);
+            
+            variant.prophecies.forEach(item => {
+                prophecyCards += `<div class="card" data-id="${item.id}">${item.prophecy}</div>`;
+            });
+            
+            shuffledFulfillments.forEach(item => {
+                fulfillmentCards += `<div class="card" data-match="${item.id}">${item.fulfillment}</div>`;
+            });
+            
+            return `
+                <h3>🔮 Match prophecies with their fulfillments:</h3>
+                <p><strong>Goal:</strong> When matched correctly, hidden word is: <strong>${variant.keyword}</strong></p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <h4>Prophecies:</h4>
+                        <div class="prophecy-cards">
+                            ${prophecyCards}
+                        </div>
+                    </div>
+                    <div>
+                        <h4>Fulfillments:</h4>
+                        <div class="fulfillment-cards">
+                            ${fulfillmentCards}
+                        </div>
+                    </div>
+                </div>
+                <button class="btn" onclick="checkProphetsMatching()">Check Matches</button>
+                <div id="prophetsResult"></div>
+            `;
+        }
+
+        function getParableLabyrinthContent() {
+            const variant = gameState.puzzleVariants.parableLabyrinth;
+            let questionsHtml = '';
+            
+            variant.questions.forEach((question, index) => {
+                let optionsHtml = '<option value="">Choose...</option>';
+                question.options.forEach((option, optionIndex) => {
+                    optionsHtml += `<option value="${optionIndex}">${option}</option>`;
+                });
+                
+                questionsHtml += `
+                    <div class="input-group">
+                        <label>${index + 1}. ${question.question}</label>
+                        <select id="parable${index + 1}">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                `;
+            });
+            
+            return `
+                <h3>🛤️ Navigate the parable paths:</h3>
+                <p><strong>Goal:</strong> Correct answers reveal the path to: <strong>${variant.keyword}</strong></p>
+                <div class="parable-questions">
+                    ${questionsHtml}
+                </div>
+                <button class="btn" onclick="checkParableAnswers()">Find the Path</button>
+                <div id="parableResult"></div>
+            `;
+        }
+
+        function getUpperRoomContent() {
+            const variant = gameState.puzzleVariants.upperRoomLockbox;
+            let cluesHtml = '';
+            
+            variant.clues.forEach((clue, index) => {
+                cluesHtml += `<p><strong>Clue ${index + 1}:</strong> ${clue.text}</p>`;
+            });
+            
+            return `
+                <h3>🍞 Unlock the 4-digit code:</h3>
+                <p><strong>Goal:</strong> Unlock the code to reveal: <strong>${variant.keyword}</strong></p>
+                <div class="clues">
+                    ${cluesHtml}
+                </div>
+                <div class="input-group">
+                    <label>Enter 4-digit code:</label>
+                    <input type="text" id="lockboxCode" maxlength="4" pattern="[0-9]{4}">
+                </div>
+                <button class="btn" onclick="checkLockboxCode()">Unlock</button>
+                <div id="lockboxResult"></div>
+            `;
+        }
+
+        function getChurchUndergroundContent() {
+            const variant = gameState.puzzleVariants.churchUnderground;
+            let lettersHtml = '';
+            
+            variant.letters.forEach((letter, index) => {
+                lettersHtml += `
+                    <div class="letter">
+                        <h4>Letter from ${letter.sender} (${letter.cipher}):</h4>
+                        <p>"${letter.encrypted}"</p>
+                        <input type="text" id="${letter.sender.toLowerCase()}Letter" placeholder="Decode this message">
+                    </div>
+                `;
+            });
+            
+            return `
+                <h3>✉️ Decode the apostolic letters:</h3>
+                <p><strong>Goal:</strong> Decode all messages to reveal: <strong>${variant.keyword}</strong></p>
+                <div class="coded-letters">
+                    ${lettersHtml}
+                </div>
+                <button class="btn" onclick="checkChurchCodes()">Decode Messages</button>
+                <div id="churchResult"></div>
+            `;
+        }
+
+        function getApocalypseMapContent() {
+            const variant = gameState.puzzleVariants.apocalypseMap;
+            let puzzlesHtml = '';
+            
+            variant.puzzles.forEach((puzzle, index) => {
+                if (puzzle.options) {
+                    // Multiple choice question
+                    let optionsHtml = '<option value="">Choose...</option>';
+                    puzzle.options.forEach(option => {
+                        const isCorrect = option === puzzle.correct ? 'correct' : 'wrong';
+                        optionsHtml += `<option value="${isCorrect}">${option}</option>`;
+                    });
+                    
+                    puzzlesHtml += `
+                        <div class="symbol-group">
+                            <h4>${puzzle.question}</h4>
+                            <select id="apocalypse${index + 1}">
+                                ${optionsHtml}
+                            </select>
+                        </div>
+                    `;
+                } else {
+                    // Number input question
+                    puzzlesHtml += `
+                        <div class="symbol-group">
+                            <h4>${puzzle.question}</h4>
+                            <input type="text" id="apocalypse${index + 1}" placeholder="Answer">
+                        </div>
+                    `;
+                }
+            });
+            
+            return `
+                <h3>🗺️ Solve the Revelation symbols:</h3>
+                <p><strong>Goal:</strong> Unlock the pattern to reveal: <strong>${variant.keyword}</strong></p>
+                <div class="symbol-grid">
+                    ${puzzlesHtml}
+                </div>
+                <button class="btn" onclick="checkApocalypseAnswers()">Reveal the Pattern</button>
+                <div id="apocalypseResult"></div>
+            `;
+        }
+
+        // Puzzle checking functions
+        function checkGardenOrder() {
+            const variant = gameState.puzzleVariants.gardenCipher;
+            const sortedItems = document.querySelectorAll('#sortableList .draggable-item');
+            let word = '';
+            let isCorrect = true;
+            
+            sortedItems.forEach((item, index) => {
+                const expectedOrder = parseInt(item.dataset.order);
+                if (expectedOrder !== index + 1) {
+                    isCorrect = false;
+                }
+                // Get the first letter of the event text
+                const firstLetter = item.textContent.trim().charAt(0).toUpperCase();
+                word += firstLetter;
+            });
+            
+            if (isCorrect && word === variant.keyword) {
+                completeSeal(1);
+            } else {
+                alert(`Not quite right. Check the biblical order of creation events. Current word: ${word}`);
+            }
+        }
+
+        function checkBloodTrail() {
+            const variant = gameState.puzzleVariants.bloodTrail;
+            const answers = [];
+            const correct = [];
+            
+            // Get answers and correct answers from current variant
+            variant.riddles.forEach((riddle, index) => {
+                answers.push(document.getElementById(`riddle${index + 1}`).value.toUpperCase());
+                correct.push(riddle.answer);
+            });
+            
+            const isCorrect = answers.every((answer, i) => answer === correct[i]);
+            
+            if (isCorrect) {
+                document.getElementById('bloodTrailResult').innerHTML = 
+                    `<p style="color: #228b22;">Correct! The first letters spell: ${variant.keyword}</p>`;
+                setTimeout(() => completeSeal(2), 1000);
+            } else {
+                alert('Some answers are incorrect. Check your biblical knowledge of sacrifices.');
+            }
+        }
+
+        function checkProphetsMatching() {
+            const variant = gameState.puzzleVariants.prophetsPuzzle;
+            // Simplified check - in a real implementation, you'd track the matching
+            alert(`For this demo, we'll assume correct matching. Keyword: ${variant.keyword}`);
+            completeSeal(3);
+        }
+
+        function checkParableAnswers() {
+            const variant = gameState.puzzleVariants.parableLabyrinth;
+            const answers = [];
+            let isCorrect = true;
+            let code = '';
+            
+            variant.questions.forEach((question, index) => {
+                const selectedAnswer = parseInt(document.getElementById(`parable${index + 1}`).value);
+                answers.push(selectedAnswer);
+                
+                if (selectedAnswer !== question.correct) {
+                    isCorrect = false;
+                }
+                code += question.code;
+            });
+            
+            if (isCorrect) {
+                document.getElementById('parableResult').innerHTML = 
+                    `<p style="color: #228b22;">Path found! Code: ${code}. Keyword: ${variant.keyword}</p>`;
+                setTimeout(() => completeSeal(4), 1000);
+            } else {
+                alert('Wrong path. Study the parables more carefully.');
+            }
+        }
+
+        function checkLockboxCode() {
+            const variant = gameState.puzzleVariants.upperRoomLockbox;
+            const code = document.getElementById('lockboxCode').value;
+            
+            if (code === variant.code) {
+                document.getElementById('lockboxResult').innerHTML = 
+                    `<p style="color: #228b22;">Lockbox opened! Keyword: ${variant.keyword}</p>`;
+                setTimeout(() => completeSeal(5), 1000);
+            } else {
+                alert('Wrong code. Think about the disciples and key numbers.');
+            }
+        }
+
+        function checkChurchCodes() {
+            const variant = gameState.puzzleVariants.churchUnderground;
+            let allCorrect = true;
+            
+            variant.letters.forEach(letter => {
+                const userInput = document.getElementById(`${letter.sender.toLowerCase()}Letter`).value.toUpperCase();
+                if (userInput !== letter.decrypted.toUpperCase()) {
+                    allCorrect = false;
+                }
+            });
+            
+            if (allCorrect) {
+                document.getElementById('churchResult').innerHTML = 
+                    `<p style="color: #228b22;">All messages decoded! Keyword: ${variant.keyword}</p>`;
+                setTimeout(() => completeSeal(6), 1000);
+            } else {
+                alert('Some decodings are incorrect. Try different cipher methods.');
+            }
+        }
+
+        function checkApocalypseAnswers() {
+            const variant = gameState.puzzleVariants.apocalypseMap;
+            let allCorrect = true;
+            
+            variant.puzzles.forEach((puzzle, index) => {
+                const userAnswer = document.getElementById(`apocalypse${index + 1}`).value;
+                
+                if (puzzle.options) {
+                    // Multiple choice - check if "correct" was selected
+                    if (userAnswer !== 'correct') {
+                        allCorrect = false;
+                    }
+                } else {
+                    // Text input - check exact answer
+                    if (userAnswer !== puzzle.answer) {
+                        allCorrect = false;
+                    }
+                }
+            });
+            
+            if (allCorrect) {
+                document.getElementById('apocalypseResult').innerHTML = 
+                    `<p style="color: #228b22;">Pattern revealed! Keyword: ${variant.keyword}</p>`;
+                setTimeout(() => completeSeal(7), 1000);
+            } else {
+                alert('The pattern is not complete. Check Revelation more carefully.');
+            }
+        }
+
+        // Drag and drop functionality
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.outerHTML);
+            ev.target.classList.add('dragging');
+        }
+
+        function drop(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData("text");
+            const draggedElement = document.createElement('div');
+            draggedElement.innerHTML = data;
+            ev.target.appendChild(draggedElement.firstChild);
+        }
+
+        // Initialize the game when page loads
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>
