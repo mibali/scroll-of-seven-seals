@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scroll of Seven Seals - Multiplayer Bible Mystery Game</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Menu -->
+        <div id="mainMenu" class="screen active">
+            <div class="header">
+                <h1 class="title">🔮 The Scroll of Seven Seals</h1>
+                <p class="subtitle">A Multiplayer Bible Mystery Adventure</p>
+            </div>
+            
+            <div class="main-menu">
+                <div class="game-mode-selection">
+                    <h3>Choose Your Adventure</h3>
+                    <div class="mode-buttons">
+                        <button class="btn mode-btn" onclick="showSinglePlayerSetup()">
+                            🏠 Single Team Mode
+                            <span class="mode-description">Practice mode for one team</span>
+                        </button>
+                        <button class="btn mode-btn" onclick="showMultiPlayerSetup()">
+                            🌍 Global Competition
+                            <span class="mode-description">Compete against teams worldwide</span>
+                        </button>
+                        <button class="btn mode-btn" onclick="showLeaderboard()">
+                            🏆 Global Leaderboard
+                            <span class="mode-description">See the world's fastest teams</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Single Player Setup -->
+        <div id="singlePlayerSetup" class="screen">
+            <div class="header">
+                <h2>🏠 Single Team Mode</h2>
+                <button class="btn btn-back" onclick="showMainMenu()">← Back to Menu</button>
+            </div>
+            
+            <div class="team-setup">
+                <div class="input-group">
+                    <label for="singleTeamName">Team Name:</label>
+                    <input type="text" id="singleTeamName" placeholder="Enter your team name">
+                </div>
+                <div class="input-group">
+                    <label for="singleTeamSize">Team Size:</label>
+                    <select id="singleTeamSize">
+                        <option value="3">3 players</option>
+                        <option value="4">4 players</option>
+                        <option value="5">5 players</option>
+                        <option value="6">6 players</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="startSinglePlayerGame()">Begin the Quest</button>
+            </div>
+        </div>
+
+        <!-- Multiplayer Setup -->
+        <div id="multiPlayerSetup" class="screen">
+            <div class="header">
+                <h2>🌍 Global Competition</h2>
+                <button class="btn btn-back" onclick="showMainMenu()">← Back to Menu</button>
+            </div>
+            
+            <div class="multiplayer-options">
+                <div class="option-card">
+                    <h3>🆕 Create New Game</h3>
+                    <p>Start a new competitive session</p>
+                    <button class="btn" onclick="showCreateGame()">Create Game</button>
+                </div>
+                <div class="option-card">
+                    <h3>🔗 Join Existing Game</h3>
+                    <p>Enter a game room code</p>
+                    <div class="input-group">
+                        <input type="text" id="gameRoomCode" placeholder="Enter room code" maxlength="6">
+                        <button class="btn" onclick="joinGame()">Join Game</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create Game -->
+        <div id="createGame" class="screen">
+            <div class="header">
+                <h2>🆕 Create New Game</h2>
+                <button class="btn btn-back" onclick="showMultiPlayerSetup()">← Back</button>
+            </div>
+            
+            <div class="create-game-setup">
+                <div class="input-group">
+                    <label for="gameTitle">Game Title:</label>
+                    <input type="text" id="gameTitle" placeholder="e.g., Youth Group Challenge">
+                </div>
+                <div class="input-group">
+                    <label for="maxTeams">Maximum Teams:</label>
+                    <select id="maxTeams">
+                        <option value="4">4 teams</option>
+                        <option value="6">6 teams</option>
+                        <option value="8" selected>8 teams</option>
+                        <option value="12">12 teams</option>
+                        <option value="16">16 teams</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="hostTeamName">Your Team Name:</label>
+                    <input type="text" id="hostTeamName" placeholder="Enter your team name">
+                </div>
+                <div class="input-group">
+                    <label for="hostTeamSize">Your Team Size:</label>
+                    <select id="hostTeamSize">
+                        <option value="3">3 players</option>
+                        <option value="4">4 players</option>
+                        <option value="5">5 players</option>
+                        <option value="6">6 players</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="createNewGame()">Create Game Room</button>
+            </div>
+        </div>
+
+        <!-- Game Lobby -->
+        <div id="gameLobby" class="screen">
+            <div class="header">
+                <h2>🏛️ Game Lobby</h2>
+                <div class="room-info">
+                    <span class="room-code">Room Code: <strong id="displayRoomCode"></strong></span>
+                    <button class="btn btn-copy" onclick="copyRoomCode()">📋 Copy</button>
+                </div>
+            </div>
+            
+            <div class="lobby-content">
+                <div class="waiting-teams">
+                    <h3>Teams in Lobby (<span id="teamCount">0</span>/<span id="maxTeamCount">8</span>)</h3>
+                    <div id="teamsList" class="teams-list">
+                        <!-- Teams will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="lobby-controls" id="lobbyControls">
+                    <button class="btn btn-primary" id="startGameBtn" onclick="startMultiplayerGame()" disabled>
+                        🚀 Start Game
+                    </button>
+                    <button class="btn btn-secondary" onclick="leaveLobby()">
+                        🚪 Leave Lobby
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="screen">
+            <div class="game-header">
+                <div class="game-info">
+                    <h2 id="gameTitle">The Scroll of Seven Seals</h2>
+                    <div class="team-display">
+                        <span class="team-name" id="currentTeamName"></span>
+                        <span class="game-timer" id="gameTimer">00:00</span>
+                    </div>
+                </div>
+                
+                <!-- Live Leaderboard -->
+                <div class="live-leaderboard" id="liveLeaderboard">
+                    <h4>🏆 Live Rankings</h4>
+                    <div class="leaderboard-content" id="liveLeaderboardContent">
+                        <!-- Live rankings will populate here -->
+                    </div>
+                    <button class="btn-toggle" onclick="toggleLeaderboard()">
+                        <span id="leaderboardToggle">Hide</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+                <div class="progress-text" id="progressText">0/7 Seals Broken</div>
+            </div>
+            
+            <div class="seals-container" id="sealsContainer">
+                <!-- Seals will be generated by JavaScript -->
+            </div>
+            
+            <div class="final-challenge" id="finalChallenge">
+                <h2>🕹️ The Final Challenge: The Hidden Word</h2>
+                <p>Combine all seven keywords to decipher the Hidden Word!</p>
+                <div id="collectedKeywords"></div>
+                <div class="input-group">
+                    <label for="finalAnswer">Enter the Hidden Word:</label>
+                    <input type="text" id="finalAnswer" placeholder="THE KINGDOM IS WITHIN YOU">
+                </div>
+                <button class="btn" onclick="checkFinalAnswer()">Reveal the Mystery</button>
+                <div class="hidden-word" id="hiddenWordResult"></div>
+            </div>
+        </div>
+
+        <!-- Global Leaderboard Screen -->
+        <div id="leaderboardScreen" class="screen">
+            <div class="header">
+                <h2>🏆 Global Leaderboard</h2>
+                <button class="btn btn-back" onclick="showMainMenu()">← Back to Menu</button>
+            </div>
+            
+            <div class="leaderboard-tabs">
+                <button class="tab-btn active" onclick="showGlobalLeaderboard()">🌍 All Time</button>
+                <button class="tab-btn" onclick="showWeeklyLeaderboard()">📅 This Week</button>
+                <button class="tab-btn" onclick="showDailyLeaderboard()">📆 Today</button>
+            </div>
+            
+            <div class="global-leaderboard">
+                <div id="globalLeaderboardContent">
+                    <!-- Global leaderboard will populate here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Panel (for game hosts) -->
+        <div id="adminPanel" class="admin-panel" style="display: none;">
+            <h3>🎛️ Game Controls</h3>
+            <div class="admin-controls">
+                <button class="btn btn-admin" onclick="pauseGame()">⏸️ Pause</button>
+                <button class="btn btn-admin" onclick="resumeGame()">▶️ Resume</button>
+                <button class="btn btn-admin" onclick="endGame()">🛑 End Game</button>
+                <button class="btn btn-admin" onclick="resetGame()">🔄 Reset</button>
+            </div>
+            <div class="admin-stats">
+                <h4>Game Statistics</h4>
+                <div id="adminStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Puzzle Modal -->
+    <div class="puzzle-modal" id="puzzleModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closePuzzle()">&times;</button>
+            <h2 id="modalTitle"></h2>
+            <div class="puzzle-content" id="puzzleContent">
+                <!-- Puzzle content will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification System -->
+    <div id="notifications" class="notifications"></div>
+
+    <!-- Scripts -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/game-data.js"></script>
+    <script src="js/multiplayer.js"></script>
+    <script src="js/puzzles.js"></script>
+    <script src="js/leaderboard.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>

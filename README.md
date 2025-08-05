@@ -1,318 +1,215 @@
-# 🔮 The Scroll of Seven Seals
-## A Bible Mystery Puzzle Game for Groups
+# 🔮 The Scroll of Seven Seals - Multiplayer Bible Mystery Game
 
-[![Live Demo](https://img.shields.io/badge/Demo-Play%20Now-brightgreen)](https://github.com/ThatLinuxGuyYouKnow/scroll-of-seven-seals)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+An enhanced multiplayer web application featuring biblical puzzles, real-time competition, and global leaderboards.
 
-An immersive, web-based Bible mystery puzzle game where teams work together to break seven spiritual seals, each containing puzzles rooted in Scripture. Only by solving all seven can players uncover "The Hidden Word" - a message left by the early church.
+## 🌟 Features
 
-![Game Screenshot](https://via.placeholder.com/800x400/2c1810/f4f1e8?text=The+Scroll+of+Seven+Seals)
+### Core Game Modes
 
-## 🎯 Game Overview
+#### 🏠 Single Team Mode
+- Practice mode for individual teams
+- Local progress tracking
+- No time pressure
+- Perfect for learning the puzzles
 
-### **Theme & Story**
-An ancient scroll sealed with seven spiritual mysteries has been uncovered. Each seal contains a puzzle rooted in Scripture, from the Garden of Eden to the Book of Revelation. Teams must use their biblical knowledge, teamwork, and puzzle-solving skills to break each seal and reveal the final hidden message.
+#### 🌍 Global Competition Mode
+- Real-time multiplayer competition
+- Live leaderboards during games
+- Room-based game sessions
+- Support for up to 16 teams per game
 
-### **Game Specifications**
-- **Players:** 3-6 per team (supports multiple teams simultaneously)
-- **Duration:** 60-90 minutes
-- **Platform:** Web browser (HTML5/JavaScript)
-- **Requirements:** Internet connection, Bible or Bible app recommended
-- **Difficulty:** Intermediate biblical knowledge helpful
+### 🎮 Seven Challenging Seals
 
-## 🔐 The Seven Seals
+1. **🌿 The Garden Cipher** - Arrange Genesis creation events in order
+2. **🩸 The Blood Trail** - Solve biblical sacrifice riddles  
+3. **🔮 The Prophecy Scroll** - Match prophecies with fulfillments
+4. **🛤️ The Parable Labyrinth** - Navigate through Jesus' teachings
+5. **🍞 The Upper Room Lockbox** - Crack the 4-digit biblical code
+6. **✉️ The Church Underground** - Decode apostolic messages
+7. **🗺️ The Apocalypse Map** - Interpret Revelation symbols
 
-Each seal represents a different aspect of biblical history and requires unique puzzle-solving skills:
+### 🏆 Leaderboard System
 
-| Seal | Title | Theme | Puzzle Type | Skills Required |
-|------|-------|-------|-------------|-----------------|
-| 🌿 **1** | **The Garden Cipher** | Eden & Temptation | Chronological Ordering | Genesis knowledge |
-| 🩸 **2** | **The Blood Trail** | OT Sacrifices | Riddle Solving | Sacrifice system |
-| 🔮 **3** | **The Prophets' Puzzle** | Messianic Prophecies | Pattern Matching | Prophecy/fulfillment |
-| 🛤️ **4** | **The Parable Labyrinth** | Jesus' Teachings | Multiple Choice | Parable interpretation |
-| 🍞 **5** | **The Upper Room Lockbox** | Disciples & Last Supper | Code Breaking | Apostle knowledge |
-| ✉️ **6** | **The Church Underground** | Acts & Early Church | Cipher Decoding | Early church history |
-| 🗺️ **7** | **The Apocalypse Map** | Revelation Symbols | Symbol Analysis | Revelation knowledge |
+#### Live Competition Leaderboard
+- Real-time rankings during active games
+- Progress tracking (seals completed)
+- Elapsed time display
+- Team status indicators
 
-## 🎮 How to Play
+#### Global Leaderboard
+- **All Time**: Greatest teams ever
+- **This Week**: Weekly champions  
+- **Today**: Daily leaders
+- Top 5 fastest completion times
+- Country representation with flags
 
-### **Getting Started**
-1. **Open the game** in any modern web browser
-2. **Enter team name** and select team size (3-6 players)
-3. **Click "Begin the Quest"** to start your adventure
+### 🎯 Advanced Features
 
-### **Gameplay Flow**
-1. **Sequential Unlocking:** Complete seals in order (Seal 2 unlocks after Seal 1, etc.)
-2. **Team Collaboration:** Work together to solve each puzzle
-3. **Biblical Research:** Use Bibles or Bible apps for reference
-4. **Keyword Collection:** Each solved seal reveals a keyword
-5. **Final Challenge:** Combine all 7 keywords to discover the hidden message
+- **🎛️ Admin Dashboard**: Game hosts can pause, resume, or end games
+- **💡 Hint System**: Optional clues with scoring penalties
+- **🔄 Puzzle Variations**: Multiple versions for replayability
+- **📱 Responsive Design**: Works on mobile and desktop
+- **⚡ Real-time Sync**: Live updates across all connected players
+- **🏅 Achievement System**: Unlock rewards for special accomplishments
 
-### **Puzzle Mechanics**
+## 🚀 Getting Started
 
-#### **🌿 Seal 1: The Garden Cipher**
-- **Goal:** Arrange Genesis creation events in chronological order
-- **Method:** Drag and drop events into correct biblical sequence
-- **Solution:** First letters of correctly ordered events spell the keyword
-- **Tip:** Follow the 7 days of creation plus Fall narrative
+### Quick Start (Demo Mode)
 
-#### **🩸 Seal 2: The Blood Trail**
-- **Goal:** Solve riddles about Old Testament sacrifices
-- **Method:** Fill in answers to sacrifice-related questions
-- **Solution:** First letters of answers form an acrostic
-- **Tip:** Think Passover, Day of Atonement, temple sacrifices
+1. Open `index.html` in your web browser
+2. The game runs in demo mode without Firebase
+3. Choose between single-player or multiplayer modes
+4. Create or join a game room
+5. Start solving the seven seals!
 
-#### **🔮 Seal 3: The Prophets' Puzzle**
-- **Goal:** Match Old Testament prophecies with New Testament fulfillments
-- **Method:** Connect prophecy cards with fulfillment cards
-- **Solution:** Correct matching reveals the keyword
-- **Tip:** Focus on Messianic prophecies about Jesus
+### Firebase Setup (Production)
 
-#### **🛤️ Seal 4: The Parable Labyrinth**
-- **Goal:** Answer questions about Jesus' parables correctly
-- **Method:** Multiple choice questions about parable meanings
-- **Solution:** Correct answers form a code leading to the keyword
-- **Tip:** Remember the spiritual lessons, not just the stories
+1. **Create Firebase Project**
+   ```
+   - Go to https://console.firebase.google.com/
+   - Create a new project
+   - Enable Realtime Database
+   - Enable Authentication (Anonymous)
+   ```
 
-#### **🍞 Seal 5: The Upper Room Lockbox**
-- **Goal:** Solve clues to unlock a 4-digit numerical code
-- **Method:** Biblical math problems about disciples and Last Supper
-- **Solution:** Numbers from clues form the unlock code
-- **Tip:** Count disciples, days, denials, and significant numbers
+2. **Update Configuration**
+   ```javascript
+   // Edit js/firebase-config.js
+   const firebaseConfig = {
+       apiKey: "your-api-key",
+       authDomain: "your-domain.firebaseapp.com",
+       databaseURL: "https://your-db.firebaseio.com",
+       projectId: "your-project-id",
+       // ... other config
+   };
+   ```
 
-#### **✉️ Seal 6: The Church Underground**
-- **Goal:** Decode encrypted messages from apostles
-- **Method:** Use cipher techniques (Caesar, Atbash, Reverse)
-- **Solution:** Decoded messages reveal the keyword
-- **Tip:** Paul, Peter, and John each use different encryption methods
+3. **Deploy**
+   ```bash
+   # Option 1: Firebase Hosting
+   npm install -g firebase-tools
+   firebase init hosting
+   firebase deploy
+   
+   # Option 2: Any static hosting (Netlify, Vercel, etc.)
+   # Upload all files to your hosting provider
+   ```
 
-#### **🗺️ Seal 7: The Apocalypse Map**
-- **Goal:** Solve puzzles about Revelation symbols and numbers
-- **Method:** Mathematical and symbolic analysis
-- **Solution:** Pattern recognition reveals final keyword
-- **Tip:** Focus on the symbolic numbers (7, 12, 144,000, etc.)
+## 🎲 How to Play
 
-## 🎲 Randomization Features
+### Single Player Mode
+1. Enter your team name and size
+2. Click "Begin the Quest"
+3. Solve seals in order (some require previous seals)
+4. Complete all 7 seals to unlock the final challenge
+5. Decipher the hidden biblical message to win
 
-### **Infinite Replayability**
-Every new game generates different puzzle variations:
+### Multiplayer Mode
 
-- **21 Total Variations:** 3 different versions for each of the 7 seals
-- **Dynamic Keywords:** Different target words each playthrough
-- **Shuffled Content:** Events, riddles, and options randomized
-- **Unique Game IDs:** Track different game sessions
+#### Creating a Game
+1. Choose "Global Competition"
+2. Click "Create New Game"
+3. Set game title and max teams
+4. Share the 6-character room code with other teams
+5. Start the game when ready
 
-### **Variation Examples**
+#### Joining a Game
+1. Choose "Global Competition" 
+2. Click "Join Existing Game"
+3. Enter the room code provided by the host
+4. Enter your team details
+5. Wait for the host to start
 
-| Seal | Variation 1 | Variation 2 | Variation 3 |
-|------|-------------|-------------|-------------|
-| Garden Cipher | INNOCENCE | BEGINNING | PARADISE |
-| Blood Trail | GRACE | MERCY | BLOOD |
-| Prophets' Puzzle | LIGHT | TRUTH | GLORY |
-| Parable Labyrinth | TRUTH | WISDOM | KINGDOM |
-| Upper Room | UNITY | PEACE | BREAD |
-| Church Underground | POWER | FAITH | HOPE |
-| Apocalypse Map | AWAKEN | VISION | OMEGA |
+### 🧩 Puzzle Types
 
-## 🛠️ Technical Features
+Each seal features different puzzle mechanics:
 
-### **Built With**
-- **HTML5:** Semantic structure and accessibility
-- **CSS3:** Immersive biblical theming with ancient scroll aesthetics
-- **Vanilla JavaScript:** Game logic, state management, and puzzle mechanics
-- **Responsive Design:** Works on desktop, tablet, and mobile devices
+- **Drag & Drop**: Arrange events chronologically
+- **Multiple Choice**: Select correct answers
+- **Text Input**: Type decoded messages or answers
+- **Matching**: Connect related biblical concepts
+- **Code Breaking**: Solve numerical puzzles
 
-### **Key Technical Features**
-- **Drag & Drop Interface:** Intuitive puzzle interaction
-- **Local State Management:** Game progress preserved during session
-- **Dynamic Content Generation:** Randomized puzzle creation
-- **Progressive Disclosure:** Seals unlock sequentially
-- **Visual Feedback:** Progress tracking and completion indicators
+## 🏗️ Technical Architecture
 
-### **Browser Compatibility**
-- ✅ Chrome 60+
-- ✅ Firefox 55+  
-- ✅ Safari 12+
-- ✅ Edge 79+
-- ✅ Mobile browsers (iOS Safari, Chrome Mobile)
+### Frontend Stack
+- **HTML5** - Semantic structure
+- **CSS3** - Responsive design with custom themes
+- **Vanilla JavaScript** - Modular ES6+ code
+- **Firebase SDK** - Real-time database and auth
 
-## 🚀 Setup & Installation
+### Backend (Firebase)
+- **Realtime Database** - Live game state sync
+- **Authentication** - Anonymous user sessions  
+- **Hosting** - Global CDN deployment
 
-### **Option 1: Direct Download**
-1. Download `scroll-of-seven-seals.html`
-2. Open in any web browser
-3. Start playing immediately!
-
-### **Option 2: GitHub Pages (Recommended)**
-1. Fork this repository
-2. Enable GitHub Pages in Settings
-3. Share the live URL with your group
-4. Play online from anywhere!
-
-### **Option 3: Local Development**
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/scroll-of-seven-seals.git
-
-# Navigate to directory
-cd scroll-of-seven-seals
-
-# Open in browser
-open scroll-of-seven-seals.html
-# or
-python -m http.server 8000  # For local server
+### File Structure
+```
+├── index.html              # Main application entry
+├── styles.css              # Complete styling
+├── js/
+│   ├── firebase-config.js  # Firebase setup & demo mode
+│   ├── game-data.js        # Seals, puzzles, constants
+│   ├── multiplayer.js      # Game rooms & team management
+│   ├── leaderboard.js      # Live & global rankings
+│   ├── puzzles.js          # Puzzle generation & validation
+│   └── game.js             # Main game controller
+└── README.md               # This documentation
 ```
 
-## 📚 Educational Value
+## 🔧 Configuration Options
 
-### **Biblical Learning Outcomes**
-- **Creation Account:** Genesis 1-3 chronology and themes
-- **Sacrifice System:** Old Testament worship and atonement
-- **Prophecy Fulfillment:** Messianic predictions and Jesus
-- **Parable Interpretation:** Jesus' teaching methods and meanings
-- **Apostolic History:** Early church formation and challenges
-- **Apocalyptic Literature:** Revelation symbolism and eschatology
+### Game Constants
+```javascript
+const GAME_CONSTANTS = {
+    MAX_TEAMS_PER_GAME: 16,     // Teams per game room
+    MIN_TEAMS_TO_START: 2,      // Minimum to begin
+    GAME_TIMEOUT_MINUTES: 120,  // Max game duration
+    LEADERBOARD_TOP_COUNT: 5,   // Global leaderboard size
+    NOTIFICATION_DURATION: 5000, // Alert display time
+    AUTO_SAVE_INTERVAL: 30000   // Progress save frequency
+};
+```
 
-### **Skills Developed**
-- **Biblical Literacy:** Scripture knowledge and cross-referencing
-- **Critical Thinking:** Pattern recognition and logical deduction
-- **Teamwork:** Collaborative problem-solving
-- **Research Skills:** Using biblical resources effectively
-- **Historical Context:** Understanding biblical chronology
+### Puzzle Variations
+Each seal has multiple puzzle variations for replayability:
+- Garden Cipher: 3 keyword variations
+- Blood Trail: 2 riddle sets  
+- Prophecy Scroll: 2 matching sets
+- Parable Labyrinth: 2 question sets
+- Upper Room: 2 code combinations
+- Church Underground: 2 cipher sets
+- Apocalypse Map: 2 symbol sets
 
-## 🎪 Usage Scenarios
+## 🌐 Browser Support
 
-### **Church Groups**
-- **Youth Groups:** Engaging Bible study alternative
-- **Small Groups:** Interactive discussion starter
-- **Bible Studies:** Hands-on learning experience
-- **VBS Programs:** Educational game activity
-
-### **Educational Settings**
-- **Christian Schools:** Biblical studies curriculum
-- **Homeschool:** Interactive learning tool
-- **Bible Colleges:** Seminary student engagement
-- **Sunday School:** All-age learning activity
-
-### **Events & Retreats**
-- **Church Retreats:** Group bonding activity
-- **Christian Camps:** Evening program option
-- **Conference Breaks:** Interactive intermission
-- **Family Gatherings:** Multi-generational fun
+- **Chrome 80+** ✅
+- **Firefox 75+** ✅  
+- **Safari 13+** ✅
+- **Edge 80+** ✅
+- **Mobile browsers** ✅
 
 ## 🤝 Contributing
 
-We welcome contributions to improve the game! Here's how you can help:
+We welcome contributions! Here are ways to help:
 
-### **Ways to Contribute**
-- 🐛 **Bug Reports:** Found an issue? Open an issue!
-- 💡 **Feature Requests:** Have an idea? We'd love to hear it!
-- 📝 **Content Additions:** More puzzle variations welcome
-- 🎨 **UI Improvements:** Better design and accessibility
-- 📖 **Documentation:** Help improve instructions and guides
-
-### **Contribution Process**
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### **Development Guidelines**
-- Maintain biblical accuracy in all content
-- Ensure accessibility for all users
-- Test across multiple browsers
-- Keep code clean and well-commented
-- Preserve the educational value
-
-## 🎯 Roadmap
-
-### **Upcoming Features**
-- 🌍 **Multi-language Support:** Spanish, French, Portuguese translations
-- 👥 **Multiplayer Mode:** Real-time collaboration across teams
-- 📊 **Analytics Dashboard:** Track team performance and learning
-- 🎵 **Audio Enhancement:** Background music and sound effects
-- 📱 **Mobile App:** Native iOS and Android versions
-- 🏆 **Achievement System:** Badges and completion certificates
-
-### **Content Expansions**
-- 📜 **Old Testament Scrolls:** Abraham, Moses, David themed games
-- ⛪ **New Testament Codex:** Paul's journeys, Gospel harmony puzzles
-- 🕊️ **Church History Edition:** Early church fathers and reformation
-- 🌟 **Kids Version:** Simplified puzzles for younger players
-
-## 🐛 Known Issues
-
-### **Current Limitations**
-- **Offline Mode:** Requires internet connection for fonts and some features
-- **Save/Load:** No persistent game saves between sessions
-- **Accessibility:** Limited screen reader support (improving)
-- **Mobile UX:** Some drag-and-drop interactions could be smoother
-
-### **Reporting Issues**
-If you encounter problems:
-1. Check the browser console for errors
-2. Note your browser version and operating system
-3. Describe steps to reproduce the issue
-4. Open an issue on GitHub with details
+1. **Report Bugs** - Create issues for any problems
+2. **Suggest Features** - Ideas for new game modes
+3. **Add Puzzles** - More biblical puzzle variations
+4. **Improve UI** - Enhanced styling and animations
+5. **Translations** - Multi-language support
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### **What This Means**
-- ✅ **Free to use** for personal, educational, and commercial purposes
-- ✅ **Modify and distribute** as needed
-- ✅ **Include in church programs** and educational curricula
-- ℹ️ **Attribution appreciated** but not required
+This project is licensed under the MIT License - see LICENSE file for details.
 
 ## 🙏 Acknowledgments
 
-### **Biblical Resources**
-- Scripture references from various Bible translations
-- Historical context from biblical commentaries
-- Theological insights from seminary resources
-
-### **Technical Inspiration**
-- Font families from Google Fonts
-- CSS techniques from modern web standards
-- JavaScript patterns from educational game development
-
-### **Community Support**
-- Beta testers from local church groups
-- Feedback from biblical studies educators
-- Contributions from the open-source community
-
-## 📞 Contact & Support
-
-### **Get Help**
-- 📧 **Email:** [Insert your email]
-- 💬 **Discord:** [Insert Discord server]
-- 🐦 **Twitter:** [@yourusername](https://twitter.com/yourusername)
-- 🌐 **Website:** [Your website]
-
-### **Quick Support**
-- **Game not loading?** Check browser compatibility
-- **Stuck on a puzzle?** Biblical study guides available
-- **Technical issues?** Check the issues page first
-- **Want to contribute?** See contributing guidelines above
+- Biblical content sourced from public domain scriptures
+- Font families: Cinzel and Uncial Antiqua (Google Fonts)
+- Firebase for real-time infrastructure
+- All the beta testers and churches who provided feedback
 
 ---
 
-## 🎮 Ready to Play?
-
-**[▶️ Start Your Quest Now!](scroll-of-seven-seals.html)**
-
-*"And I saw in the right hand of him that sat on the throne a book written within and on the backside, sealed with seven seals."* - Revelation 5:1
-
----
-
-<div align="center">
-
-**Made with ❤️ for the Body of Christ**
-
-*May this game deepen your understanding of God's Word and strengthen the bonds of fellowship in your community.*
-
-</div>
+**Ready to unlock the mysteries? Start your quest today!** 🗝️✨
