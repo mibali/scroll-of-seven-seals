@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Scroll of Seven Seals - Working Multiplayer</title>
+    <title>The Scroll of Seven Seals - Final Multiplayer</title>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
@@ -550,17 +550,17 @@
     <div class="container">
         <div class="header">
             <h1 class="title">🔮 The Scroll of Seven Seals</h1>
-            <p class="subtitle">Working Multiplayer Bible Mystery Adventure</p>
+            <p class="subtitle">Cross-Device Multiplayer Bible Mystery Adventure</p>
         </div>
 
         <div class="info-box">
             <div class="info-title">
-                🌐 Real Multiplayer Now Working:
+                🌐 Real Cross-Device Multiplayer:
             </div>
             <ol class="info-list">
-                <li><strong>Create room →</strong> Get a 6-digit code</li>
-                <li><strong>Share code with friends</strong> on different devices</li>
-                <li><strong>Everyone joins using the same code</strong></li>
+                <li><strong>Create room →</strong> Get a shareable link</li>
+                <li><strong>Share link with friends</strong> on different devices</li>
+                <li><strong>Everyone clicks the same link to join</strong></li>
                 <li><strong>Compete in real-time across the internet!</strong></li>
             </ol>
         </div>
@@ -588,7 +588,7 @@
 
         <!-- Multiplayer Setup -->
         <div id="multiplayerSetup" class="multiplayer-setup">
-            <div class="setup-title">Working Multiplayer Setup</div>
+            <div class="setup-title">Cross-Device Multiplayer Setup</div>
             
             <div class="team-input">
                 <label for="teamName">Team Name:</label>
@@ -603,37 +603,35 @@
                 
                 <div class="room-option" onclick="showRoomJoin()">
                     <div class="room-option-title">🔗 Join via Link</div>
-                    <div class="room-option-desc">Use a friend's room code</div>
+                    <div class="room-option-desc">Use a friend's room link</div>
                 </div>
             </div>
             
             <div id="roomCreation" class="room-input-section">
                 <div class="room-code-display">
-                    <div>Your Room Code:</div>
-                    <div class="room-code" id="generatedRoomCode">------</div>
+                    <div>Your Room Link:</div>
+                    <div class="share-link" id="shareLink">Click Create Room to generate link...</div>
                 </div>
-                <div class="share-link" id="shareLink">Share this link: ...</div>
-                <button class="button" onclick="copyRoomCode()">📋 Copy Room Code</button>
+                <button class="button" onclick="copyRoomLink()">📋 Copy Room Link</button>
                 <button class="button" onclick="createRoom()">Create Room</button>
             </div>
             
             <div id="roomJoin" class="room-input-section">
                 <div class="team-input">
-                    <label>Room Code or Paste Room Link:</label>
-                    <input type="text" id="roomInput" placeholder="Enter 6-digit room code or paste full link">
+                    <label>Paste Room Link:</label>
+                    <input type="text" id="roomInput" placeholder="Paste room link from your friend">
                 </div>
                 <button class="button" onclick="joinRoom()">Join Room</button>
             </div>
             
             <div style="text-align: center; margin-top: 20px;">
                 <button class="button secondary" onclick="goBack()">← Back</button>
-                <button class="button" onclick="startRoomGameplay()" style="display: none;" id="startGameBtn">Start Adventure</button>
             </div>
         </div>
 
         <!-- Lobby -->
         <div id="lobby" class="lobby">
-            <div class="lobby-title">Game Lobby - Room: <span id="lobbyRoomCode"></span></div>
+            <div class="lobby-title">Game Lobby</div>
             <div class="teams-list" id="teamsList"></div>
             <div style="text-align: center;">
                 <button class="button" onclick="startRoomGameplay()" id="startLobbyBtn">Start Adventure</button>
@@ -681,9 +679,8 @@
     </div>
 
     <script>
-        // Cross-device multiplayer using JSONBin.io free service
-        const JSONBIN_API = 'https://api.jsonbin.io/v3/b';
-        const MASTER_BIN_ID = '675b4e5be41b4d34e4594bdf'; // Public bin for room registry
+        // Simple cross-device multiplayer using URL-based room system
+        const STORAGE_PREFIX = 'seals_room_';
         
         // Game State
         let gameState = {
@@ -694,8 +691,9 @@
             startTime: null,
             currentPuzzle: null,
             isGameActive: false,
-            roomCode: '',
-            isHost: false
+            roomId: '',
+            isHost: false,
+            roomData: null
         };
 
         // Check for room parameter in URL
@@ -703,11 +701,28 @@
             const urlParams = new URLSearchParams(window.location.search);
             const roomParam = urlParams.get('room');
             if (roomParam) {
-                document.getElementById('roomInput').value = roomParam;
+                // Auto-fill join form
+                document.getElementById('roomInput').value = window.location.href;
                 selectMode('multiplayer');
                 showRoomJoin();
+                
+                // Automatically try to join if room exists
+                tryAutoJoin(roomParam);
             }
         });
+
+        async function tryAutoJoin(roomId) {
+            // Check if room exists via trying to load it
+            try {
+                const response = await fetch(`https://api.github.com/gists/${roomId}`);
+                if (response.ok) {
+                    showAlert('Found room! Please enter your team name and click Join Room.', 'success');
+                }
+            } catch (error) {
+                // Room not found or error, just show normal interface
+                console.log('Room auto-join check failed:', error);
+            }
+        }
 
         function selectMode(mode) {
             gameState.mode = mode;
@@ -727,15 +742,6 @@
         function showRoomCreation() {
             document.getElementById('roomCreation').classList.add('active');
             document.getElementById('roomJoin').classList.remove('active');
-            
-            // Generate room code
-            const roomCode = Math.random().toString(36).substr(2, 6).toUpperCase();
-            document.getElementById('generatedRoomCode').textContent = roomCode;
-            gameState.roomCode = roomCode;
-            
-            // Update share link
-            const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-            document.getElementById('shareLink').textContent = `Share this link: ${shareLink}`;
         }
 
         function showRoomJoin() {
@@ -758,17 +764,27 @@
                     host: teamName,
                     teams: [{ name: teamName, score: 0, completedSeals: [] }],
                     gameStarted: false,
-                    createdAt: Date.now()
+                    createdAt: Date.now(),
+                    lastUpdated: Date.now()
                 };
 
-                // Store room data in JSONBin
-                const response = await fetch(JSONBIN_API, {
+                // Create a GitHub Gist as our database (anonymous, no auth needed)
+                const gistData = {
+                    description: `Scroll of Seven Seals - Room by ${teamName}`,
+                    public: false,
+                    files: {
+                        "room.json": {
+                            content: JSON.stringify(roomData, null, 2)
+                        }
+                    }
+                };
+
+                const response = await fetch('https://api.github.com/gists', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Bin-Name': `room-${gameState.roomCode}`
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(roomData)
+                    body: JSON.stringify(gistData)
                 });
 
                 if (!response.ok) {
@@ -776,14 +792,19 @@
                 }
 
                 const result = await response.json();
-                gameState.roomBinId = result.metadata.id;
+                gameState.roomId = result.id;
+                gameState.roomData = roomData;
+
+                // Generate shareable link
+                const shareLink = `${window.location.origin}${window.location.pathname}?room=${result.id}`;
+                document.getElementById('shareLink').textContent = shareLink;
 
                 gameState.currentTeam = teamName;
                 gameState.isHost = true;
                 gameState.teams = roomData.teams;
 
                 showLobby();
-                showAlert('Room created successfully!', 'success');
+                showAlert('Room created successfully! Share the link with friends.', 'success');
             } catch (error) {
                 console.error('Room creation error:', error);
                 showAlert('Failed to create room. Please try again.', 'error');
@@ -799,90 +820,80 @@
                 return;
             }
 
-            // Extract room code from input (handle both codes and full URLs)
-            let roomCode = roomInput.toUpperCase();
+            // Extract room ID from URL
+            let roomId = roomInput;
             if (roomInput.includes('?room=')) {
-                roomCode = roomInput.split('?room=')[1].split('&')[0].toUpperCase();
+                roomId = roomInput.split('?room=')[1].split('&')[0];
             }
 
             try {
                 showAlert('Looking for room...', 'success');
                 
-                // Search for room by scanning recent bins
-                const roomBinId = await findRoomBin(roomCode);
-                
-                if (!roomBinId) {
-                    showAlert('Room not found! Check the room code.', 'error');
-                    return;
-                }
-
-                // Get room data
-                const response = await fetch(`${JSONBIN_API}/${roomBinId}/latest`);
+                // Fetch room data from GitHub Gist
+                const response = await fetch(`https://api.github.com/gists/${roomId}`);
                 if (!response.ok) {
-                    throw new Error('Failed to fetch room data');
+                    throw new Error('Room not found');
                 }
 
-                const roomData = await response.json();
-                const room = roomData.record;
+                const gistData = await response.json();
+                const roomData = JSON.parse(gistData.files["room.json"].content);
 
                 // Check if team name already exists
-                const existingTeam = room.teams.find(team => team.name === teamName);
+                const existingTeam = roomData.teams.find(team => team.name === teamName);
                 if (existingTeam) {
                     showAlert('Team name already taken in this room', 'error');
                     return;
                 }
 
                 // Add team to room
-                room.teams.push({ name: teamName, score: 0, completedSeals: [] });
+                roomData.teams.push({ name: teamName, score: 0, completedSeals: [] });
+                roomData.lastUpdated = Date.now();
                 
                 // Update room data
-                await fetch(`${JSONBIN_API}/${roomBinId}`, {
-                    method: 'PUT',
+                const updateData = {
+                    description: gistData.description,
+                    files: {
+                        "room.json": {
+                            content: JSON.stringify(roomData, null, 2)
+                        }
+                    }
+                };
+
+                await fetch(`https://api.github.com/gists/${roomId}`, {
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(room)
+                    body: JSON.stringify(updateData)
                 });
 
-                gameState.roomCode = roomCode;
-                gameState.roomBinId = roomBinId;
+                gameState.roomId = roomId;
+                gameState.roomData = roomData;
                 gameState.currentTeam = teamName;
                 gameState.isHost = false;
-                gameState.teams = room.teams;
+                gameState.teams = roomData.teams;
+
+                // Update URL without page reload
+                window.history.pushState({}, '', `${window.location.pathname}?room=${roomId}`);
 
                 showLobby();
                 showAlert('Joined room successfully!', 'success');
             } catch (error) {
                 console.error('Join room error:', error);
-                showAlert('Failed to join room. Please check the room code.', 'error');
-            }
-        }
-
-        // Helper function to find room bin by scanning
-        async function findRoomBin(roomCode) {
-            try {
-                // In a real implementation, you'd maintain a registry
-                // For now, we'll use a simple search approach
-                const binName = `room-${roomCode}`;
-                
-                // Try to find the room by searching through JSONBin API
-                // This is a simplified approach - in production you'd use a registry
-                const searchResponse = await fetch('https://httpbin.org/get');
-                
-                // For now, return null to trigger the fallback
-                // In practice, you'd implement proper room discovery
-                return null;
-            } catch (error) {
-                return null;
+                showAlert('Room not found! Please check the link.', 'error');
             }
         }
 
         function showLobby() {
             document.getElementById('multiplayerSetup').style.display = 'none';
             document.getElementById('lobby').style.display = 'block';
-            document.getElementById('lobbyRoomCode').textContent = gameState.roomCode;
             
             updateTeamsList();
+            
+            // Start polling for room updates
+            if (gameState.mode === 'multiplayer') {
+                startRoomPolling();
+            }
         }
 
         function updateTeamsList() {
@@ -898,6 +909,36 @@
                 `;
                 teamsList.appendChild(teamItem);
             });
+        }
+
+        let pollingInterval = null;
+
+        function startRoomPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`https://api.github.com/gists/${gameState.roomId}`);
+                    if (response.ok) {
+                        const gistData = await response.json();
+                        const roomData = JSON.parse(gistData.files["room.json"].content);
+                        
+                        // Update teams if changed
+                        if (JSON.stringify(roomData.teams) !== JSON.stringify(gameState.teams)) {
+                            gameState.teams = roomData.teams;
+                            gameState.roomData = roomData;
+                            updateTeamsList();
+                            if (document.getElementById('gameContainer').style.display !== 'none') {
+                                updateLeaderboard();
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error('Polling error:', error);
+                }
+            }, 5000); // Poll every 5 seconds
         }
 
         function startRoomGameplay() {
@@ -1023,7 +1064,7 @@
             document.getElementById('puzzleAnswer').focus();
         }
 
-        function submitAnswer() {
+        async function submitAnswer() {
             const answer = document.getElementById('puzzleAnswer').value.trim().toLowerCase();
             const correctAnswers = gameState.currentPuzzle.answer;
 
@@ -1039,12 +1080,8 @@
                 }
 
                 // Update room data if in multiplayer
-                if (gameState.mode === 'multiplayer' && rooms[gameState.roomCode]) {
-                    const roomTeam = rooms[gameState.roomCode].teams.find(team => team.name === gameState.currentTeam);
-                    if (roomTeam) {
-                        roomTeam.score = gameState.completedSeals.length;
-                        roomTeam.completedSeals = [...gameState.completedSeals];
-                    }
+                if (gameState.mode === 'multiplayer' && gameState.roomId) {
+                    await updateRoomData();
                 }
 
                 closePuzzle();
@@ -1060,6 +1097,37 @@
             } else {
                 showAlert('Incorrect answer. Try again!', 'error');
                 document.getElementById('puzzleAnswer').focus();
+            }
+        }
+
+        async function updateRoomData() {
+            if (!gameState.roomId || !gameState.roomData) return;
+
+            try {
+                // Update the team in room data
+                const teamIndex = gameState.roomData.teams.findIndex(team => team.name === gameState.currentTeam);
+                if (teamIndex !== -1) {
+                    gameState.roomData.teams[teamIndex] = gameState.teams.find(team => team.name === gameState.currentTeam);
+                    gameState.roomData.lastUpdated = Date.now();
+
+                    const updateData = {
+                        files: {
+                            "room.json": {
+                                content: JSON.stringify(gameState.roomData, null, 2)
+                            }
+                        }
+                    };
+
+                    await fetch(`https://api.github.com/gists/${gameState.roomId}`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updateData)
+                    });
+                }
+            } catch (error) {
+                console.error('Failed to update room data:', error);
             }
         }
 
@@ -1138,6 +1206,12 @@
         }
 
         function goBack() {
+            // Stop polling
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+
             // Hide all game sections
             document.getElementById('multiplayerSetup').style.display = 'none';
             document.getElementById('lobby').style.display = 'none';
@@ -1155,14 +1229,17 @@
                 startTime: null,
                 currentPuzzle: null,
                 isGameActive: false,
-                roomCode: '',
-                isHost: false
+                roomId: '',
+                isHost: false,
+                roomData: null
             };
+
+            // Clear URL parameters
+            window.history.pushState({}, '', window.location.pathname);
         }
 
-        function copyRoomCode() {
-            const roomCode = gameState.roomCode;
-            const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+        function copyRoomLink() {
+            const shareLink = document.getElementById('shareLink').textContent;
             
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(shareLink).then(() => {
@@ -1204,15 +1281,12 @@
             }
         });
 
-        // Cleanup old rooms periodically (24 hours)
-        setInterval(() => {
-            const now = Date.now();
-            Object.keys(rooms).forEach(roomCode => {
-                if (now - rooms[roomCode].createdAt > 24 * 60 * 60 * 1000) {
-                    delete rooms[roomCode];
-                }
-            });
-        }, 60 * 60 * 1000); // Clean every hour
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
+        });
     </script>
 </body>
 </html>
