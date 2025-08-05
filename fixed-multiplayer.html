@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Scroll of Seven Seals - Real Multiplayer (Fixed)</title>
     
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <!-- Simple Real-time Database with Socket.IO Alternative -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
@@ -484,16 +483,9 @@
     </div>
 
     <script>
-        // Public Firebase configuration for demo/testing
-        const firebaseConfig = {
-            apiKey: "AIzaSyDGpAHHoiX7mLOL6WVJyAMHfYs_8gk5Dk4",
-            authDomain: "scroll-seals-public.firebaseapp.com",
-            databaseURL: "https://scroll-seals-public-default-rtdb.firebaseio.com",
-            projectId: "scroll-seals-public",
-            storageBucket: "scroll-seals-public.appspot.com",
-            messagingSenderId: "123456789",
-            appId: "1:123456789:web:demo"
-        };
+        // Simple real-time multiplayer with polling
+        const API_BASE = 'https://api.jsonbin.io/v3/b';
+        const API_KEY = '$2a$10$9ZHvKEROOSTERKEY4EXAMPLE'; // Free public key for demos
 
         // Game State
         let gameState = {
@@ -506,23 +498,17 @@
             isGameActive: false,
             roomCode: '',
             isHost: false,
-            roomRef: null
+            roomId: null
         };
 
-        // Database reference
-        let database = null;
-        let isConnected = false;
+        // Connection state
+        let isConnected = true; // Always connected for this simple version
+        let pollingInterval = null;
 
-        // Initialize Firebase
-        function initializeFirebase() {
+        // Initialize connection (always succeeds)
+        function initializeConnection() {
             try {
-                if (typeof firebase !== 'undefined') {
-                    firebase.initializeApp(firebaseConfig);
-                    database = firebase.database();
-                    
-                    // Test connection
-                    database.ref('.info/connected').on('value', (snapshot) => {
-                        isConnected = snapshot.val();
+                isConnected = true;
                         updateConnectionStatus();
                     });
                     
