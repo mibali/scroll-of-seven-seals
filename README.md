@@ -2,6 +2,9 @@
 
 An enhanced multiplayer web application featuring biblical puzzles, real-time competition, and global leaderboards.
 
+<img width="1261" height="433" alt="image" src="https://github.com/user-attachments/assets/10e76405-5ad7-48cd-80cd-5e6d133a5dff" />
+
+
 ## 🌟 Features
 
 ### Core Game Modes
