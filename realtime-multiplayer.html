@@ -674,70 +674,128 @@
             connected: false
         };
 
-        // WebSocket connection with fallback servers
-        const WS_SERVERS = [
-            'wss://socketsbay.com/wss/v2/1/demo/',
-            'wss://ws.postman-echo.com/raw',
-            'wss://echo.websocket.org'
-        ];
+        // Real-time multiplayer using localStorage + polling for cross-tab communication
+        let syncInterval = null;
+        let lastSyncTime = 0;
 
-        let currentServerIndex = 0;
-
-        function connectWebSocket() {
-            if (gameState.ws) {
-                gameState.ws.close();
-            }
-
-            const server = WS_SERVERS[currentServerIndex];
+        function initializeRealTimeSync() {
             updateConnectionStatus('connecting');
             
+            // Simulate connection for demo
+            setTimeout(() => {
+                gameState.connected = true;
+                updateConnectionStatus('connected');
+                startSyncPolling();
+            }, 1000);
+        }
+
+        function startSyncPolling() {
+            if (syncInterval) {
+                clearInterval(syncInterval);
+            }
+
+            // Poll every 1 second for real-time feel
+            syncInterval = setInterval(() => {
+                if (gameState.mode === 'multiplayer' && gameState.roomCode) {
+                    syncRoomState();
+                }
+            }, 1000);
+        }
+
+        function syncRoomState() {
+            const roomKey = `room_${gameState.roomCode}`;
+            
             try {
-                gameState.ws = new WebSocket(server);
-                
-                gameState.ws.onopen = () => {
-                    console.log('Connected to:', server);
-                    gameState.connected = true;
-                    updateConnectionStatus('connected');
+                // Get current room state
+                const roomDataStr = localStorage.getItem(roomKey);
+                if (roomDataStr) {
+                    const roomData = JSON.parse(roomDataStr);
                     
-                    // Send identification
-                    sendMessage({
-                        type: 'identify',
-                        teamName: gameState.currentTeam,
-                        roomCode: gameState.roomCode
-                    });
-                };
-                
-                gameState.ws.onmessage = (event) => {
-                    try {
-                        const message = JSON.parse(event.data);
-                        handleWebSocketMessage(message);
-                    } catch (e) {
-                        console.log('Non-JSON message received:', event.data);
+                    // Only process if there are updates since last sync
+                    if (roomData.lastUpdated > lastSyncTime) {
+                        lastSyncTime = roomData.lastUpdated;
+                        processRoomUpdate(roomData);
                     }
-                };
-                
-                gameState.ws.onclose = () => {
-                    gameState.connected = false;
-                    updateConnectionStatus('disconnected');
-                    
-                    // Try next server after 2 seconds
-                    setTimeout(() => {
-                        currentServerIndex = (currentServerIndex + 1) % WS_SERVERS.length;
-                        if (gameState.mode === 'multiplayer') {
-                            connectWebSocket();
-                        }
-                    }, 2000);
-                };
-                
-                gameState.ws.onerror = (error) => {
-                    console.error('WebSocket error:', error);
-                    gameState.connected = false;
-                    updateConnectionStatus('disconnected');
-                };
-                
+                }
             } catch (error) {
-                console.error('Failed to connect to WebSocket:', error);
-                updateConnectionStatus('disconnected');
+                console.error('Sync error:', error);
+            }
+        }
+
+        function processRoomUpdate(roomData) {
+            // Update teams list if in lobby
+            if (document.getElementById('lobby').style.display !== 'none') {
+                const oldTeamCount = gameState.teams.length;
+                gameState.teams = roomData.teams || [];
+                
+                if (gameState.teams.length !== oldTeamCount) {
+                    updateTeamsList();
+                    
+                    // Show join notification
+                    const newTeam = gameState.teams.find(t => t.name !== gameState.currentTeam);
+                    if (newTeam && gameState.teams.length > oldTeamCount) {
+                        showAlert(`${newTeam.name} joined the room!`, 'success');
+                    }
+                }
+            }
+
+            // Check if game started
+            if (roomData.gameStarted && !gameState.isGameActive) {
+                if (document.getElementById('lobby').style.display !== 'none') {
+                    showAlert('Game started by host!', 'success');
+                    startGameplay();
+                }
+            }
+
+            // Update team progress during game
+            if (gameState.isGameActive && roomData.teams) {
+                let progressUpdated = false;
+                roomData.teams.forEach(roomTeam => {
+                    const localTeam = gameState.teams.find(t => t.name === roomTeam.name);
+                    if (localTeam && roomTeam.name !== gameState.currentTeam) {
+                        if (localTeam.score !== roomTeam.score) {
+                            localTeam.score = roomTeam.score;
+                            localTeam.completedSeals = roomTeam.completedSeals || [];
+                            progressUpdated = true;
+
+                            // Show notification for seal completion
+                            if (roomTeam.score > (localTeam.lastKnownScore || 0)) {
+                                showAlert(`🔥 ${roomTeam.name} opened seal ${roomTeam.score}!`, 'success');
+                                localTeam.lastKnownScore = roomTeam.score;
+                            }
+                        }
+                    }
+                });
+
+                if (progressUpdated) {
+                    updateLeaderboard();
+                }
+            }
+        }
+
+        function updateRoomState(updates) {
+            const roomKey = `room_${gameState.roomCode}`;
+            
+            try {
+                // Get current room state
+                let roomData = {};
+                const existing = localStorage.getItem(roomKey);
+                if (existing) {
+                    roomData = JSON.parse(existing);
+                }
+
+                // Apply updates
+                Object.assign(roomData, updates);
+                roomData.lastUpdated = Date.now();
+
+                // Save back to localStorage
+                localStorage.setItem(roomKey, JSON.stringify(roomData));
+                
+                // Update local state
+                lastSyncTime = roomData.lastUpdated;
+
+            } catch (error) {
+                console.error('Failed to update room state:', error);
             }
         }
 
@@ -760,41 +818,7 @@
             }
         }
 
-        function sendMessage(message) {
-            if (gameState.ws && gameState.connected) {
-                try {
-                    gameState.ws.send(JSON.stringify(message));
-                } catch (e) {
-                    console.error('Failed to send message:', e);
-                }
-            }
-        }
-
-        function handleWebSocketMessage(message) {
-            switch (message.type) {
-                case 'room_update':
-                    if (message.roomCode === gameState.roomCode) {
-                        updateRoom(message.data);
-                    }
-                    break;
-                case 'team_joined':
-                    if (message.roomCode === gameState.roomCode) {
-                        showAlert(`${message.teamName} joined the room!`, 'success');
-                        addTeamToRoom(message.teamName);
-                    }
-                    break;
-                case 'game_started':
-                    if (message.roomCode === gameState.roomCode && !gameState.isGameActive) {
-                        startGameplay();
-                    }
-                    break;
-                case 'seal_completed':
-                    if (message.roomCode === gameState.roomCode) {
-                        updateTeamProgress(message.teamName, message.completedSeals);
-                    }
-                    break;
-            }
-        }
+        // Remove old WebSocket message functions - replaced with localStorage sync
 
         function selectMode(mode) {
             gameState.mode = mode;
@@ -804,7 +828,7 @@
                 startSinglePlayerGame();
             } else if (mode === 'multiplayer') {
                 document.getElementById('multiplayerSetup').style.display = 'block';
-                connectWebSocket();
+                initializeRealTimeSync();
             }
         }
 
@@ -838,11 +862,13 @@
             gameState.isHost = true;
             gameState.teams = [{ name: teamName, score: 0, completedSeals: [], isHost: true }];
 
-            // Create room on server
-            sendMessage({
-                type: 'create_room',
+            // Create room state in localStorage
+            updateRoomState({
                 roomCode: gameState.roomCode,
-                teamName: teamName
+                host: teamName,
+                teams: gameState.teams,
+                gameStarted: false,
+                createdAt: Date.now()
             });
 
             showLobby();
@@ -868,18 +894,41 @@
             gameState.currentTeam = teamName;
             gameState.isHost = false;
 
-            // Join room on server
-            sendMessage({
-                type: 'join_room',
-                roomCode: roomCode,
-                teamName: teamName
-            });
+            // Check if room exists
+            const roomKey = `room_${roomCode}`;
+            const existingRoom = localStorage.getItem(roomKey);
+            
+            if (!existingRoom) {
+                showAlert('Room not found! Please check the room code.', 'error');
+                return;
+            }
 
-            // For demo purposes, immediately show lobby
-            // In real implementation, wait for server confirmation
-            gameState.teams = [{ name: teamName, score: 0, completedSeals: [], isHost: false }];
-            showLobby();
-            showAlert('Joined room successfully!', 'success');
+            try {
+                const roomData = JSON.parse(existingRoom);
+                
+                // Check if team name already exists
+                if (roomData.teams && roomData.teams.find(t => t.name === teamName)) {
+                    showAlert('Team name already taken in this room', 'error');
+                    return;
+                }
+
+                // Add team to room
+                const newTeam = { name: teamName, score: 0, completedSeals: [], isHost: false };
+                roomData.teams = roomData.teams || [];
+                roomData.teams.push(newTeam);
+                
+                // Update room state
+                updateRoomState({
+                    teams: roomData.teams
+                });
+
+                gameState.teams = roomData.teams;
+                showLobby();
+                showAlert('Joined room successfully!', 'success');
+                
+            } catch (error) {
+                showAlert('Error joining room. Please try again.', 'error');
+            }
         }
 
         function showLobby() {
@@ -930,10 +979,10 @@
         function startRoomGameplay() {
             if (!gameState.isHost) return;
             
-            // Notify all players
-            sendMessage({
-                type: 'start_game',
-                roomCode: gameState.roomCode
+            // Update room state to indicate game started
+            updateRoomState({
+                gameStarted: true,
+                gameStartTime: Date.now()
             });
             
             startGameplay();
@@ -1063,14 +1112,16 @@
                     currentTeam.completedSeals = [...gameState.completedSeals];
                 }
 
-                // Notify other players in multiplayer
+                // Update room state with team progress in multiplayer
                 if (gameState.mode === 'multiplayer') {
-                    sendMessage({
-                        type: 'seal_completed',
-                        roomCode: gameState.roomCode,
-                        teamName: gameState.currentTeam,
-                        completedSeals: gameState.completedSeals,
-                        sealNumber: gameState.currentPuzzle.number
+                    const updatedTeams = gameState.teams.map(team => 
+                        team.name === gameState.currentTeam 
+                            ? { ...team, score: gameState.completedSeals.length, completedSeals: [...gameState.completedSeals] }
+                            : team
+                    );
+                    
+                    updateRoomState({
+                        teams: updatedTeams
                     });
                 }
 
@@ -1169,19 +1220,42 @@
         }
 
         function leaveRoom() {
-            if (gameState.ws) {
-                sendMessage({
-                    type: 'leave_room',
-                    roomCode: gameState.roomCode,
-                    teamName: gameState.currentTeam
-                });
-                gameState.ws.close();
+            // Remove team from room state
+            if (gameState.roomCode && gameState.currentTeam) {
+                const roomKey = `room_${gameState.roomCode}`;
+                const existingRoom = localStorage.getItem(roomKey);
+                
+                if (existingRoom) {
+                    try {
+                        const roomData = JSON.parse(existingRoom);
+                        roomData.teams = roomData.teams.filter(t => t.name !== gameState.currentTeam);
+                        
+                        if (roomData.teams.length === 0 || gameState.isHost) {
+                            // Remove room if empty or host is leaving
+                            localStorage.removeItem(roomKey);
+                        } else {
+                            // Update room state
+                            localStorage.setItem(roomKey, JSON.stringify({
+                                ...roomData,
+                                lastUpdated: Date.now()
+                            }));
+                        }
+                    } catch (error) {
+                        console.error('Error leaving room:', error);
+                    }
+                }
             }
             
             goBack();
         }
 
         function goBack() {
+            // Stop sync polling
+            if (syncInterval) {
+                clearInterval(syncInterval);
+                syncInterval = null;
+            }
+
             // Hide all sections
             document.getElementById('multiplayerSetup').style.display = 'none';
             document.getElementById('lobby').style.display = 'none';
@@ -1264,8 +1338,8 @@
 
         // Cleanup on page unload
         window.addEventListener('beforeunload', () => {
-            if (gameState.ws) {
-                gameState.ws.close();
+            if (syncInterval) {
+                clearInterval(syncInterval);
             }
         });
     </script>
