@@ -759,6 +759,9 @@
             try {
                 showAlert('Creating room...', 'success');
                 
+                // Generate a simple room ID
+                const roomId = Math.random().toString(36).substr(2, 8).toUpperCase();
+                
                 // Create room data
                 const roomData = {
                     host: teamName,
@@ -768,35 +771,27 @@
                     lastUpdated: Date.now()
                 };
 
-                // Create a GitHub Gist as our database (anonymous, no auth needed)
-                const gistData = {
-                    description: `Scroll of Seven Seals - Room by ${teamName}`,
-                    public: false,
-                    files: {
-                        "room.json": {
-                            content: JSON.stringify(roomData, null, 2)
-                        }
-                    }
-                };
-
-                const response = await fetch('https://api.github.com/gists', {
+                // Store using JSONBIN.io (has better CORS support)
+                const response = await fetch('https://api.jsonbin.io/v3/b', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'X-Bin-Name': `seals-room-${roomId}`,
+                        'X-Bin-Private': 'false'
                     },
-                    body: JSON.stringify(gistData)
+                    body: JSON.stringify(roomData)
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to create room');
+                    throw new Error('Failed to create room - using local fallback');
                 }
 
                 const result = await response.json();
-                gameState.roomId = result.id;
+                gameState.roomId = result.metadata.id;
                 gameState.roomData = roomData;
 
                 // Generate shareable link
-                const shareLink = `${window.location.origin}${window.location.pathname}?room=${result.id}`;
+                const shareLink = `${window.location.origin}${window.location.pathname}?room=${gameState.roomId}`;
                 document.getElementById('shareLink').textContent = shareLink;
 
                 gameState.currentTeam = teamName;
@@ -807,7 +802,33 @@
                 showAlert('Room created successfully! Share the link with friends.', 'success');
             } catch (error) {
                 console.error('Room creation error:', error);
-                showAlert('Failed to create room. Please try again.', 'error');
+                
+                // Fallback: Use local storage with random ID for demo
+                const roomId = Math.random().toString(36).substr(2, 8).toUpperCase();
+                const roomData = {
+                    host: teamName,
+                    teams: [{ name: teamName, score: 0, completedSeals: [] }],
+                    gameStarted: false,
+                    createdAt: Date.now(),
+                    lastUpdated: Date.now()
+                };
+
+                // Store locally as demo
+                localStorage.setItem(`room_${roomId}`, JSON.stringify(roomData));
+                
+                gameState.roomId = roomId;
+                gameState.roomData = roomData;
+
+                // Generate demo link
+                const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomId}`;
+                document.getElementById('shareLink').textContent = shareLink;
+
+                gameState.currentTeam = teamName;
+                gameState.isHost = true;
+                gameState.teams = roomData.teams;
+
+                showLobby();
+                showAlert('Room created (local demo mode)! Share the link with friends on the same device.', 'success');
             }
         }
 
@@ -829,14 +850,27 @@
             try {
                 showAlert('Looking for room...', 'success');
                 
-                // Fetch room data from GitHub Gist
-                const response = await fetch(`https://api.github.com/gists/${roomId}`);
-                if (!response.ok) {
-                    throw new Error('Room not found');
+                let roomData;
+                
+                // Try JSONBin first
+                try {
+                    const response = await fetch(`https://api.jsonbin.io/v3/b/${roomId}/latest`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        roomData = data.record;
+                    } else {
+                        throw new Error('Not found in JSONBin');
+                    }
+                } catch (jsonbinError) {
+                    // Fallback to localStorage for demo mode
+                    const localData = localStorage.getItem(`room_${roomId}`);
+                    if (localData) {
+                        roomData = JSON.parse(localData);
+                        showAlert('Joining local demo room...', 'success');
+                    } else {
+                        throw new Error('Room not found');
+                    }
                 }
-
-                const gistData = await response.json();
-                const roomData = JSON.parse(gistData.files["room.json"].content);
 
                 // Check if team name already exists
                 const existingTeam = roomData.teams.find(team => team.name === teamName);
@@ -850,22 +884,18 @@
                 roomData.lastUpdated = Date.now();
                 
                 // Update room data
-                const updateData = {
-                    description: gistData.description,
-                    files: {
-                        "room.json": {
-                            content: JSON.stringify(roomData, null, 2)
-                        }
-                    }
-                };
-
-                await fetch(`https://api.github.com/gists/${roomId}`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updateData)
-                });
+                try {
+                    await fetch(`https://api.jsonbin.io/v3/b/${roomId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(roomData)
+                    });
+                } catch (updateError) {
+                    // Fallback to localStorage
+                    localStorage.setItem(`room_${roomId}`, JSON.stringify(roomData));
+                }
 
                 gameState.roomId = roomId;
                 gameState.roomData = roomData;
