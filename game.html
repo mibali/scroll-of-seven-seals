@@ -1511,12 +1511,16 @@
         }
 
         // Generate random seals for each new game
-        let seals = generateRandomSeals();
+        // Use seals from GameData or generate if needed
+        function getSealsData() {
+            return window.GameData?.seals || generateRandomSeals();
+        }
 
         function renderSeals() {
             const sealsGrid = document.getElementById('sealsGrid');
             sealsGrid.innerHTML = '';
 
+            const seals = getSealsData();
             seals.forEach(seal => {
                 const sealElement = document.createElement('div');
                 sealElement.className = `seal ${gameState.completedSeals.includes(seal.number) ? 'opened' : ''}`;
@@ -1603,6 +1607,7 @@
 
         function updateProgress() {
             const completed = gameState.completedSeals.length;
+            const seals = getSealsData();
             const total = seals.length;
             const percentage = (completed / total) * 100;
 
