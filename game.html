@@ -854,6 +854,17 @@
         function showRoomCreation() {
             document.getElementById('roomCreation').classList.add('active');
             document.getElementById('roomJoin').classList.remove('active');
+            
+            // Automatically generate room code and link when showing creation form
+            const roomCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+            const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+            
+            document.getElementById('roomCode').textContent = roomCode;
+            document.getElementById('shareLink').textContent = shareLink;
+            
+            // Store for when they actually create the room
+            window.tempRoomCode = roomCode;
+            window.tempShareLink = shareLink;
         }
 
         function showRoomJoin() {
@@ -872,14 +883,10 @@
                 return;
             }
 
-            // Generate room code immediately and show it
-            const roomCode = Math.random().toString(36).substr(2, 6).toUpperCase();
-            console.log('🎲 Generated room code:', roomCode);
-            
-            // Update UI immediately
-            document.getElementById('roomCode').textContent = roomCode;
-            const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-            document.getElementById('shareLink').textContent = shareLink;
+            // Use pre-generated room code and link
+            const roomCode = window.tempRoomCode || Math.random().toString(36).substr(2, 6).toUpperCase();
+            const shareLink = window.tempShareLink || `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+            console.log('🎲 Using room code:', roomCode);
             
             gameState.roomCode = roomCode;
             gameState.currentTeam = teamName;
