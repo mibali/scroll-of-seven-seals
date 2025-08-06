@@ -774,27 +774,37 @@
         function initializeFirebase() {
             try {
                 if (typeof firebase !== 'undefined') {
+                    console.log('🔥 Firebase SDK loaded, initializing...');
                     app = firebase.initializeApp(firebaseConfig);
                     database = firebase.database();
                     
                     console.log('🔥 Firebase initialized successfully');
+                    console.log('🔥 Database object created:', database);
+                    
+                    isFirebaseReady = true;
                     updateConnectionStatus('connected');
                     
-                    // Monitor connection status
+                    // Test basic connectivity
                     database.ref('.info/connected').on('value', (snapshot) => {
-                        if (snapshot.val() === true) {
+                        const connected = snapshot.val();
+                        console.log('🔥 Firebase connection status:', connected);
+                        if (connected === true) {
                             updateConnectionStatus('connected');
+                            isFirebaseReady = true;
                         } else {
                             updateConnectionStatus('disconnected');
+                            isFirebaseReady = false;
                         }
                     });
                 } else {
-                    console.error('Firebase SDK not loaded');
+                    console.error('❌ Firebase SDK not loaded');
                     updateConnectionStatus('disconnected');
+                    isFirebaseReady = false;
                 }
             } catch (error) {
-                console.error('Firebase initialization failed:', error);
+                console.error('❌ Firebase initialization failed:', error);
                 updateConnectionStatus('disconnected');
+                isFirebaseReady = false;
             }
         }
 
@@ -852,10 +862,9 @@
         }
 
         function createRoom() {
-            if (!isFirebaseReady) {
-                showAlert('Firebase not ready. Please wait a moment.', 'error');
-                return;
-            }
+            console.log('🎯 Create room clicked');
+            console.log('🔥 Firebase ready:', isFirebaseReady);
+            console.log('🔥 Database object:', database);
 
             const teamName = document.getElementById('teamName').value.trim();
             if (!teamName) {
@@ -863,45 +872,57 @@
                 return;
             }
 
-            // Generate room code
+            // Generate room code immediately and show it
             const roomCode = Math.random().toString(36).substr(2, 6).toUpperCase();
+            console.log('🎲 Generated room code:', roomCode);
+            
+            // Update UI immediately
+            document.getElementById('roomCode').textContent = roomCode;
+            const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+            document.getElementById('shareLink').textContent = shareLink;
+            
             gameState.roomCode = roomCode;
             gameState.currentTeam = teamName;
             gameState.isHost = true;
+            gameState.teams = [{ name: teamName, score: 0, completedSeals: [] }];
 
-            // Create room in Firebase
-            const roomData = {
-                code: roomCode,
-                host: teamName,
-                teams: {
-                    [teamName]: {
-                        name: teamName,
-                        isHost: true,
-                        joinTime: firebase.database.ServerValue.TIMESTAMP,
-                        score: 0,
-                        completedSeals: []
-                    }
-                },
-                status: 'waiting',
-                gameStarted: false,
-                createdAt: firebase.database.ServerValue.TIMESTAMP
-            };
+            // Try Firebase, but don't block if it fails
+            if (isFirebaseReady && database) {
+                console.log('🔥 Attempting Firebase save...');
+                
+                const roomData = {
+                    code: roomCode,
+                    host: teamName,
+                    teams: {
+                        [teamName]: {
+                            name: teamName,
+                            isHost: true,
+                            joinTime: Date.now(), // Use regular timestamp as fallback
+                            score: 0,
+                            completedSeals: []
+                        }
+                    },
+                    status: 'waiting',
+                    gameStarted: false,
+                    createdAt: Date.now()
+                };
 
-            database.ref(`rooms/${roomCode}`).set(roomData)
-                .then(() => {
-                    // Update UI
-                    document.getElementById('roomCode').textContent = roomCode;
-                    const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-                    document.getElementById('shareLink').textContent = shareLink;
-                    
-                    gameState.teams = [{ name: teamName, score: 0, completedSeals: [] }];
-                    
-                    showLobby();
-                    showAlert('Room created successfully! Share the link with friends.', 'success');
-                })
-                .catch((error) => {
-                    showAlert('Failed to create room: ' + error.message, 'error');
-                });
+                database.ref(`rooms/${roomCode}`).set(roomData)
+                    .then(() => {
+                        console.log('✅ Firebase save successful');
+                        showAlert('Room created with Firebase sync!', 'success');
+                    })
+                    .catch((error) => {
+                        console.error('❌ Firebase save failed:', error);
+                        showAlert('Room created locally (Firebase sync failed)', 'success');
+                    });
+            } else {
+                console.log('⚠️ Creating room without Firebase');
+                showAlert('Room created locally (no Firebase)', 'success');
+            }
+
+            // Always proceed to lobby
+            showLobby();
         }
 
         function joinRoom() {
