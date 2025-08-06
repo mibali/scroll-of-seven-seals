@@ -719,9 +719,19 @@
         </div>
     </div>
 
-    <!-- Load Firebase config and start app -->
-    <script src="js/firebase-config.js"></script>
     <script>
+        // Initialize Firebase directly
+        const firebaseConfig = {
+            apiKey: "AIzaSyB9eQyqDeIjQvCRDtVVEsImhsfXNA9xMRc",
+            authDomain: "scroll-of-seven-seals.firebaseapp.com",
+            databaseURL: "https://scroll-of-seven-seals-default-rtdb.firebaseio.com",
+            projectId: "scroll-of-seven-seals",
+            storageBucket: "scroll-of-seven-seals.firebasestorage.app",
+            messagingSenderId: "156760249212",
+            appId: "1:156760249212:web:1bf31ad5f92b410f29caf9",
+            measurementId: "G-DPY2ZJ7CSD"
+        };
+
         // Game State
         let gameState = {
             mode: '',
@@ -738,6 +748,7 @@
 
         // Firebase connection monitoring
         let isFirebaseReady = false;
+        let app, database;
 
         function updateConnectionStatus(status) {
             const statusEl = document.getElementById('connectionStatus');
@@ -759,25 +770,44 @@
             }
         }
 
-        // Wait for Firebase to initialize
-        function waitForFirebase() {
-            if (typeof firebase !== 'undefined' && window.database) {
-                updateConnectionStatus('connected');
-                
-                // Monitor connection status
-                window.database.ref('.info/connected').on('value', (snapshot) => {
-                    if (snapshot.val() === true) {
-                        updateConnectionStatus('connected');
-                    } else {
-                        updateConnectionStatus('disconnected');
-                    }
-                });
-            } else {
-                setTimeout(waitForFirebase, 500);
+        // Initialize Firebase
+        function initializeFirebase() {
+            try {
+                if (typeof firebase !== 'undefined') {
+                    app = firebase.initializeApp(firebaseConfig);
+                    database = firebase.database();
+                    
+                    console.log('🔥 Firebase initialized successfully');
+                    updateConnectionStatus('connected');
+                    
+                    // Monitor connection status
+                    database.ref('.info/connected').on('value', (snapshot) => {
+                        if (snapshot.val() === true) {
+                            updateConnectionStatus('connected');
+                        } else {
+                            updateConnectionStatus('disconnected');
+                        }
+                    });
+                } else {
+                    console.error('Firebase SDK not loaded');
+                    updateConnectionStatus('disconnected');
+                }
+            } catch (error) {
+                console.error('Firebase initialization failed:', error);
+                updateConnectionStatus('disconnected');
             }
         }
 
-        // Start Firebase monitoring
+        // Wait for Firebase SDK to load
+        function waitForFirebase() {
+            if (typeof firebase !== 'undefined') {
+                initializeFirebase();
+            } else {
+                setTimeout(waitForFirebase, 100);
+            }
+        }
+
+        // Start Firebase initialization
         waitForFirebase();
 
         // Check for room parameter in URL
@@ -857,7 +887,7 @@
                 createdAt: firebase.database.ServerValue.TIMESTAMP
             };
 
-            window.database.ref(`rooms/${roomCode}`).set(roomData)
+            database.ref(`rooms/${roomCode}`).set(roomData)
                 .then(() => {
                     // Update UI
                     document.getElementById('roomCode').textContent = roomCode;
@@ -902,7 +932,7 @@
             roomCode = roomCode.toUpperCase();
 
             // Check if room exists
-            window.database.ref(`rooms/${roomCode}`).once('value')
+            database.ref(`rooms/${roomCode}`).once('value')
                 .then((snapshot) => {
                     const roomData = snapshot.val();
                     
@@ -935,7 +965,7 @@
                         completedSeals: []
                     };
 
-                    window.database.ref(`rooms/${roomCode}/teams/${teamName}`).set(teamData)
+                    database.ref(`rooms/${roomCode}/teams/${teamName}`).set(teamData)
                         .then(() => {
                             // Update URL
                             window.history.pushState({}, '', `${window.location.pathname}?room=${roomCode}`);
@@ -958,7 +988,7 @@
             document.getElementById('lobbyRoomCode').textContent = gameState.roomCode;
 
             // Listen for room updates
-            gameState.roomRef = window.database.ref(`rooms/${gameState.roomCode}`);
+            gameState.roomRef = database.ref(`rooms/${gameState.roomCode}`);
             gameState.roomRef.on('value', (snapshot) => {
                 const roomData = snapshot.val();
                 if (roomData) {
@@ -1010,7 +1040,7 @@
         function startRoomGameplay() {
             if (gameState.isHost) {
                 // Host starts the game for everyone
-                window.database.ref(`rooms/${gameState.roomCode}`).update({
+                database.ref(`rooms/${gameState.roomCode}`).update({
                     gameStarted: true,
                     status: 'playing',
                     startTime: firebase.database.ServerValue.TIMESTAMP
@@ -1180,7 +1210,7 @@
                 lastUpdate: firebase.database.ServerValue.TIMESTAMP
             };
 
-            window.database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData)
+            database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData)
                 .catch((error) => {
                     console.error('Failed to update team progress:', error);
                 });
