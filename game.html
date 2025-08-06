@@ -999,6 +999,19 @@
 
     <script>
         // Firebase configuration is loaded from firebase-config.js
+        
+        // Function declarations to avoid hoisting issues
+        function selectMode(mode) {
+            // Will be defined later
+        }
+        
+        function showRoomJoin() {
+            // Will be defined later
+        }
+        
+        function showRoomCreation() {
+            // Will be defined later
+        }
 
         // Game State
         let gameState = {
@@ -1016,7 +1029,6 @@
 
         // Firebase connection monitoring
         let isFirebaseReady = false;
-        let database, auth;
 
         function updateConnectionStatus(status) {
             const statusEl = document.getElementById('connectionStatus');
@@ -1047,8 +1059,6 @@
                         // Check if Firebase is already initialized by firebase-config.js
                         if (window.database && window.auth) {
                             console.log('✅ Using Firebase from firebase-config.js');
-                            database = window.database;
-                            auth = window.auth;
                             isFirebaseReady = true;
                             updateConnectionStatus('connected');
                             resolve(true);
@@ -1057,13 +1067,13 @@
 
                         if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
                             console.log('🔥 Using existing Firebase app');
-                            database = firebase.database();
-                            auth = firebase.auth();
+                            window.database = firebase.database();
+                            window.auth = firebase.auth();
                             
                             console.log('🔥 Firebase initialized successfully');
 
                         // Wait for authentication state
-                        const unsubscribe = auth.onAuthStateChanged((user) => {
+                        const unsubscribe = window.auth.onAuthStateChanged((user) => {
                             if (user) {
                                 console.log('✅ User authenticated:', user.uid);
                                 isFirebaseReady = true;
@@ -1072,7 +1082,7 @@
                                 resolve(true);
 
                                 // Monitor connection status
-                                database.ref('.info/connected').on('value', (snapshot) => {
+                                window.database.ref('.info/connected').on('value', (snapshot) => {
                                     const connected = snapshot.val();
                                     console.log('🔥 Firebase connection status:', connected);
                                     if (connected === true) {
@@ -1086,7 +1096,7 @@
                             } else {
                                 // Sign in anonymously for multiplayer access
                                 console.log('🔐 Signing in anonymously...');
-                                auth.signInAnonymously()
+                                window.auth.signInAnonymously()
                                     .catch((error) => {
                                         console.error('❌ Anonymous authentication failed:', error);
                                         updateConnectionStatus('disconnected');
@@ -1133,12 +1143,15 @@
             }
         });
 
-        function selectMode(mode) {
+        // Redefine selectMode with actual implementation
+        selectMode = function(mode) {
             gameState.mode = mode;
 
             // Update UI
             document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('selected'));
-            event.target.closest('.mode-card').classList.add('selected');
+            if (event && event.target) {
+                event.target.closest('.mode-card').classList.add('selected');
+            }
 
             if (mode === 'multiplayer') {
                 if (!isFirebaseReady) {
@@ -1150,9 +1163,10 @@
                 // Start single player or AI mode directly
                 startSinglePlayerGame();
             }
-        }
+        };
 
-        function showRoomCreation() {
+        // Redefine showRoomCreation with actual implementation
+        showRoomCreation = function() {
             document.getElementById('roomCreation').classList.add('active');
             document.getElementById('roomJoin').classList.remove('active');
 
@@ -1166,12 +1180,13 @@
             // Store for when they actually create the room
             window.tempRoomCode = roomCode;
             window.tempShareLink = shareLink;
-        }
+        };
 
-        function showRoomJoin() {
+        // Redefine showRoomJoin with actual implementation
+        showRoomJoin = function() {
             document.getElementById('roomJoin').classList.add('active');
             document.getElementById('roomCreation').classList.remove('active');
-        }
+        };
 
         async function createRoom() {
             console.log('🎯 Create room clicked');
