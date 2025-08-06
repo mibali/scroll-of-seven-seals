@@ -882,30 +882,40 @@
         }
 
         // Test Firebase connection
-        async function testFirebaseConnection() {
+        function testFirebaseConnection() {
             try {
                 console.log('🧪 Testing Firebase connection...');
-                await initializeFirebase();
                 
                 if (database && isFirebaseReady) {
                     // Test write permissions
                     const testRef = database.ref('test/connection');
-                    await testRef.set({ timestamp: Date.now(), test: true });
-                    console.log('✅ Firebase write test successful');
-                    
-                    // Test read permissions
-                    const readTest = await testRef.once('value');
-                    console.log('✅ Firebase read test successful:', readTest.val());
-                    
-                    // Clean up test data
-                    await testRef.remove();
-                    console.log('✅ Firebase connection test completed successfully');
+                    testRef.set({ timestamp: Date.now(), test: true })
+                        .then(() => {
+                            console.log('✅ Firebase write test successful');
+                            
+                            // Test read permissions
+                            return testRef.once('value');
+                        })
+                        .then((readTest) => {
+                            console.log('✅ Firebase read test successful:', readTest.val());
+                            
+                            // Clean up test data
+                            return testRef.remove();
+                        })
+                        .then(() => {
+                            console.log('✅ Firebase connection test completed successfully');
+                        })
+                        .catch((error) => {
+                            console.error('❌ Firebase test operations failed:', error);
+                        });
                 } else {
-                    console.error('❌ Firebase not ready for testing');
+                    console.log('⏳ Firebase not ready yet for testing');
+                    
+                    // Retry after delay if not ready
+                    setTimeout(testFirebaseConnection, 2000);
                 }
             } catch (error) {
                 console.error('❌ Firebase connection test failed:', error);
-                console.error('❌ This might be a permissions issue. Check Firebase rules.');
             }
         }
 
@@ -914,10 +924,6 @@
         
         // Test Firebase after a delay
         setTimeout(testFirebaseConnection, 3000);
-
-        // Initialize with random puzzles and reset session
-        questionGenerator.resetSession();
-        selectRandomPuzzleSet();
 
         // Check for room parameter in URL
         window.addEventListener('load', () => {
@@ -1586,7 +1592,27 @@
         }
 
         // Initialize question generator
-        const questionGenerator = new BibleQuestionGenerator();
+        let questionGenerator;
+        try {
+            questionGenerator = new BibleQuestionGenerator();
+            console.log('✅ Question generator initialized successfully');
+            
+            // Initialize with random puzzles and reset session
+            questionGenerator.resetSession();
+            selectRandomPuzzleSet();
+        } catch (error) {
+            console.error('❌ Error initializing question generator:', error);
+            
+            // Fallback to simple initialization
+            questionGenerator = {
+                resetSession: () => console.log('Fallback reset session'),
+                generateQuestionSet: (count) => generateLegacyRandomPuzzles(count),
+                generateThemedSet: (theme, count) => generateLegacyRandomPuzzles(count)
+            };
+            
+            // Use legacy random selection
+            selectRandomPuzzleSet();
+        }
 
         // Legacy compatibility - keep existing structure
         const bibleQuestionPool = {
