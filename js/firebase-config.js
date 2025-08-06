@@ -1,13 +1,14 @@
 // Firebase Configuration
 // Note: Replace with your actual Firebase config when deploying
 const firebaseConfig = {
-    apiKey: "demo-api-key",
-    authDomain: "scroll-seven-seals-demo.firebaseapp.com", 
-    databaseURL: "https://scroll-seven-seals-demo-default-rtdb.firebaseio.com",
-    projectId: "scroll-seven-seals-demo",
-    storageBucket: "scroll-seven-seals-demo.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abcdef123456789"
+    apiKey: "AIzaSyB9eQyqDeIjQvCRDtVVEsImhsfXNA9xMRc",
+    authDomain: "scroll-of-seven-seals.firebaseapp.com",
+    databaseURL: "https://scroll-of-seven-seals-default-rtdb.firebaseio.com",
+    projectId: "scroll-of-seven-seals",
+    storageBucket: "scroll-of-seven-seals.firebasestorage.app",
+    messagingSenderId: "156760249212",
+    appId: "1:156760249212:web:1bf31ad5f92b410f29caf9",
+    measurementId: "G-DPY2ZJ7CSD"
 };
 
 // Initialize Firebase
