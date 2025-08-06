@@ -55,10 +55,15 @@
         window.GameData.seals.length > 0
     );
     
-    window.GameInitialization.addDependency('BibleDatasetManager', () => 
-        typeof window.BibleDatasetManager !== 'undefined' &&
-        typeof window.BibleDatasetManager.generateRandomPuzzleSet === 'function'
-    );
+    // BibleDatasetManager is optional - don't block game startup
+    window.GameInitialization.addDependency('BibleDatasetManager (optional)', () => {
+        const available = typeof window.BibleDatasetManager !== 'undefined' &&
+                         typeof window.BibleDatasetManager.generateRandomPuzzleSet === 'function';
+        if (!available) {
+            console.log('📝 BibleDatasetManager not available, will use fallback puzzles');
+        }
+        return true; // Always return true since it's optional
+    });
     
     window.GameInitialization.addDependency('PuzzleManager', () => 
         typeof window.PuzzleManager !== 'undefined' &&
@@ -141,13 +146,18 @@
         }
     }, 200);
     
-    // Clear check after 30 seconds to avoid infinite checking
+    // Clear check after 10 seconds to avoid infinite checking
     setTimeout(() => {
         if (checkInterval) {
             clearInterval(checkInterval);
-            console.warn('⚠️ Stopped initialization checks after timeout');
+            console.log('⏰ Initialization checks completed (timeout reached)');
+            
+            // Force trigger ready event even if not all dependencies loaded
+            document.dispatchEvent(new CustomEvent('gameReady', {
+                detail: window.GameInitialization.getStatus()
+            }));
         }
-    }, 30000);
+    }, 10000);
     
     console.log('🔧 Initialization fix active');
 })();

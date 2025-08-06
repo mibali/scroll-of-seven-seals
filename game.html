@@ -998,17 +998,7 @@
     </div>
 
     <script>
-        // Initialize Firebase directly
-        const firebaseConfig = {
-            apiKey: "AIzaSyB9eQyqDeIjQvCRDtVVEsImhsfXNA9xMRc",
-            authDomain: "scroll-of-seven-seals.firebaseapp.com",
-            databaseURL: "https://scroll-of-seven-seals-default-rtdb.firebaseio.com",
-            projectId: "scroll-of-seven-seals",
-            storageBucket: "scroll-of-seven-seals.firebasestorage.app",
-            messagingSenderId: "156760249212",
-            appId: "1:156760249212:web:1bf31ad5f92b410f29caf9",
-            measurementId: "G-DPY2ZJ7CSD"
-        };
+        // Firebase configuration is loaded from firebase-config.js
 
         // Game State
         let gameState = {
@@ -1048,23 +1038,23 @@
             }
         }
 
-        // Initialize Firebase
+        // Use Firebase from external config
         function initializeFirebase() {
             return new Promise((resolve, reject) => {
                 try {
+                    // Check if Firebase is already initialized by firebase-config.js
+                    if (window.database && window.auth) {
+                        console.log('✅ Using Firebase from firebase-config.js');
+                        database = window.database;
+                        auth = window.auth;
+                        isFirebaseReady = true;
+                        updateConnectionStatus('connected');
+                        resolve(true);
+                        return;
+                    }
+
                     if (typeof firebase !== 'undefined') {
-                        console.log('🔥 Firebase SDK loaded, initializing...');
-
-                        // Check if already initialized
-                        if (isFirebaseReady && database && auth) {
-                            console.log('✅ Firebase already ready');
-                            resolve(true);
-                            return;
-                        }
-
-                        if (!app) {
-                            app = firebase.initializeApp(firebaseConfig);
-                        }
+                        console.log('🔥 Firebase SDK loaded, checking initialization...');
                         database = firebase.database();
                         auth = firebase.auth();
 

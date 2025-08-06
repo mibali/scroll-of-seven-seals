@@ -50,43 +50,48 @@ class GameIntegrationManager {
 
     // Wait for required dependencies
     async waitForDependencies() {
-        const dependencies = [
-            'BibleDatasetManager',
-            'MultiplayerManager', 
-            'LeaderboardManager',
-            'PuzzleManager',
+        const coreDependencies = [
             'GameData',
             'firebase'
         ];
         
-        const maxAttempts = 100; // Increased timeout
+        const optionalDependencies = [
+            'BibleDatasetManager',
+            'MultiplayerManager', 
+            'LeaderboardManager',
+            'PuzzleManager'
+        ];
+        
+        const maxAttempts = 30; // Reduced timeout for faster startup
         let attempts = 0;
         
         while (attempts < maxAttempts) {
-            const missing = dependencies.filter(dep => {
+            const missingCore = coreDependencies.filter(dep => {
                 if (dep === 'firebase') {
                     return typeof window.firebase === 'undefined';
                 }
                 return !window[dep];
             });
             
-            if (missing.length === 0) {
-                console.log('📦 All dependencies loaded');
-                // Additional check for Firebase readiness
-                if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
-                    console.log('🔥 Firebase fully initialized');
-                    return;
+            const missingOptional = optionalDependencies.filter(dep => !window[dep]);
+            
+            if (missingCore.length === 0) {
+                console.log('📦 Core dependencies loaded');
+                if (missingOptional.length > 0) {
+                    console.log(`⚠️ Optional dependencies missing: ${missingOptional.join(', ')}`);
+                    console.log('🚀 Proceeding with basic functionality');
                 }
+                return;
             }
             
-            if (attempts % 10 === 0) { // Log every 1 second
-                console.log(`⏳ Waiting for dependencies: ${missing.join(', ')}`);
+            if (attempts % 5 === 0) { // Log every 500ms
+                console.log(`⏳ Waiting for core dependencies: ${missingCore.join(', ')}`);
             }
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
         }
         
-        throw new Error('Timeout waiting for dependencies');
+        console.warn('⚠️ Timeout waiting for core dependencies, proceeding with fallback');
     }
 
     // Initialize Bible dataset integration
@@ -405,11 +410,11 @@ class GameIntegrationManager {
 
 // Initialize when DOM is ready and after all scripts have loaded
 document.addEventListener('DOMContentLoaded', () => {
-    // Use setTimeout to ensure all scripts have finished executing
+    // Use shorter timeout for faster startup
     setTimeout(() => {
         console.log('🔧 Initializing Game Integration Manager...');
         window.GameIntegration = new GameIntegrationManager();
-    }, 500); // Give scripts time to load
+    }, 200); // Reduced from 500ms
 });
 
 // Also listen for window load as a backup
@@ -420,7 +425,7 @@ window.addEventListener('load', () => {
             if (!window.GameIntegration) {
                 window.GameIntegration = new GameIntegrationManager();
             }
-        }, 1000);
+        }, 300); // Reduced from 1000ms
     }
 });
 
