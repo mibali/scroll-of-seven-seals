@@ -41,7 +41,7 @@ class BibleDatasetManager {
                 { book: "2 Corinthians", chapter: 5, verse: 17, text: "Therefore, if anyone is in Christ, the new creation has come: The old has gone, the new is here!", theme: "salvation" }
             ],
             hope: [
-                { book: "Jeremiah", chapter: 29, verse: 11, text: "For I know the plans I have for you," declares the Lord, "plans to prosper you and not to harm you, plans to give you hope and a future.", theme: "hope" },
+                { book: "Jeremiah", chapter: 29, verse: 11, text: "For I know the plans I have for you,\" declares the Lord, \"plans to prosper you and not to harm you, plans to give you hope and a future.", theme: "hope" },
                 { book: "Romans", chapter: 15, verse: 13, text: "May the God of hope fill you with all joy and peace as you trust in him, so that you may overflow with hope by the power of the Holy Spirit.", theme: "hope" },
                 { book: "1 Peter", chapter: 1, verse: 3, text: "Praise be to the God and Father of our Lord Jesus Christ! In his great mercy he has given us new birth into a living hope through the resurrection of Jesus Christ from the dead.", theme: "hope" },
                 { book: "Psalm", chapter: 42, verse: 5, text: "Why, my soul, are you downcast? Why so disturbed within me? Put your hope in God, for I will yet praise him, my Savior and my God.", theme: "hope" }

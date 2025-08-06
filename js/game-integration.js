@@ -34,7 +34,7 @@ class GameIntegrationManager {
             this.initializeLeaderboardSync();
             
             // Setup puzzle generation
-            this.setupPuzzleGeneration();
+            this.enableUniquePuzzleGeneration();
             
             this.isInitialized = true;
             console.log('✅ All enhanced features initialized successfully!');
