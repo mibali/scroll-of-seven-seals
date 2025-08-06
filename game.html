@@ -853,8 +853,39 @@
             }
         }
 
+        // Test Firebase connection
+        async function testFirebaseConnection() {
+            try {
+                console.log('🧪 Testing Firebase connection...');
+                await initializeFirebase();
+                
+                if (database && isFirebaseReady) {
+                    // Test write permissions
+                    const testRef = database.ref('test/connection');
+                    await testRef.set({ timestamp: Date.now(), test: true });
+                    console.log('✅ Firebase write test successful');
+                    
+                    // Test read permissions
+                    const readTest = await testRef.once('value');
+                    console.log('✅ Firebase read test successful:', readTest.val());
+                    
+                    // Clean up test data
+                    await testRef.remove();
+                    console.log('✅ Firebase connection test completed successfully');
+                } else {
+                    console.error('❌ Firebase not ready for testing');
+                }
+            } catch (error) {
+                console.error('❌ Firebase connection test failed:', error);
+                console.error('❌ This might be a permissions issue. Check Firebase rules.');
+            }
+        }
+
         // Start Firebase initialization
         waitForFirebase();
+        
+        // Test Firebase after a delay
+        setTimeout(testFirebaseConnection, 3000);
 
         // Check for room parameter in URL
         window.addEventListener('load', () => {
@@ -936,6 +967,9 @@
 
                 if (database && isFirebaseReady) {
                     console.log('🔥 Attempting Firebase save...');
+                    console.log('🔥 Database object:', database);
+                    console.log('🔥 Room code:', roomCode);
+                    console.log('🔥 Team name:', teamName);
 
                     const roomData = {
                         code: roomCode,
@@ -954,11 +988,28 @@
                         createdAt: firebase.database.ServerValue.TIMESTAMP
                     };
 
-                    await database.ref(`rooms/${roomCode}`).set(roomData);
-                    console.log('✅ Firebase save successful');
-                    showAlert('Room created! Share the link to invite players.', 'success');
+                    console.log('📦 Room data to save:', roomData);
+
+                    try {
+                        await database.ref(`rooms/${roomCode}`).set(roomData);
+                        console.log('✅ Firebase save successful for room:', roomCode);
+                        
+                        // Verify the room was saved by reading it back
+                        const verification = await database.ref(`rooms/${roomCode}`).once('value');
+                        const savedData = verification.val();
+                        console.log('🔍 Verification - room exists in Firebase:', !!savedData);
+                        console.log('🔍 Saved room data:', savedData);
+                        
+                        showAlert('Room created! Share the link to invite players.', 'success');
+                    } catch (saveError) {
+                        console.error('❌ Firebase save failed:', saveError);
+                        console.error('❌ Error details:', saveError.message);
+                        showAlert('Room created locally (Firebase save failed)', 'error');
+                    }
                 } else {
                     console.log('⚠️ Creating room without Firebase');
+                    console.log('⚠️ Database ready:', !!database);
+                    console.log('⚠️ Firebase ready:', isFirebaseReady);
                     showAlert('Room created locally (limited functionality)', 'success');
                 }
             } catch (error) {
@@ -1006,12 +1057,24 @@
                 }
 
                 console.log('🔍 Checking room:', roomCode);
+                console.log('🔍 Database path:', `rooms/${roomCode}`);
 
                 // Check if room exists
                 const snapshot = await database.ref(`rooms/${roomCode}`).once('value');
                 const roomData = snapshot.val();
+                
+                console.log('🔍 Snapshot exists:', snapshot.exists());
+                console.log('🔍 Room data retrieved:', roomData);
 
                 if (!roomData) {
+                    console.error('❌ Room not found in Firebase for code:', roomCode);
+                    
+                    // Let's also check if any rooms exist at all
+                    const allRoomsSnapshot = await database.ref('rooms').once('value');
+                    const allRooms = allRoomsSnapshot.val();
+                    console.log('🔍 All rooms in Firebase:', allRooms);
+                    console.log('🔍 Available room codes:', allRooms ? Object.keys(allRooms) : 'none');
+                    
                     showAlert('Room not found. Please check the room code.', 'error');
                     return;
                 }
