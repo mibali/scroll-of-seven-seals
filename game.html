@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Scroll of Seven Seals - Final Multiplayer</title>
-    
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
@@ -576,6 +581,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="connection-status connecting" id="connectionStatus">
         🔄 Connecting to Firebase...
@@ -748,12 +754,12 @@
 
         // Firebase connection monitoring
         let isFirebaseReady = false;
-        let app, database;
+        let app, database, auth;
 
         function updateConnectionStatus(status) {
             const statusEl = document.getElementById('connectionStatus');
             statusEl.className = `connection-status ${status}`;
-            
+
             switch (status) {
                 case 'connecting':
                     statusEl.textContent = '🔄 Connecting to Firebase...';
@@ -772,40 +778,70 @@
 
         // Initialize Firebase
         function initializeFirebase() {
-            try {
-                if (typeof firebase !== 'undefined') {
-                    console.log('🔥 Firebase SDK loaded, initializing...');
-                    app = firebase.initializeApp(firebaseConfig);
-                    database = firebase.database();
-                    
-                    console.log('🔥 Firebase initialized successfully');
-                    console.log('🔥 Database object created:', database);
-                    
-                    isFirebaseReady = true;
-                    updateConnectionStatus('connected');
-                    
-                    // Test basic connectivity
-                    database.ref('.info/connected').on('value', (snapshot) => {
-                        const connected = snapshot.val();
-                        console.log('🔥 Firebase connection status:', connected);
-                        if (connected === true) {
-                            updateConnectionStatus('connected');
-                            isFirebaseReady = true;
-                        } else {
-                            updateConnectionStatus('disconnected');
-                            isFirebaseReady = false;
+            return new Promise((resolve, reject) => {
+                try {
+                    if (typeof firebase !== 'undefined') {
+                        console.log('🔥 Firebase SDK loaded, initializing...');
+
+                        // Check if already initialized
+                        if (isFirebaseReady && database && auth) {
+                            console.log('✅ Firebase already ready');
+                            resolve(true);
+                            return;
                         }
-                    });
-                } else {
-                    console.error('❌ Firebase SDK not loaded');
+
+                        if (!app) {
+                            app = firebase.initializeApp(firebaseConfig);
+                        }
+                        database = firebase.database();
+                        auth = firebase.auth();
+
+                        console.log('🔥 Firebase initialized successfully');
+
+                        // Wait for authentication state
+                        const unsubscribe = auth.onAuthStateChanged((user) => {
+                            if (user) {
+                                console.log('✅ User authenticated:', user.uid);
+                                isFirebaseReady = true;
+                                updateConnectionStatus('connected');
+                                unsubscribe(); // Remove listener after first authentication
+                                resolve(true);
+
+                                // Monitor connection status
+                                database.ref('.info/connected').on('value', (snapshot) => {
+                                    const connected = snapshot.val();
+                                    console.log('🔥 Firebase connection status:', connected);
+                                    if (connected === true) {
+                                        updateConnectionStatus('connected');
+                                        isFirebaseReady = true;
+                                    } else {
+                                        updateConnectionStatus('disconnected');
+                                        isFirebaseReady = false;
+                                    }
+                                });
+                            } else {
+                                // Sign in anonymously for multiplayer access
+                                console.log('🔐 Signing in anonymously...');
+                                auth.signInAnonymously()
+                                    .catch((error) => {
+                                        console.error('❌ Anonymous authentication failed:', error);
+                                        updateConnectionStatus('disconnected');
+                                        unsubscribe();
+                                        reject(error);
+                                    });
+                            }
+                        });
+                    } else {
+                        console.error('❌ Firebase SDK not loaded');
+                        updateConnectionStatus('disconnected');
+                        reject(new Error('Firebase SDK not available'));
+                    }
+                } catch (error) {
+                    console.error('❌ Firebase initialization failed:', error);
                     updateConnectionStatus('disconnected');
-                    isFirebaseReady = false;
+                    reject(error);
                 }
-            } catch (error) {
-                console.error('❌ Firebase initialization failed:', error);
-                updateConnectionStatus('disconnected');
-                isFirebaseReady = false;
-            }
+            });
         }
 
         // Wait for Firebase SDK to load
@@ -854,14 +890,14 @@
         function showRoomCreation() {
             document.getElementById('roomCreation').classList.add('active');
             document.getElementById('roomJoin').classList.remove('active');
-            
+
             // Automatically generate room code and link when showing creation form
             const roomCode = Math.random().toString(36).substr(2, 6).toUpperCase();
             const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-            
+
             document.getElementById('roomCode').textContent = roomCode;
             document.getElementById('shareLink').textContent = shareLink;
-            
+
             // Store for when they actually create the room
             window.tempRoomCode = roomCode;
             window.tempShareLink = shareLink;
@@ -872,10 +908,8 @@
             document.getElementById('roomCreation').classList.remove('active');
         }
 
-        function createRoom() {
+        async function createRoom() {
             console.log('🎯 Create room clicked');
-            console.log('🔥 Firebase ready:', isFirebaseReady);
-            console.log('🔥 Database object:', database);
 
             const teamName = document.getElementById('teamName').value.trim();
             if (!teamName) {
@@ -887,57 +921,56 @@
             const roomCode = window.tempRoomCode || Math.random().toString(36).substr(2, 6).toUpperCase();
             const shareLink = window.tempShareLink || `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
             console.log('🎲 Using room code:', roomCode);
-            
+
             gameState.roomCode = roomCode;
             gameState.currentTeam = teamName;
             gameState.isHost = true;
             gameState.teams = [{ name: teamName, score: 0, completedSeals: [] }];
 
-            // Try Firebase, but don't block if it fails
-            if (isFirebaseReady && database) {
-                console.log('🔥 Attempting Firebase save...');
-                
-                const roomData = {
-                    code: roomCode,
-                    host: teamName,
-                    teams: {
-                        [teamName]: {
-                            name: teamName,
-                            isHost: true,
-                            joinTime: Date.now(), // Use regular timestamp as fallback
-                            score: 0,
-                            completedSeals: []
-                        }
-                    },
-                    status: 'waiting',
-                    gameStarted: false,
-                    createdAt: Date.now()
-                };
+            try {
+                // Ensure Firebase is ready before proceeding
+                if (!isFirebaseReady) {
+                    updateConnectionStatus('connecting');
+                    await initializeFirebase();
+                }
 
-                database.ref(`rooms/${roomCode}`).set(roomData)
-                    .then(() => {
-                        console.log('✅ Firebase save successful');
-                        showAlert('Room created with Firebase sync!', 'success');
-                    })
-                    .catch((error) => {
-                        console.error('❌ Firebase save failed:', error);
-                        showAlert('Room created locally (Firebase sync failed)', 'success');
-                    });
-            } else {
-                console.log('⚠️ Creating room without Firebase');
-                showAlert('Room created locally (no Firebase)', 'success');
+                if (database && isFirebaseReady) {
+                    console.log('🔥 Attempting Firebase save...');
+
+                    const roomData = {
+                        code: roomCode,
+                        host: teamName,
+                        teams: {
+                            [teamName]: {
+                                name: teamName,
+                                isHost: true,
+                                joinTime: firebase.database.ServerValue.TIMESTAMP,
+                                score: 0,
+                                completedSeals: []
+                            }
+                        },
+                        status: 'waiting',
+                        gameStarted: false,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    };
+
+                    await database.ref(`rooms/${roomCode}`).set(roomData);
+                    console.log('✅ Firebase save successful');
+                    showAlert('Room created! Share the link to invite players.', 'success');
+                } else {
+                    console.log('⚠️ Creating room without Firebase');
+                    showAlert('Room created locally (limited functionality)', 'success');
+                }
+            } catch (error) {
+                console.error('❌ Error creating room:', error);
+                showAlert('Room created (with sync issues)', 'success');
             }
 
             // Always proceed to lobby
             showLobby();
         }
 
-        function joinRoom() {
-            if (!isFirebaseReady) {
-                showAlert('Firebase not ready. Please wait a moment.', 'error');
-                return;
-            }
-
+        async function joinRoom() {
             const teamName = document.getElementById('teamName').value.trim();
             let roomInput = document.getElementById('roomInput').value.trim();
 
@@ -959,55 +992,67 @@
 
             roomCode = roomCode.toUpperCase();
 
-            // Check if room exists
-            database.ref(`rooms/${roomCode}`).once('value')
-                .then((snapshot) => {
-                    const roomData = snapshot.val();
-                    
-                    if (!roomData) {
-                        showAlert('Room not found. Please check the room code.', 'error');
-                        return;
-                    }
+            try {
+                // Ensure Firebase is ready before proceeding
+                if (!isFirebaseReady) {
+                    updateConnectionStatus('connecting');
+                    showAlert('Connecting to room...', 'success');
+                    await initializeFirebase();
+                }
 
-                    if (roomData.status !== 'waiting') {
-                        showAlert('This game has already started.', 'error');
-                        return;
-                    }
+                if (!database || !isFirebaseReady) {
+                    showAlert('Unable to connect to multiplayer service', 'error');
+                    return;
+                }
 
-                    // Check if team name already exists
-                    if (roomData.teams && roomData.teams[teamName]) {
-                        showAlert('A team with this name already exists in the room.', 'error');
-                        return;
-                    }
+                console.log('🔍 Checking room:', roomCode);
 
-                    // Join the room
-                    gameState.roomCode = roomCode;
-                    gameState.currentTeam = teamName;
-                    gameState.isHost = false;
+                // Check if room exists
+                const snapshot = await database.ref(`rooms/${roomCode}`).once('value');
+                const roomData = snapshot.val();
 
-                    const teamData = {
-                        name: teamName,
-                        isHost: false,
-                        joinTime: firebase.database.ServerValue.TIMESTAMP,
-                        score: 0,
-                        completedSeals: []
-                    };
+                if (!roomData) {
+                    showAlert('Room not found. Please check the room code.', 'error');
+                    return;
+                }
 
-                    database.ref(`rooms/${roomCode}/teams/${teamName}`).set(teamData)
-                        .then(() => {
-                            // Update URL
-                            window.history.pushState({}, '', `${window.location.pathname}?room=${roomCode}`);
-                            
-                            showLobby();
-                            showAlert('Joined room successfully!', 'success');
-                        })
-                        .catch((error) => {
-                            showAlert('Failed to join room: ' + error.message, 'error');
-                        });
-                })
-                .catch((error) => {
-                    showAlert('Error checking room: ' + error.message, 'error');
-                });
+                if (roomData.status !== 'waiting') {
+                    showAlert('This game has already started.', 'error');
+                    return;
+                }
+
+                // Check if team name already exists
+                if (roomData.teams && roomData.teams[teamName]) {
+                    showAlert('A team with this name already exists in the room.', 'error');
+                    return;
+                }
+
+                // Join the room
+                gameState.roomCode = roomCode;
+                gameState.currentTeam = teamName;
+                gameState.isHost = false;
+
+                const teamData = {
+                    name: teamName,
+                    isHost: false,
+                    joinTime: firebase.database.ServerValue.TIMESTAMP,
+                    score: 0,
+                    completedSeals: []
+                };
+
+                console.log('💾 Saving team data:', teamData);
+                await database.ref(`rooms/${roomCode}/teams/${teamName}`).set(teamData);
+
+                // Update URL
+                window.history.pushState({}, '', `${window.location.pathname}?room=${roomCode}`);
+
+                showLobby();
+                showAlert('Joined room successfully!', 'success');
+
+            } catch (error) {
+                console.error('❌ Error joining room:', error);
+                showAlert('Failed to join room: ' + error.message, 'error');
+            }
         }
 
         function showLobby() {
@@ -1021,7 +1066,7 @@
                 const roomData = snapshot.val();
                 if (roomData) {
                     updateLobby(roomData);
-                    
+
                     // Check if game started
                     if (roomData.gameStarted && !gameState.isGameActive) {
                         startRoomGameplay();
@@ -1396,4 +1441,5 @@
         });
     </script>
 </body>
+
 </html>
