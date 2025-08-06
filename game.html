@@ -691,6 +691,7 @@
             <div class="game-header">
                 <div class="timer" id="timer">00:00</div>
                 <div class="progress-container">
+                    <div class="puzzle-set-info" id="puzzleSetInfo" style="color: #d4af37; font-size: 0.9em; margin-bottom: 5px; text-align: center;">🌟 The Seven Seals of Revelation</div>
                     <div class="progress-label">Progress: <span id="progressText">0/7 Seals</span></div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill"></div>
@@ -706,6 +707,7 @@
             </div>
 
             <div style="text-align: center; margin-top: 20px;">
+                <button class="button secondary" onclick="showPuzzleSetSelector()">🎲 Change Challenge</button>
                 <button class="button secondary" onclick="resetGameState()">🔄 Reset Game</button>
                 <button class="button secondary" onclick="goBack()">← Back to Lobby</button>
             </div>
@@ -718,9 +720,31 @@
             <div class="puzzle-title" id="puzzleTitle"></div>
             <div class="puzzle-question" id="puzzleQuestion"></div>
             <input type="text" id="puzzleAnswer" class="puzzle-input" placeholder="Enter your answer">
+            <div id="puzzleHint" style="display: none; background: rgba(74, 144, 226, 0.1); border: 1px solid #4a90e2; border-radius: 5px; padding: 10px; margin: 15px 0; color: #4a90e2;">
+                💡 <span id="hintText"></span>
+            </div>
             <div class="puzzle-buttons">
                 <button class="button" onclick="submitAnswer()">Submit</button>
+                <button class="button secondary" onclick="showHint()">💡 Hint</button>
                 <button class="button secondary" onclick="closePuzzle()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Puzzle Set Selector Modal -->
+    <div id="puzzleSetModal" class="puzzle-modal">
+        <div class="puzzle-content">
+            <div class="puzzle-title">🎯 Choose Your Challenge</div>
+            <div class="puzzle-question" style="margin-bottom: 30px;">
+                Select a biblical challenge set to test your knowledge!
+            </div>
+            
+            <div id="puzzleSetOptions" style="display: grid; gap: 15px; margin-bottom: 30px;">
+                <!-- Options will be populated by JavaScript -->
+            </div>
+            
+            <div class="puzzle-buttons">
+                <button class="button secondary" onclick="closePuzzleSetSelector()">Cancel</button>
             </div>
         </div>
     </div>
@@ -1130,6 +1154,12 @@
                 if (roomData) {
                     updateLobby(roomData);
 
+                    // Sync puzzle set from host
+                    if (roomData.puzzleSet && roomData.puzzleSet !== currentPuzzleSet) {
+                        currentPuzzleSet = roomData.puzzleSet;
+                        console.log('🎯 Synced puzzle set from host:', puzzleSets[currentPuzzleSet].name);
+                    }
+
                     // Check if game started
                     if (roomData.gameStarted && !gameState.isGameActive) {
                         startRoomGameplay();
@@ -1175,13 +1205,20 @@
 
         function startRoomGameplay() {
             if (gameState.isHost) {
+                // Host selects puzzle set for everyone
+                selectRandomPuzzleSet();
+                
                 // Host starts the game for everyone
                 database.ref(`rooms/${gameState.roomCode}`).update({
                     gameStarted: true,
                     status: 'playing',
-                    startTime: firebase.database.ServerValue.TIMESTAMP
+                    startTime: firebase.database.ServerValue.TIMESTAMP,
+                    puzzleSet: currentPuzzleSet
                 });
             }
+
+            // Update puzzle set display
+            updatePuzzleSetDisplay();
 
             // Start local game
             document.getElementById('lobby').style.display = 'none';
@@ -1203,6 +1240,10 @@
             gameState.currentTeam = 'Player';
             gameState.teams = [{ name: 'Player', score: 0, completedSeals: [] }];
 
+            // Randomly select a puzzle set for variety
+            selectRandomPuzzleSet();
+            updatePuzzleSetDisplay();
+
             document.getElementById('modeSelection').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'block';
 
@@ -1216,64 +1257,374 @@
             updateLeaderboard();
         }
 
-        // Seal puzzles data
-        const seals = [
-            {
-                number: 1,
-                title: "The White Horse",
-                question: "Who rode the white horse in Revelation 6:2?",
-                answer: ["jesus", "christ", "lamb", "conqueror"],
-                hint: "The one who conquers and will conquer"
+        // Multiple puzzle sets for replayability
+        const puzzleSets = {
+            "revelation": {
+                name: "🌟 The Seven Seals of Revelation",
+                description: "Unlock the mysteries of the apocalypse",
+                seals: [
+                    {
+                        number: 1,
+                        title: "The White Horse",
+                        question: "Who rode the white horse in Revelation 6:2?",
+                        answer: ["jesus", "christ", "lamb", "conqueror"],
+                        hint: "The one who conquers and will conquer"
+                    },
+                    {
+                        number: 2,
+                        title: "The Red Horse",
+                        question: "What was the rider of the red horse given power to take from the earth?",
+                        answer: ["peace"],
+                        hint: "The opposite of war"
+                    },
+                    {
+                        number: 3,
+                        title: "The Black Horse",
+                        question: "What did the rider of the black horse hold in his hand?",
+                        answer: ["scales", "balance", "balances"],
+                        hint: "Used for measuring and weighing"
+                    },
+                    {
+                        number: 4,
+                        title: "The Pale Horse",
+                        question: "What was the name of the rider on the pale horse?",
+                        answer: ["death"],
+                        hint: "The end of life"
+                    },
+                    {
+                        number: 5,
+                        title: "The Souls Under the Altar",
+                        question: "What were the souls under the altar given to wear?",
+                        answer: ["white robes", "robes", "white robe"],
+                        hint: "Garments of purity and righteousness"
+                    },
+                    {
+                        number: 6,
+                        title: "The Great Earthquake",
+                        question: "What did the sun become like when the sixth seal was opened?",
+                        answer: ["black", "sackcloth", "dark"],
+                        hint: "Color of mourning cloth"
+                    },
+                    {
+                        number: 7,
+                        title: "Silence in Heaven",
+                        question: "How long was there silence in heaven when the seventh seal was opened?",
+                        answer: ["half an hour", "30 minutes", "half hour"],
+                        hint: "A brief period of time"
+                    }
+                ]
             },
-            {
-                number: 2,
-                title: "The Red Horse",
-                question: "What was the rider of the red horse given power to take from the earth?",
-                answer: ["peace"],
-                hint: "The opposite of war"
+            "creation": {
+                name: "🌿 The Garden Cipher",
+                description: "Arrange Genesis creation events in divine order",
+                seals: [
+                    {
+                        number: 1,
+                        title: "Day One",
+                        question: "What did God create on the first day? (Genesis 1:3)",
+                        answer: ["light"],
+                        hint: "And God said, 'Let there be...'"
+                    },
+                    {
+                        number: 2,
+                        title: "Day Two", 
+                        question: "God separated the waters above from the waters below, creating what?",
+                        answer: ["sky", "heaven", "firmament", "expanse"],
+                        hint: "The dome above us"
+                    },
+                    {
+                        number: 3,
+                        title: "Day Three",
+                        question: "On day three, God gathered waters and created what TWO things? (Name one)",
+                        answer: ["dry land", "land", "plants", "vegetation", "trees", "grass"],
+                        hint: "Something to stand on and something to grow"
+                    },
+                    {
+                        number: 4,
+                        title: "Day Four",
+                        question: "What did God create to rule the day and night?",
+                        answer: ["sun and moon", "sun", "moon", "stars", "lights"],
+                        hint: "Celestial bodies for time and seasons"
+                    },
+                    {
+                        number: 5,
+                        title: "Day Five",
+                        question: "God created creatures of the sea and what kind of animals?",
+                        answer: ["birds", "flying creatures", "winged creatures"],
+                        hint: "Creatures that soar in the sky"
+                    },
+                    {
+                        number: 6,
+                        title: "Day Six",
+                        question: "On day six, God created land animals and which special being 'in His image'?",
+                        answer: ["man", "humans", "mankind", "people", "adam"],
+                        hint: "The crown of creation"
+                    },
+                    {
+                        number: 7,
+                        title: "Day Seven",
+                        question: "What did God do on the seventh day?",
+                        answer: ["rested", "sabbath", "blessed", "sanctified"],
+                        hint: "He ceased from all His work"
+                    }
+                ]
             },
-            {
-                number: 3,
-                title: "The Black Horse",
-                question: "What did the rider of the black horse hold in his hand?",
-                answer: ["scales", "balance", "balances"],
-                hint: "Used for measuring and weighing"
+            "sacrifice": {
+                name: "🩸 The Blood Trail",
+                description: "Solve biblical sacrifice riddles",
+                seals: [
+                    {
+                        number: 1,
+                        title: "The First Offering",
+                        question: "Whose offering was accepted by God - Cain's or Abel's?",
+                        answer: ["abel", "abels"],
+                        hint: "The shepherd's sacrifice pleased God"
+                    },
+                    {
+                        number: 2,
+                        title: "The Great Test",
+                        question: "What did God provide as a substitute when Abraham was about to sacrifice Isaac?",
+                        answer: ["ram", "sheep", "lamb"],
+                        hint: "Caught in a thicket by its horns"
+                    },
+                    {
+                        number: 3,
+                        title: "The Passover",
+                        question: "What was put on the doorposts during the first Passover?",
+                        answer: ["blood", "lambs blood", "lamb blood"],
+                        hint: "Protection from the destroying angel"
+                    },
+                    {
+                        number: 4,
+                        title: "The Golden Calf",
+                        question: "Who made the golden calf while Moses was on Mount Sinai?",
+                        answer: ["aaron"],
+                        hint: "Moses' brother and high priest"
+                    },
+                    {
+                        number: 5,
+                        title: "The Day of Atonement",
+                        question: "On the Day of Atonement, what animal carried the sins into the wilderness?",
+                        answer: ["scapegoat", "goat"],
+                        hint: "Azazel's goat, sent away from the camp"
+                    },
+                    {
+                        number: 6,
+                        title: "The Bronze Serpent",
+                        question: "What did Moses lift up in the wilderness to heal those bitten by serpents?",
+                        answer: ["bronze serpent", "brazen serpent", "bronze snake", "serpent"],
+                        hint: "Look and live! A symbol of Christ"
+                    },
+                    {
+                        number: 7,
+                        title: "The Ultimate Sacrifice",
+                        question: "Who is called 'the Lamb of God who takes away the sin of the world'?",
+                        answer: ["jesus", "christ", "jesus christ"],
+                        hint: "John the Baptist proclaimed this truth"
+                    }
+                ]
             },
-            {
-                number: 4,
-                title: "The Pale Horse",
-                question: "What was the name of the rider on the pale horse?",
-                answer: ["death"],
-                hint: "The end of life"
+            "prophecy": {
+                name: "🔮 The Prophecy Scroll",
+                description: "Match ancient prophecies with their fulfillments",
+                seals: [
+                    {
+                        number: 1,
+                        title: "The Virgin Birth",
+                        question: "Which prophet foretold that a virgin would conceive and bear a son called Immanuel?",
+                        answer: ["isaiah"],
+                        hint: "The prophet of the coming Messiah"
+                    },
+                    {
+                        number: 2,
+                        title: "The Bethlehem Birth",
+                        question: "Which prophet said the Messiah would be born in Bethlehem?",
+                        answer: ["micah"],
+                        hint: "A minor prophet with a major prophecy"
+                    },
+                    {
+                        number: 3,
+                        title: "The Suffering Servant",
+                        question: "Complete this prophecy: 'He was pierced for our ___________'",
+                        answer: ["transgressions", "sins", "iniquities"],
+                        hint: "Isaiah 53:5 - our wrongdoings"
+                    },
+                    {
+                        number: 4,
+                        title: "The Triumphal Entry",
+                        question: "Which prophet said the king would come 'riding on a donkey'?",
+                        answer: ["zechariah"],
+                        hint: "Rejoice greatly, O daughter of Zion!"
+                    },
+                    {
+                        number: 5,
+                        title: "The Betrayal Price",
+                        question: "How many pieces of silver were prophesied as the betrayal price?",
+                        answer: ["30", "thirty"],
+                        hint: "Zechariah's prophecy, Judas' payment"
+                    },
+                    {
+                        number: 6,
+                        title: "The Pierced One",
+                        question: "Complete: 'They will look on me, the one they have ________'",
+                        answer: ["pierced"],
+                        hint: "Zechariah 12:10 - fulfilled at the cross"
+                    },
+                    {
+                        number: 7,
+                        title: "The Resurrection",
+                        question: "Which psalm prophesied that God's Holy One would not see decay?",
+                        answer: ["psalm 16", "16", "psalms 16"],
+                        hint: "David's prophetic psalm about the Messiah"
+                    }
+                ]
             },
-            {
-                number: 5,
-                title: "The Souls Under the Altar",
-                question: "What were the souls under the altar given to wear?",
-                answer: ["white robes", "robes", "white robe"],
-                hint: "Garments of purity and righteousness"
+            "parables": {
+                name: "🛤️ The Parable Labyrinth",
+                description: "Navigate through Jesus' teachings",
+                seals: [
+                    {
+                        number: 1,
+                        title: "The Sower",
+                        question: "In the parable of the sower, what represents the Word of God?",
+                        answer: ["seed", "seeds"],
+                        hint: "What the farmer plants"
+                    },
+                    {
+                        number: 2,
+                        title: "The Lost Sheep",
+                        question: "In the parable of the lost sheep, how many sheep did the shepherd leave to find the one?",
+                        answer: ["99", "ninety nine", "ninety-nine"],
+                        hint: "100 minus 1"
+                    },
+                    {
+                        number: 3,
+                        title: "The Prodigal Son",
+                        question: "What did the prodigal son ask for from his father before leaving?",
+                        answer: ["inheritance", "his inheritance", "his share"],
+                        hint: "His portion of the family wealth"
+                    },
+                    {
+                        number: 4,
+                        title: "The Good Samaritan",
+                        question: "Who helped the beaten traveler after the priest and Levite passed by?",
+                        answer: ["samaritan", "good samaritan"],
+                        hint: "Someone from a despised ethnic group"
+                    },
+                    {
+                        number: 5,
+                        title: "The Mustard Seed",
+                        question: "Jesus said the kingdom of heaven is like a mustard seed because it is what?",
+                        answer: ["small", "tiny", "smallest", "little"],
+                        hint: "Size comparison to other seeds"
+                    },
+                    {
+                        number: 6,
+                        title: "The Ten Virgins",
+                        question: "In the parable of the ten virgins, what did the foolish ones forget to bring?",
+                        answer: ["oil", "extra oil"],
+                        hint: "Fuel for their lamps"
+                    },
+                    {
+                        number: 7,
+                        title: "The Talents",
+                        question: "In the parable of the talents, how many talents did the lazy servant bury?",
+                        answer: ["1", "one"],
+                        hint: "The smallest amount given"
+                    }
+                ]
             },
-            {
-                number: 6,
-                title: "The Great Earthquake",
-                question: "What did the sun become like when the sixth seal was opened?",
-                answer: ["black", "sackcloth", "dark"],
-                hint: "Color of mourning cloth"
-            },
-            {
-                number: 7,
-                title: "Silence in Heaven",
-                question: "How long was there silence in heaven when the seventh seal was opened?",
-                answer: ["half an hour", "30 minutes", "half hour"],
-                hint: "A brief period of time"
+            "apostles": {
+                name: "✉️ The Church Underground",
+                description: "Decode apostolic messages and early church mysteries",
+                seals: [
+                    {
+                        number: 1,
+                        title: "The Rock",
+                        question: "Which apostle did Jesus call 'the rock' upon which He would build His church?",
+                        answer: ["peter", "simon peter"],
+                        hint: "He denied Jesus three times but was restored"
+                    },
+                    {
+                        number: 2,
+                        title: "The Road to Damascus",
+                        question: "What was Paul's name before his conversion?",
+                        answer: ["saul"],
+                        hint: "Named after Israel's first king"
+                    },
+                    {
+                        number: 3,
+                        title: "The Beloved Disciple",
+                        question: "Which apostle was known as 'the disciple whom Jesus loved'?",
+                        answer: ["john"],
+                        hint: "Brother of James, wrote the Gospel and Revelation"
+                    },
+                    {
+                        number: 4,
+                        title: "The Doubter",
+                        question: "Which apostle doubted Jesus' resurrection until he saw the nail marks?",
+                        answer: ["thomas", "doubting thomas"],
+                        hint: "Called 'Doubting _______'"
+                    },
+                    {
+                        number: 5,
+                        title: "The First Martyr",
+                        question: "Who was the first Christian martyr, stoned for his faith?",
+                        answer: ["stephen"],
+                        hint: "He saw Jesus standing at God's right hand"
+                    },
+                    {
+                        number: 6,
+                        title: "The Gentile Apostle",
+                        question: "Paul was known as the apostle to which group of people?",
+                        answer: ["gentiles", "nations"],
+                        hint: "Non-Jewish people"
+                    },
+                    {
+                        number: 7,
+                        title: "The Final Word",
+                        question: "On which island did John receive the Revelation?",
+                        answer: ["patmos"],
+                        hint: "A rocky island where he was exiled"
+                    }
+                ]
             }
-        ];
+        };
+
+        // Current game state for puzzle sets
+        let currentPuzzleSet = 'revelation';
+        let availablePuzzleSets = Object.keys(puzzleSets);
+
+        // Get current seals based on selected puzzle set
+        function getCurrentSeals() {
+            return puzzleSets[currentPuzzleSet].seals;
+        }
+
+        // Select random puzzle set
+        function selectRandomPuzzleSet() {
+            const randomIndex = Math.floor(Math.random() * availablePuzzleSets.length);
+            currentPuzzleSet = availablePuzzleSets[randomIndex];
+            console.log('🎯 Selected puzzle set:', puzzleSets[currentPuzzleSet].name);
+            return currentPuzzleSet;
+        }
+
+        // Select specific puzzle set
+        function selectPuzzleSet(setKey) {
+            if (puzzleSets[setKey]) {
+                currentPuzzleSet = setKey;
+                console.log('🎯 Selected puzzle set:', puzzleSets[currentPuzzleSet].name);
+                return true;
+            }
+            return false;
+        }
 
         function renderSeals() {
             const sealsGrid = document.getElementById('sealsGrid');
             sealsGrid.innerHTML = '';
+            
+            const currentSeals = getCurrentSeals();
 
-            seals.forEach(seal => {
+            currentSeals.forEach(seal => {
                 const sealElement = document.createElement('div');
                 sealElement.className = `seal ${gameState.completedSeals.includes(seal.number) ? 'opened' : ''}`;
                 sealElement.onclick = () => openSeal(seal);
@@ -1297,8 +1648,14 @@
             document.getElementById('puzzleTitle').textContent = `Seal ${seal.number}: ${seal.title}`;
             document.getElementById('puzzleQuestion').textContent = seal.question;
             document.getElementById('puzzleAnswer').value = '';
+            document.getElementById('puzzleHint').style.display = 'none';
+            document.getElementById('hintText').textContent = seal.hint;
             document.getElementById('puzzleModal').style.display = 'flex';
             document.getElementById('puzzleAnswer').focus();
+        }
+
+        function showHint() {
+            document.getElementById('puzzleHint').style.display = 'block';
         }
 
         function submitAnswer() {
@@ -1328,7 +1685,7 @@
 
                 showAlert(`Seal ${gameState.currentPuzzle.number} opened!`, 'success');
 
-                if (gameState.completedSeals.length === 7) {
+                if (gameState.completedSeals.length === getCurrentSeals().length) {
                     finishGame();
                 }
             } else {
@@ -1359,7 +1716,7 @@
 
         function updateProgress() {
             const completed = gameState.completedSeals.length;
-            const total = seals.length;
+            const total = getCurrentSeals().length;
             const percentage = (completed / total) * 100;
 
             document.getElementById('progressText').textContent = `${completed}/${total} Seals`;
@@ -1477,6 +1834,52 @@
                 document.body.removeChild(textArea);
                 showAlert('Room link copied to clipboard!', 'success');
             }
+        }
+
+        function updatePuzzleSetDisplay() {
+            const puzzleSetInfo = document.getElementById('puzzleSetInfo');
+            if (puzzleSetInfo) {
+                puzzleSetInfo.textContent = puzzleSets[currentPuzzleSet].name;
+            }
+        }
+
+        function showPuzzleSetSelector() {
+            const optionsContainer = document.getElementById('puzzleSetOptions');
+            optionsContainer.innerHTML = '';
+
+            Object.keys(puzzleSets).forEach(setKey => {
+                const puzzleSet = puzzleSets[setKey];
+                const option = document.createElement('div');
+                option.className = 'room-option';
+                option.style.cursor = 'pointer';
+                option.onclick = () => selectPuzzleSetAndStart(setKey);
+
+                option.innerHTML = `
+                    <div class="room-option-title">${puzzleSet.name}</div>
+                    <div class="room-option-desc">${puzzleSet.description}</div>
+                `;
+
+                optionsContainer.appendChild(option);
+            });
+
+            document.getElementById('puzzleSetModal').style.display = 'flex';
+        }
+
+        function selectPuzzleSetAndStart(setKey) {
+            selectPuzzleSet(setKey);
+            updatePuzzleSetDisplay();
+            closePuzzleSetSelector();
+            
+            // Reset and restart the game with new puzzle set
+            resetGameState();
+            renderSeals();
+            updateProgress();
+            
+            showAlert(`Challenge changed to: ${puzzleSets[currentPuzzleSet].name}`, 'success');
+        }
+
+        function closePuzzleSetSelector() {
+            document.getElementById('puzzleSetModal').style.display = 'none';
         }
 
         function showAlert(message, type) {
