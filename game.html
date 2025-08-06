@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Scroll of Seven Seals - Final Multiplayer</title>
-    
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     
     <!-- Enhanced Game Scripts -->
     <script src="js/firebase-config.js"></script>
@@ -850,6 +852,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="connection-status connecting" id="connectionStatus">
         🔄 Connecting to Firebase...
@@ -1022,12 +1025,12 @@
 
         // Firebase connection monitoring
         let isFirebaseReady = false;
-        let app, database;
+        let app, database, auth;
 
         function updateConnectionStatus(status) {
             const statusEl = document.getElementById('connectionStatus');
             statusEl.className = `connection-status ${status}`;
-            
+
             switch (status) {
                 case 'connecting':
                     statusEl.textContent = '🔄 Connecting to Firebase...';
@@ -1046,40 +1049,70 @@
 
         // Initialize Firebase
         function initializeFirebase() {
-            try {
-                if (typeof firebase !== 'undefined') {
-                    console.log('🔥 Firebase SDK loaded, initializing...');
-                    app = firebase.initializeApp(firebaseConfig);
-                    database = firebase.database();
-                    
-                    console.log('🔥 Firebase initialized successfully');
-                    console.log('🔥 Database object created:', database);
-                    
-                    isFirebaseReady = true;
-                    updateConnectionStatus('connected');
-                    
-                    // Test basic connectivity
-                    database.ref('.info/connected').on('value', (snapshot) => {
-                        const connected = snapshot.val();
-                        console.log('🔥 Firebase connection status:', connected);
-                        if (connected === true) {
-                            updateConnectionStatus('connected');
-                            isFirebaseReady = true;
-                        } else {
-                            updateConnectionStatus('disconnected');
-                            isFirebaseReady = false;
+            return new Promise((resolve, reject) => {
+                try {
+                    if (typeof firebase !== 'undefined') {
+                        console.log('🔥 Firebase SDK loaded, initializing...');
+
+                        // Check if already initialized
+                        if (isFirebaseReady && database && auth) {
+                            console.log('✅ Firebase already ready');
+                            resolve(true);
+                            return;
                         }
-                    });
-                } else {
-                    console.error('❌ Firebase SDK not loaded');
+
+                        if (!app) {
+                            app = firebase.initializeApp(firebaseConfig);
+                        }
+                        database = firebase.database();
+                        auth = firebase.auth();
+
+                        console.log('🔥 Firebase initialized successfully');
+
+                        // Wait for authentication state
+                        const unsubscribe = auth.onAuthStateChanged((user) => {
+                            if (user) {
+                                console.log('✅ User authenticated:', user.uid);
+                                isFirebaseReady = true;
+                                updateConnectionStatus('connected');
+                                unsubscribe(); // Remove listener after first authentication
+                                resolve(true);
+
+                                // Monitor connection status
+                                database.ref('.info/connected').on('value', (snapshot) => {
+                                    const connected = snapshot.val();
+                                    console.log('🔥 Firebase connection status:', connected);
+                                    if (connected === true) {
+                                        updateConnectionStatus('connected');
+                                        isFirebaseReady = true;
+                                    } else {
+                                        updateConnectionStatus('disconnected');
+                                        isFirebaseReady = false;
+                                    }
+                                });
+                            } else {
+                                // Sign in anonymously for multiplayer access
+                                console.log('🔐 Signing in anonymously...');
+                                auth.signInAnonymously()
+                                    .catch((error) => {
+                                        console.error('❌ Anonymous authentication failed:', error);
+                                        updateConnectionStatus('disconnected');
+                                        unsubscribe();
+                                        reject(error);
+                                    });
+                            }
+                        });
+                    } else {
+                        console.error('❌ Firebase SDK not loaded');
+                        updateConnectionStatus('disconnected');
+                        reject(new Error('Firebase SDK not available'));
+                    }
+                } catch (error) {
+                    console.error('❌ Firebase initialization failed:', error);
                     updateConnectionStatus('disconnected');
-                    isFirebaseReady = false;
+                    reject(error);
                 }
-            } catch (error) {
-                console.error('❌ Firebase initialization failed:', error);
-                updateConnectionStatus('disconnected');
-                isFirebaseReady = false;
-            }
+            });
         }
 
         // Wait for Firebase SDK to load
@@ -1128,14 +1161,14 @@
         function showRoomCreation() {
             document.getElementById('roomCreation').classList.add('active');
             document.getElementById('roomJoin').classList.remove('active');
-            
+
             // Automatically generate room code and link when showing creation form
             const roomCode = Math.random().toString(36).substr(2, 6).toUpperCase();
             const shareLink = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
-            
+
             document.getElementById('roomCode').textContent = roomCode;
             document.getElementById('shareLink').textContent = shareLink;
-            
+
             // Store for when they actually create the room
             window.tempRoomCode = roomCode;
             window.tempShareLink = shareLink;
@@ -1146,10 +1179,8 @@
             document.getElementById('roomCreation').classList.remove('active');
         }
 
-        function createRoom() {
+        async function createRoom() {
             console.log('🎯 Create room clicked');
-            console.log('🔥 Firebase ready:', isFirebaseReady);
-            console.log('🔥 Database object:', database);
 
             const teamName = document.getElementById('teamName').value.trim();
             if (!teamName) {
@@ -1161,57 +1192,56 @@
             const roomCode = window.tempRoomCode || Math.random().toString(36).substr(2, 6).toUpperCase();
             const shareLink = window.tempShareLink || `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
             console.log('🎲 Using room code:', roomCode);
-            
+
             gameState.roomCode = roomCode;
             gameState.currentTeam = teamName;
             gameState.isHost = true;
             gameState.teams = [{ name: teamName, score: 0, completedSeals: [] }];
 
-            // Try Firebase, but don't block if it fails
-            if (isFirebaseReady && database) {
-                console.log('🔥 Attempting Firebase save...');
-                
-                const roomData = {
-                    code: roomCode,
-                    host: teamName,
-                    teams: {
-                        [teamName]: {
-                            name: teamName,
-                            isHost: true,
-                            joinTime: Date.now(), // Use regular timestamp as fallback
-                            score: 0,
-                            completedSeals: []
-                        }
-                    },
-                    status: 'waiting',
-                    gameStarted: false,
-                    createdAt: Date.now()
-                };
+            try {
+                // Ensure Firebase is ready before proceeding
+                if (!isFirebaseReady) {
+                    updateConnectionStatus('connecting');
+                    await initializeFirebase();
+                }
 
-                database.ref(`rooms/${roomCode}`).set(roomData)
-                    .then(() => {
-                        console.log('✅ Firebase save successful');
-                        showAlert('Room created with Firebase sync!', 'success');
-                    })
-                    .catch((error) => {
-                        console.error('❌ Firebase save failed:', error);
-                        showAlert('Room created locally (Firebase sync failed)', 'success');
-                    });
-            } else {
-                console.log('⚠️ Creating room without Firebase');
-                showAlert('Room created locally (no Firebase)', 'success');
+                if (database && isFirebaseReady) {
+                    console.log('🔥 Attempting Firebase save...');
+
+                    const roomData = {
+                        code: roomCode,
+                        host: teamName,
+                        teams: {
+                            [teamName]: {
+                                name: teamName,
+                                isHost: true,
+                                joinTime: firebase.database.ServerValue.TIMESTAMP,
+                                score: 0,
+                                completedSeals: []
+                            }
+                        },
+                        status: 'waiting',
+                        gameStarted: false,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    };
+
+                    await database.ref(`rooms/${roomCode}`).set(roomData);
+                    console.log('✅ Firebase save successful');
+                    showAlert('Room created! Share the link to invite players.', 'success');
+                } else {
+                    console.log('⚠️ Creating room without Firebase');
+                    showAlert('Room created locally (limited functionality)', 'success');
+                }
+            } catch (error) {
+                console.error('❌ Error creating room:', error);
+                showAlert('Room created (with sync issues)', 'success');
             }
 
             // Always proceed to lobby
             showLobby();
         }
 
-        function joinRoom() {
-            if (!isFirebaseReady) {
-                showAlert('Firebase not ready. Please wait a moment.', 'error');
-                return;
-            }
-
+        async function joinRoom() {
             const teamName = document.getElementById('teamName').value.trim();
             let roomInput = document.getElementById('roomInput').value.trim();
 
@@ -1233,55 +1263,67 @@
 
             roomCode = roomCode.toUpperCase();
 
-            // Check if room exists
-            database.ref(`rooms/${roomCode}`).once('value')
-                .then((snapshot) => {
-                    const roomData = snapshot.val();
-                    
-                    if (!roomData) {
-                        showAlert('Room not found. Please check the room code.', 'error');
-                        return;
-                    }
+            try {
+                // Ensure Firebase is ready before proceeding
+                if (!isFirebaseReady) {
+                    updateConnectionStatus('connecting');
+                    showAlert('Connecting to room...', 'success');
+                    await initializeFirebase();
+                }
 
-                    if (roomData.status !== 'waiting') {
-                        showAlert('This game has already started.', 'error');
-                        return;
-                    }
+                if (!database || !isFirebaseReady) {
+                    showAlert('Unable to connect to multiplayer service', 'error');
+                    return;
+                }
 
-                    // Check if team name already exists
-                    if (roomData.teams && roomData.teams[teamName]) {
-                        showAlert('A team with this name already exists in the room.', 'error');
-                        return;
-                    }
+                console.log('🔍 Checking room:', roomCode);
 
-                    // Join the room
-                    gameState.roomCode = roomCode;
-                    gameState.currentTeam = teamName;
-                    gameState.isHost = false;
+                // Check if room exists
+                const snapshot = await database.ref(`rooms/${roomCode}`).once('value');
+                const roomData = snapshot.val();
 
-                    const teamData = {
-                        name: teamName,
-                        isHost: false,
-                        joinTime: firebase.database.ServerValue.TIMESTAMP,
-                        score: 0,
-                        completedSeals: []
-                    };
+                if (!roomData) {
+                    showAlert('Room not found. Please check the room code.', 'error');
+                    return;
+                }
 
-                    database.ref(`rooms/${roomCode}/teams/${teamName}`).set(teamData)
-                        .then(() => {
-                            // Update URL
-                            window.history.pushState({}, '', `${window.location.pathname}?room=${roomCode}`);
-                            
-                            showLobby();
-                            showAlert('Joined room successfully!', 'success');
-                        })
-                        .catch((error) => {
-                            showAlert('Failed to join room: ' + error.message, 'error');
-                        });
-                })
-                .catch((error) => {
-                    showAlert('Error checking room: ' + error.message, 'error');
-                });
+                if (roomData.status !== 'waiting') {
+                    showAlert('This game has already started.', 'error');
+                    return;
+                }
+
+                // Check if team name already exists
+                if (roomData.teams && roomData.teams[teamName]) {
+                    showAlert('A team with this name already exists in the room.', 'error');
+                    return;
+                }
+
+                // Join the room
+                gameState.roomCode = roomCode;
+                gameState.currentTeam = teamName;
+                gameState.isHost = false;
+
+                const teamData = {
+                    name: teamName,
+                    isHost: false,
+                    joinTime: firebase.database.ServerValue.TIMESTAMP,
+                    score: 0,
+                    completedSeals: []
+                };
+
+                console.log('💾 Saving team data:', teamData);
+                await database.ref(`rooms/${roomCode}/teams/${teamName}`).set(teamData);
+
+                // Update URL
+                window.history.pushState({}, '', `${window.location.pathname}?room=${roomCode}`);
+
+                showLobby();
+                showAlert('Joined room successfully!', 'success');
+
+            } catch (error) {
+                console.error('❌ Error joining room:', error);
+                showAlert('Failed to join room: ' + error.message, 'error');
+            }
         }
 
         function showLobby() {
@@ -1295,7 +1337,7 @@
                 const roomData = snapshot.val();
                 if (roomData) {
                     updateLobby(roomData);
-                    
+
                     // Check if game started
                     if (roomData.gameStarted && !gameState.isGameActive) {
                         startRoomGameplay();
@@ -1366,6 +1408,9 @@
         }
 
         function startSinglePlayerGame() {
+            // Generate fresh questions for each game
+            seals = generateRandomSeals();
+            
             gameState.currentTeam = 'Player';
             gameState.teams = [{ name: 'Player', score: 0, completedSeals: [] }];
 
@@ -1382,58 +1427,82 @@
             updateLeaderboard();
         }
 
-        // Seal puzzles data
-        const seals = [
-            {
-                number: 1,
-                title: "The White Horse",
-                question: "Who rode the white horse in Revelation 6:2?",
-                answer: ["jesus", "christ", "lamb", "conqueror"],
-                hint: "The one who conquers and will conquer"
-            },
-            {
-                number: 2,
-                title: "The Red Horse",
-                question: "What was the rider of the red horse given power to take from the earth?",
-                answer: ["peace"],
-                hint: "The opposite of war"
-            },
-            {
-                number: 3,
-                title: "The Black Horse",
-                question: "What did the rider of the black horse hold in his hand?",
-                answer: ["scales", "balance", "balances"],
-                hint: "Used for measuring and weighing"
-            },
-            {
-                number: 4,
-                title: "The Pale Horse",
-                question: "What was the name of the rider on the pale horse?",
-                answer: ["death"],
-                hint: "The end of life"
-            },
-            {
-                number: 5,
-                title: "The Souls Under the Altar",
-                question: "What were the souls under the altar given to wear?",
-                answer: ["white robes", "robes", "white robe"],
-                hint: "Garments of purity and righteousness"
-            },
-            {
-                number: 6,
-                title: "The Great Earthquake",
-                question: "What did the sun become like when the sixth seal was opened?",
-                answer: ["black", "sackcloth", "dark"],
-                hint: "Color of mourning cloth"
-            },
-            {
-                number: 7,
-                title: "Silence in Heaven",
-                question: "How long was there silence in heaven when the seventh seal was opened?",
-                answer: ["half an hour", "30 minutes", "half hour"],
-                hint: "A brief period of time"
-            }
+        // Expanded Bible Question Pool for Random Generation
+        const bibleQuestionPool = [
+            // Original Revelation questions
+            { title: "The White Horse", question: "Who rode the white horse in Revelation 6:2?", answer: ["jesus", "christ", "lamb", "conqueror"], hint: "The one who conquers and will conquer", reference: "Revelation 6:2" },
+            { title: "The Red Horse", question: "What was the rider of the red horse given power to take from the earth?", answer: ["peace"], hint: "The opposite of war", reference: "Revelation 6:4" },
+            { title: "The Black Horse", question: "What did the rider of the black horse hold in his hand?", answer: ["scales", "balance", "balances"], hint: "Used for measuring and weighing", reference: "Revelation 6:5" },
+            { title: "The Pale Horse", question: "What was the name of the rider on the pale horse?", answer: ["death"], hint: "The end of life", reference: "Revelation 6:8" },
+            { title: "The Souls Under the Altar", question: "What were the souls under the altar given to wear?", answer: ["white robes", "robes", "white robe"], hint: "Garments of purity and righteousness", reference: "Revelation 6:11" },
+            { title: "The Great Earthquake", question: "What did the sun become like when the sixth seal was opened?", answer: ["black", "sackcloth", "dark"], hint: "Color of mourning cloth", reference: "Revelation 6:12" },
+            { title: "Silence in Heaven", question: "How long was there silence in heaven when the seventh seal was opened?", answer: ["half an hour", "30 minutes", "half hour"], hint: "A brief period of time", reference: "Revelation 8:1" },
+            
+            // Genesis
+            { title: "Creation Day 1", question: "What did God create on the first day?", answer: ["light"], hint: "And God said, 'Let there be...'", reference: "Genesis 1:3" },
+            { title: "First Man", question: "Who was the first man created by God?", answer: ["adam"], hint: "Made from the dust of the earth", reference: "Genesis 2:7" },
+            { title: "First Woman", question: "What was the name of the first woman?", answer: ["eve"], hint: "Mother of all living", reference: "Genesis 3:20" },
+            { title: "The Flood", question: "How many days and nights did it rain during the flood?", answer: ["40", "forty"], hint: "The same number Moses was on the mountain", reference: "Genesis 7:4" },
+            { title: "Abraham's Promise", question: "What did God promise Abraham would be as numerous as the stars?", answer: ["descendants", "offspring", "children"], hint: "His future family line", reference: "Genesis 15:5" },
+            { title: "Jacob's Dream", question: "What did Jacob see in his dream at Bethel?", answer: ["ladder", "stairway"], hint: "Angels ascending and descending", reference: "Genesis 28:12" },
+            { title: "Joseph's Brothers", question: "How many sons did Jacob have?", answer: ["12", "twelve"], hint: "They became the tribes of Israel", reference: "Genesis 35:22" },
+            
+            // Exodus
+            { title: "Moses' Calling", question: "Who led the Israelites out of Egypt?", answer: ["moses"], hint: "He was found in a basket as a baby", reference: "Exodus 2:10" },
+            { title: "Ten Plagues", question: "How many plagues did God send on Egypt?", answer: ["10", "ten"], hint: "The last one was the worst", reference: "Exodus 7-12" },
+            { title: "Red Sea", question: "What sea did the Israelites cross?", answer: ["red sea"], hint: "The waters parted", reference: "Exodus 14:21" },
+            { title: "Mount Sinai", question: "On which mountain did Moses receive the Ten Commandments?", answer: ["sinai", "mount sinai"], hint: "Also called Horeb", reference: "Exodus 19:20" },
+            { title: "Golden Calf", question: "What did the Israelites worship while Moses was on the mountain?", answer: ["golden calf"], hint: "An idol made from their jewelry", reference: "Exodus 32:4" },
+            { title: "Wilderness Food", question: "What food did God provide in the wilderness?", answer: ["manna"], hint: "Bread from heaven", reference: "Exodus 16:4" },
+            
+            // New Testament - Gospels
+            { title: "Jesus' Birth", question: "In which city was Jesus born?", answer: ["bethlehem"], hint: "City of David", reference: "Matthew 2:1" },
+            { title: "Jesus' Baptism", question: "Who baptized Jesus?", answer: ["john", "john the baptist"], hint: "The voice crying in the wilderness", reference: "Matthew 3:13" },
+            { title: "The Twelve", question: "How many disciples did Jesus choose?", answer: ["12", "twelve"], hint: "The same number as the tribes of Israel", reference: "Matthew 10:1" },
+            { title: "The Betrayal", question: "Who betrayed Jesus?", answer: ["judas", "judas iscariot"], hint: "He did it for 30 pieces of silver", reference: "Matthew 26:14" },
+            { title: "The Denial", question: "Who denied Jesus three times?", answer: ["peter", "simon peter"], hint: "The rock upon which the church was built", reference: "Matthew 26:69" },
+            { title: "First Miracle", question: "What did Jesus turn water into at the wedding?", answer: ["wine"], hint: "His first miracle", reference: "John 2:11" },
+            { title: "Feeding 5000", question: "How many loaves fed the 5000?", answer: ["5", "five"], hint: "Plus two fish", reference: "Matthew 14:17" },
+            
+            // Acts
+            { title: "Pentecost", question: "What happened on the Day of Pentecost?", answer: ["holy spirit came", "tongues of fire"], hint: "The Spirit descended like tongues of fire", reference: "Acts 2:3" },
+            { title: "First Martyr", question: "Who was the first Christian martyr?", answer: ["stephen"], hint: "He saw Jesus standing at God's right hand", reference: "Acts 7:56" },
+            { title: "Paul's Conversion", question: "What was Paul's name before his conversion?", answer: ["saul"], hint: "Named after Israel's first king", reference: "Acts 9:4" },
+            { title: "Damascus Road", question: "On what road did Paul encounter Jesus?", answer: ["damascus"], hint: "He was blinded by the light", reference: "Acts 9:3" },
+            
+            // Wisdom Literature
+            { title: "The Wisest King", question: "Who is traditionally considered the wisest man?", answer: ["solomon"], hint: "He asked God for wisdom", reference: "1 Kings 3:9" },
+            { title: "The Good Shepherd", question: "Which psalm begins 'The Lord is my shepherd'?", answer: ["psalm 23", "23"], hint: "The most famous psalm", reference: "Psalm 23:1" },
+            { title: "Proverbs Wisdom", question: "Complete: 'The fear of the Lord is the beginning of...'", answer: ["wisdom"], hint: "From Proverbs", reference: "Proverbs 9:10" },
+            
+            // Paul's Letters
+            { title: "All Have Sinned", question: "Complete: 'For all have sinned and fall short of...'", answer: ["glory", "glory of god"], hint: "Romans 3:23", reference: "Romans 3:23" },
+            { title: "Greatest Virtue", question: "What is the greatest of faith, hope, and love?", answer: ["love"], hint: "From 1 Corinthians 13", reference: "1 Corinthians 13:13" },
+            { title: "Armor of God", question: "In which letter does Paul describe the armor of God?", answer: ["ephesians"], hint: "Stand against the devil's schemes", reference: "Ephesians 6:11" },
+            
+            // More Revelation
+            { title: "Seven Churches", question: "How many churches are addressed in Revelation?", answer: ["7", "seven"], hint: "In Asia Minor", reference: "Revelation 1:4" },
+            { title: "Beast's Number", question: "What is the number of the beast?", answer: ["666"], hint: "The mark of the beast", reference: "Revelation 13:18" },
+            { title: "John's Exile", question: "On which island did John receive the Revelation?", answer: ["patmos"], hint: "A place of exile", reference: "Revelation 1:9" },
+            { title: "New Jerusalem", question: "What comes down from heaven like a bride?", answer: ["new jerusalem"], hint: "The holy city", reference: "Revelation 21:2" }
         ];
+
+        // Random Question Generation
+        function generateRandomSeals() {
+            const shuffled = [...bibleQuestionPool].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 7);
+            
+            return selected.map((question, index) => ({
+                number: index + 1,
+                title: question.title,
+                question: question.reference ? `${question.question}\n\n📖 ${question.reference}` : question.question,
+                answer: question.answer,
+                hint: question.hint
+            }));
+        }
+
+        // Generate random seals for each new game
+        let seals = generateRandomSeals();
 
         function renderSeals() {
             const sealsGrid = document.getElementById('sealsGrid');
@@ -1575,6 +1644,9 @@
         }
 
         function resetGameState() {
+            // Generate new random questions for replayability
+            seals = generateRandomSeals();
+            
             gameState.completedSeals = [];
             gameState.isGameActive = false;
             gameState.startTime = null;
@@ -1590,7 +1662,7 @@
             updateLeaderboard();
 
             document.getElementById('timer').textContent = '00:00';
-            showAlert('Game reset!', 'success');
+            showAlert('New questions generated! Game reset!', 'success');
         }
 
         function goBack() {
@@ -1670,4 +1742,5 @@
         });
     </script>
 </body>
+
 </html>
