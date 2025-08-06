@@ -55,21 +55,33 @@ class GameIntegrationManager {
             'MultiplayerManager', 
             'LeaderboardManager',
             'PuzzleManager',
-            'GameData'
+            'GameData',
+            'firebase'
         ];
         
-        const maxAttempts = 50;
+        const maxAttempts = 100; // Increased timeout
         let attempts = 0;
         
         while (attempts < maxAttempts) {
-            const missing = dependencies.filter(dep => !window[dep]);
+            const missing = dependencies.filter(dep => {
+                if (dep === 'firebase') {
+                    return typeof window.firebase === 'undefined';
+                }
+                return !window[dep];
+            });
             
             if (missing.length === 0) {
                 console.log('📦 All dependencies loaded');
-                return;
+                // Additional check for Firebase readiness
+                if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
+                    console.log('🔥 Firebase fully initialized');
+                    return;
+                }
             }
             
-            console.log(`⏳ Waiting for dependencies: ${missing.join(', ')}`);
+            if (attempts % 10 === 0) { // Log every 1 second
+                console.log(`⏳ Waiting for dependencies: ${missing.join(', ')}`);
+            }
             await new Promise(resolve => setTimeout(resolve, 100));
             attempts++;
         }
@@ -80,18 +92,25 @@ class GameIntegrationManager {
     // Initialize Bible dataset integration
     initializeBibleDataset() {
         if (!window.BibleDatasetManager) {
-            throw new Error('BibleDatasetManager not available');
+            console.warn('⚠️ BibleDatasetManager not available, using fallback');
+            this.enableFallbackPuzzles();
+            return;
         }
         
-        // Configure Bible dataset
-        const stats = window.BibleDatasetManager.getStatistics();
-        console.log(`📚 Bible Dataset: ${stats.totalQuestions} questions across ${Object.keys(stats.byTheme).length} themes`);
-        
-        // Setup auto-generation of unique puzzle sets
-        this.enableUniquePuzzleGeneration();
-        
-        this.features.bibleDataset = true;
-        this.features.puzzleGeneration = true;
+        try {
+            // Configure Bible dataset
+            const stats = window.BibleDatasetManager.getStatistics();
+            console.log(`📚 Bible Dataset: ${stats.totalQuestions} questions across ${Object.keys(stats.byTheme).length} themes`);
+            
+            // Setup auto-generation of unique puzzle sets
+            this.enableUniquePuzzleGeneration();
+            
+            this.features.bibleDataset = true;
+            this.features.puzzleGeneration = true;
+        } catch (error) {
+            console.error('Error initializing Bible dataset:', error);
+            this.enableFallbackPuzzles();
+        }
     }
 
     // Setup enhanced multiplayer features
@@ -210,16 +229,26 @@ class GameIntegrationManager {
             window.MultiplayerManager.startGame = async function(gameId) {
                 // Generate and store unique puzzle set for this game
                 try {
-                    const puzzleSet = await this.generateGamePuzzleSet(gameId);
+                    let puzzleSet;
+                    if (this.generateGamePuzzleSet && window.BibleDatasetManager) {
+                        puzzleSet = await this.generateGamePuzzleSet(gameId);
+                    } else {
+                        console.log('🔄 Using fallback puzzle generation');
+                        puzzleSet = window.GameData?.seals || [];
+                    }
                     
                     // Load puzzles into the puzzle manager
                     if (window.PuzzleManager && window.PuzzleManager.loadGamePuzzles) {
                         window.PuzzleManager.loadGamePuzzles(puzzleSet);
                     }
                     
-                    console.log(`🎲 Generated ${puzzleSet.length} unique Bible puzzles for game ${gameId}`);
+                    console.log(`🎲 Generated ${puzzleSet.length} puzzles for game ${gameId}`);
                 } catch (error) {
                     console.error('Error generating puzzle set:', error);
+                    // Fallback to original seals
+                    if (window.PuzzleManager && window.GameData?.seals) {
+                        window.PuzzleManager.loadGamePuzzles(window.GameData.seals);
+                    }
                 }
                 
                 // Call original start game
@@ -235,15 +264,26 @@ class GameIntegrationManager {
                 // Generate unique puzzles for single player
                 try {
                     const gameId = `single_${Date.now()}`;
-                    const puzzleSet = window.BibleDatasetManager.generateRandomPuzzleSet(7, { random: 80, themed: 20 });
+                    let puzzleSet;
+                    
+                    if (window.BibleDatasetManager && window.BibleDatasetManager.generateRandomPuzzleSet) {
+                        puzzleSet = window.BibleDatasetManager.generateRandomPuzzleSet(7, { random: 80, themed: 20 });
+                    } else {
+                        console.log('🔄 Using fallback puzzle generation for single player');
+                        puzzleSet = window.GameData?.seals || [];
+                    }
                     
                     if (window.PuzzleManager && window.PuzzleManager.loadGamePuzzles) {
                         window.PuzzleManager.loadGamePuzzles(puzzleSet);
                     }
                     
-                    console.log(`🎯 Generated ${puzzleSet.length} unique Bible puzzles for single player`);
+                    console.log(`🎯 Generated ${puzzleSet.length} puzzles for single player`);
                 } catch (error) {
                     console.error('Error generating single player puzzles:', error);
+                    // Fallback to original seals
+                    if (window.PuzzleManager && window.GameData?.seals) {
+                        window.PuzzleManager.loadGamePuzzles(window.GameData.seals);
+                    }
                 }
                 
                 // Call original function
@@ -308,9 +348,30 @@ class GameIntegrationManager {
             window.PuzzleManager = {
                 generatePuzzleContent: () => '<p>Loading puzzle...</p>',
                 showHint: () => console.log('Hint not available'),
-                resetPuzzle: () => console.log('Reset not available')
+                resetPuzzle: () => console.log('Reset not available'),
+                currentGamePuzzles: [],
+                loadGamePuzzles: () => console.log('Load puzzles not available')
             };
         }
+    }
+
+    // Enable fallback puzzles when Bible dataset fails
+    enableFallbackPuzzles() {
+        console.log('📝 Using original puzzle system as fallback');
+        
+        // Ensure puzzle manager has safe defaults
+        if (window.PuzzleManager) {
+            if (!window.PuzzleManager.currentGamePuzzles) {
+                window.PuzzleManager.currentGamePuzzles = [];
+            }
+            if (!window.PuzzleManager.loadGamePuzzles) {
+                window.PuzzleManager.loadGamePuzzles = function(puzzles) {
+                    console.log('Fallback: Load puzzles called with', puzzles?.length || 0, 'puzzles');
+                };
+            }
+        }
+        
+        this.features.puzzleGeneration = true; // Mark as working with fallback
     }
 
     // Check if feature is available
@@ -342,9 +403,25 @@ class GameIntegrationManager {
     }
 }
 
-// Initialize when DOM is ready
+// Initialize when DOM is ready and after all scripts have loaded
 document.addEventListener('DOMContentLoaded', () => {
-    window.GameIntegration = new GameIntegrationManager();
+    // Use setTimeout to ensure all scripts have finished executing
+    setTimeout(() => {
+        console.log('🔧 Initializing Game Integration Manager...');
+        window.GameIntegration = new GameIntegrationManager();
+    }, 500); // Give scripts time to load
+});
+
+// Also listen for window load as a backup
+window.addEventListener('load', () => {
+    if (!window.GameIntegration) {
+        console.log('🔧 Backup initialization of Game Integration Manager...');
+        setTimeout(() => {
+            if (!window.GameIntegration) {
+                window.GameIntegration = new GameIntegrationManager();
+            }
+        }, 1000);
+    }
 });
 
 // Export for debugging and manual control

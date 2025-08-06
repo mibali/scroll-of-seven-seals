@@ -287,6 +287,12 @@ class EnhancedPuzzleManager extends PuzzleManager {
 
     // Load game-specific puzzles
     loadGamePuzzles(puzzles) {
+        if (!puzzles || !Array.isArray(puzzles)) {
+            console.warn('⚠️ Invalid puzzles provided, using empty array');
+            this.currentGamePuzzles = [];
+            return;
+        }
+        
         this.currentGamePuzzles = puzzles;
         console.log(`🧩 Loaded ${puzzles.length} Bible-based puzzles for this game`);
     }
@@ -388,7 +394,12 @@ class EnhancedPuzzleManager extends PuzzleManager {
 
     // Get current puzzle for validation
     getCurrentPuzzle(puzzleId) {
-        if (this.currentGamePuzzles.length > 0) {
+        if (!this.currentGamePuzzles || !Array.isArray(this.currentGamePuzzles)) {
+            console.warn('⚠️ No current game puzzles available');
+            return null;
+        }
+        
+        if (this.currentGamePuzzles.length > 0 && puzzleId >= 1 && puzzleId <= this.currentGamePuzzles.length) {
             return this.currentGamePuzzles[puzzleId - 1];
         }
         return null;
