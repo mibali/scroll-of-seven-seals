@@ -10,6 +10,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
@@ -527,10 +530,6 @@
             background: linear-gradient(135deg, #dc3545, #fd7e14);
         }
 
-        .alert.info {
-            background: linear-gradient(135deg, #17a2b8, #6f42c1);
-        }
-
         .alert.show {
             opacity: 1;
             transform: translateX(0);
@@ -692,7 +691,6 @@
             <div class="game-header">
                 <div class="timer" id="timer">00:00</div>
                 <div class="progress-container">
-                    <div class="puzzle-set-info" id="puzzleSetInfo" style="color: #d4af37; font-size: 0.9em; margin-bottom: 5px; text-align: center;">🌟 The Seven Seals of Revelation</div>
                     <div class="progress-label">Progress: <span id="progressText">0/7 Seals</span></div>
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill"></div>
@@ -708,7 +706,6 @@
             </div>
 
             <div style="text-align: center; margin-top: 20px;">
-                <button class="button secondary" onclick="showPuzzleSetSelector()">🎲 Change Challenge</button>
                 <button class="button secondary" onclick="resetGameState()">🔄 Reset Game</button>
                 <button class="button secondary" onclick="goBack()">← Back to Lobby</button>
             </div>
@@ -721,31 +718,9 @@
             <div class="puzzle-title" id="puzzleTitle"></div>
             <div class="puzzle-question" id="puzzleQuestion"></div>
             <input type="text" id="puzzleAnswer" class="puzzle-input" placeholder="Enter your answer">
-            <div id="puzzleHint" style="display: none; background: rgba(74, 144, 226, 0.1); border: 1px solid #4a90e2; border-radius: 5px; padding: 10px; margin: 15px 0; color: #4a90e2;">
-                💡 <span id="hintText"></span>
-            </div>
             <div class="puzzle-buttons">
                 <button class="button" onclick="submitAnswer()">Submit</button>
-                <button class="button secondary" onclick="showHint()">💡 Hint</button>
                 <button class="button secondary" onclick="closePuzzle()">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Puzzle Set Selector Modal -->
-    <div id="puzzleSetModal" class="puzzle-modal">
-        <div class="puzzle-content">
-            <div class="puzzle-title">🎯 Choose Your Challenge</div>
-            <div class="puzzle-question" style="margin-bottom: 30px;">
-                Select a biblical challenge set to test your knowledge!
-            </div>
-            
-            <div id="puzzleSetOptions" style="display: grid; gap: 15px; margin-bottom: 30px;">
-                <!-- Options will be populated by JavaScript -->
-            </div>
-            
-            <div class="puzzle-buttons">
-                <button class="button secondary" onclick="closePuzzleSetSelector()">Cancel</button>
             </div>
         </div>
     </div>
@@ -878,43 +853,20 @@
             }
         }
 
-        // Test Firebase connection
-        function testFirebaseConnection() {
-            try {
-                console.log('🧪 Testing Firebase connection...');
-                
-                if (database && isFirebaseReady) {
-                    // Test write permissions
-                    const testRef = database.ref('test/connection');
-                    testRef.set({ timestamp: Date.now(), test: true })
-                        .then(() => {
-                            console.log('✅ Firebase write test successful');
-                            
-                            // Test read permissions
-                            return testRef.once('value');
-                        })
-                        .then((readTest) => {
-                            console.log('✅ Firebase read test successful:', readTest.val());
-                            
-                            // Clean up test data
-                            return testRef.remove();
-                        })
-                        .then(() => {
-                            console.log('✅ Firebase connection test completed successfully');
-                        })
-                        .catch((error) => {
-                            console.error('❌ Firebase test operations failed:', error);
-                        });
-                } else {
-                    console.log('⏳ Firebase not ready yet for testing');
-                    
-                    // Retry after delay if not ready
-                    setTimeout(testFirebaseConnection, 2000);
-                }
-            } catch (error) {
-                console.error('❌ Firebase connection test failed:', error);
+        // Start Firebase initialization
+        waitForFirebase();
+
+        // Check for room parameter in URL
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if (roomParam) {
+                // Auto-fill join form
+                document.getElementById('roomInput').value = roomParam;
+                selectMode('multiplayer');
+                showRoomJoin();
             }
-        }
+        });
 
         function selectMode(mode) {
             gameState.mode = mode;
@@ -984,9 +936,6 @@
 
                 if (database && isFirebaseReady) {
                     console.log('🔥 Attempting Firebase save...');
-                    console.log('🔥 Database object:', database);
-                    console.log('🔥 Room code:', roomCode);
-                    console.log('🔥 Team name:', teamName);
 
                     const roomData = {
                         code: roomCode,
@@ -1005,28 +954,11 @@
                         createdAt: firebase.database.ServerValue.TIMESTAMP
                     };
 
-                    console.log('📦 Room data to save:', roomData);
-
-                    try {
-                        await database.ref(`rooms/${roomCode}`).set(roomData);
-                        console.log('✅ Firebase save successful for room:', roomCode);
-                        
-                        // Verify the room was saved by reading it back
-                        const verification = await database.ref(`rooms/${roomCode}`).once('value');
-                        const savedData = verification.val();
-                        console.log('🔍 Verification - room exists in Firebase:', !!savedData);
-                        console.log('🔍 Saved room data:', savedData);
-                        
-                        showAlert('Room created! Share the link to invite players.', 'success');
-                    } catch (saveError) {
-                        console.error('❌ Firebase save failed:', saveError);
-                        console.error('❌ Error details:', saveError.message);
-                        showAlert('Room created locally (Firebase save failed)', 'error');
-                    }
+                    await database.ref(`rooms/${roomCode}`).set(roomData);
+                    console.log('✅ Firebase save successful');
+                    showAlert('Room created! Share the link to invite players.', 'success');
                 } else {
                     console.log('⚠️ Creating room without Firebase');
-                    console.log('⚠️ Database ready:', !!database);
-                    console.log('⚠️ Firebase ready:', isFirebaseReady);
                     showAlert('Room created locally (limited functionality)', 'success');
                 }
             } catch (error) {
@@ -1074,24 +1006,12 @@
                 }
 
                 console.log('🔍 Checking room:', roomCode);
-                console.log('🔍 Database path:', `rooms/${roomCode}`);
 
                 // Check if room exists
                 const snapshot = await database.ref(`rooms/${roomCode}`).once('value');
                 const roomData = snapshot.val();
-                
-                console.log('🔍 Snapshot exists:', snapshot.exists());
-                console.log('🔍 Room data retrieved:', roomData);
 
                 if (!roomData) {
-                    console.error('❌ Room not found in Firebase for code:', roomCode);
-                    
-                    // Let's also check if any rooms exist at all
-                    const allRoomsSnapshot = await database.ref('rooms').once('value');
-                    const allRooms = allRoomsSnapshot.val();
-                    console.log('🔍 All rooms in Firebase:', allRooms);
-                    console.log('🔍 Available room codes:', allRooms ? Object.keys(allRooms) : 'none');
-                    
                     showAlert('Room not found. Please check the room code.', 'error');
                     return;
                 }
@@ -1147,53 +1067,9 @@
                 if (roomData) {
                     updateLobby(roomData);
 
-                    // Sync puzzle set from host
-                    if (roomData.puzzleSet && roomData.puzzleSet !== currentPuzzleSet) {
-                        currentPuzzleSet = roomData.puzzleSet;
-                        if (currentPuzzleSet === 'random' && roomData.generatedSeals) {
-                            currentGameSeals = roomData.generatedSeals;
-                            puzzleSets.random.seals = currentGameSeals;
-                        }
-                        console.log('🎯 Synced puzzle set from host:', puzzleSets[currentPuzzleSet].name);
-                        updatePuzzleSetDisplay();
-                    }
-
-                    // Handle game locking
-                    if (roomData.gameLocked && !gameState.gameLocked) {
-                        console.log('🔒 Game locked by host');
-                        lockGameInputs();
-                    }
-
-                    // Check for game end/winner
-                    if (roomData.gameEnded && roomData.winner && gameState.isGameActive) {
-                        console.log('🏆 Game ended, winner:', roomData.winner);
-                        lockGameInputs();
-                        showWinnerAnnouncement(roomData.winner);
-                    }
-
                     // Check if game started
-                    if (roomData.gameStarted && !gameState.isGameActive && !roomData.gameEnded) {
+                    if (roomData.gameStarted && !gameState.isGameActive) {
                         startRoomGameplay();
-                    }
-
-                    // Real-time leaderboard updates with improved frequency
-                    if (roomData.teams) {
-                        const newTeams = Object.values(roomData.teams);
-                        
-                        // Check if teams data changed before updating
-                        const teamsChanged = !gameState.teams || 
-                            newTeams.length !== gameState.teams.length ||
-                            newTeams.some((team, index) => 
-                                !gameState.teams[index] || 
-                                team.score !== gameState.teams[index].score ||
-                                team.isComplete !== gameState.teams[index].isComplete
-                            );
-
-                        if (teamsChanged) {
-                            gameState.teams = newTeams;
-                            updateLeaderboard();
-                            console.log('📊 Leaderboard updated:', gameState.teams.map(t => `${t.name}: ${t.score}`));
-                        }
                     }
                 } else {
                     showAlert('Room no longer exists', 'error');
@@ -1236,27 +1112,13 @@
 
         function startRoomGameplay() {
             if (gameState.isHost) {
-                // Host selects puzzle set for everyone
-                selectRandomPuzzleSet();
-                
-                const updateData = {
+                // Host starts the game for everyone
+                database.ref(`rooms/${gameState.roomCode}`).update({
                     gameStarted: true,
                     status: 'playing',
-                    startTime: firebase.database.ServerValue.TIMESTAMP,
-                    puzzleSet: currentPuzzleSet
-                };
-
-                // If using random puzzles, share them with other players
-                if (currentPuzzleSet === 'random') {
-                    updateData.generatedSeals = currentGameSeals;
-                }
-                
-                // Host starts the game for everyone
-                database.ref(`rooms/${gameState.roomCode}`).update(updateData);
+                    startTime: firebase.database.ServerValue.TIMESTAMP
+                });
             }
-
-            // Update puzzle set display
-            updatePuzzleSetDisplay();
 
             // Start local game
             document.getElementById('lobby').style.display = 'none';
@@ -1275,12 +1137,11 @@
         }
 
         function startSinglePlayerGame() {
+            // Generate fresh questions for each game
+            seals = generateRandomSeals();
+            
             gameState.currentTeam = 'Player';
             gameState.teams = [{ name: 'Player', score: 0, completedSeals: [] }];
-
-            // Randomly select a puzzle set for variety
-            selectRandomPuzzleSet();
-            updatePuzzleSetDisplay();
 
             document.getElementById('modeSelection').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'block';
@@ -1295,851 +1156,88 @@
             updateLeaderboard();
         }
 
-        // Comprehensive Bible Dataset - All 66 Books
-        const fullBibleDataset = {
-            // Old Testament - Pentateuch (Torah)
-            genesis: {
-                book: "Genesis", chapters: 50, themes: ["Creation", "Fall", "Flood", "Patriarchs"],
-                questions: [
-                    { question: "Who was the first man created by God?", answer: ["adam"], hint: "Made from the dust of the earth", reference: "Genesis 2:7", difficulty: "easy" },
-                    { question: "What was the name of the first woman?", answer: ["eve"], hint: "Mother of all living", reference: "Genesis 3:20", difficulty: "easy" },
-                    { question: "Which son of Adam killed his brother?", answer: ["cain"], hint: "The first murderer", reference: "Genesis 4:8", difficulty: "easy" },
-                    { question: "How many days and nights did it rain during the flood?", answer: ["40", "forty"], hint: "The same number Moses was on the mountain", reference: "Genesis 7:4", difficulty: "medium" },
-                    { question: "What was the name of Noah's ark resting place?", answer: ["ararat", "mount ararat"], hint: "A mountain in modern-day Turkey", reference: "Genesis 8:4", difficulty: "medium" },
-                    { question: "What did God promise Abraham that would be as numerous as the stars?", answer: ["descendants", "offspring", "children"], hint: "His future family line", reference: "Genesis 15:5", difficulty: "medium" },
-                    { question: "What was Abraham's name before God changed it?", answer: ["abram"], hint: "Exalted father", reference: "Genesis 17:5", difficulty: "medium" },
-                    { question: "What did Jacob see in his dream at Bethel?", answer: ["ladder", "stairway"], hint: "Angels ascending and descending", reference: "Genesis 28:12", difficulty: "medium" },
-                    { question: "How many sons did Jacob have?", answer: ["12", "twelve"], hint: "They became the tribes of Israel", reference: "Genesis 35:22", difficulty: "easy" },
-                    { question: "Which son did Jacob love most?", answer: ["joseph"], hint: "He received a coat of many colors", reference: "Genesis 37:3", difficulty: "easy" },
-                    { question: "Who bought Joseph as a slave in Egypt?", answer: ["potiphar"], hint: "An officer of Pharaoh", reference: "Genesis 37:36", difficulty: "hard" },
-                    { question: "How many years of famine did Joseph predict?", answer: ["7", "seven"], hint: "Symbolized by thin cows", reference: "Genesis 41:30", difficulty: "medium" }
-                ]
-            },
-            exodus: {
-                book: "Exodus", chapters: 40, themes: ["Deliverance", "Law", "Wilderness", "Tabernacle"],
-                questions: [
-                    { question: "Who led the Israelites out of Egypt?", answer: ["moses"], hint: "He was found in a basket as a baby", reference: "Exodus 2:10", difficulty: "easy" },
-                    { question: "What was Moses' brother's name?", answer: ["aaron"], hint: "He became the first high priest", reference: "Exodus 4:14", difficulty: "easy" },
-                    { question: "How many plagues did God send on Egypt?", answer: ["10", "ten"], hint: "The last one was the worst", reference: "Exodus 7-12", difficulty: "medium" },
-                    { question: "What sea did the Israelites cross?", answer: ["red sea"], hint: "The waters parted", reference: "Exodus 14:21", difficulty: "easy" },
-                    { question: "On which mountain did Moses receive the Ten Commandments?", answer: ["sinai", "mount sinai"], hint: "Also called Horeb", reference: "Exodus 19:20", difficulty: "medium" },
-                    { question: "What did the Israelites worship while Moses was on the mountain?", answer: ["golden calf"], hint: "An idol made from their jewelry", reference: "Exodus 32:4", difficulty: "medium" },
-                    { question: "What covered the Israelites by day in the wilderness?", answer: ["cloud"], hint: "God's presence protecting them from the sun", reference: "Exodus 13:21", difficulty: "medium" },
-                    { question: "What guided the Israelites by night?", answer: ["fire", "pillar of fire"], hint: "A bright light in the darkness", reference: "Exodus 13:21", difficulty: "medium" },
-                    { question: "What food did God provide in the wilderness?", answer: ["manna"], hint: "Bread from heaven", reference: "Exodus 16:4", difficulty: "easy" },
-                    { question: "Who helped Moses hold up his hands during battle with Amalek?", answer: ["aaron and hur"], hint: "Two men assisted him", reference: "Exodus 17:12", difficulty: "hard" }
-                ]
-            },
-            leviticus: {
-                book: "Leviticus", chapters: 27, themes: ["Holiness", "Sacrifices", "Priesthood", "Purity"],
-                questions: [
-                    { question: "Which tribe was chosen for the priesthood?", answer: ["levi", "levites"], hint: "Moses and Aaron's tribe", reference: "Leviticus 8:1", difficulty: "medium" },
-                    { question: "What happened to Aaron's sons Nadab and Abihu?", answer: ["killed", "died"], hint: "They offered unauthorized fire", reference: "Leviticus 10:2", difficulty: "hard" },
-                    { question: "On which day was the Day of Atonement observed?", answer: ["10th", "tenth"], hint: "The 10th day of the 7th month", reference: "Leviticus 16:29", difficulty: "hard" },
-                    { question: "What animal was used as the scapegoat?", answer: ["goat"], hint: "It carried the sins into the wilderness", reference: "Leviticus 16:10", difficulty: "medium" }
-                ]
-            },
-            numbers: {
-                book: "Numbers", chapters: 36, themes: ["Wilderness", "Rebellion", "Wandering", "Census"],
-                questions: [
-                    { question: "How many years did the Israelites wander in the wilderness?", answer: ["40", "forty"], hint: "One year for each day the spies explored", reference: "Numbers 14:34", difficulty: "easy" },
-                    { question: "Who were the two faithful spies?", answer: ["joshua and caleb", "caleb and joshua"], hint: "They trusted God could give them the land", reference: "Numbers 14:6", difficulty: "medium" },
-                    { question: "What did Moses strike to bring forth water?", answer: ["rock"], hint: "He was supposed to speak to it", reference: "Numbers 20:11", difficulty: "medium" },
-                    { question: "What kind of serpent did Moses make to heal snake bites?", answer: ["bronze", "brass"], hint: "Made of metal", reference: "Numbers 21:9", difficulty: "medium" }
-                ]
-            },
-            deuteronomy: {
-                book: "Deuteronomy", chapters: 34, themes: ["Law", "Covenant", "Blessing", "Curse"],
-                questions: [
-                    { question: "Who succeeded Moses as leader of Israel?", answer: ["joshua"], hint: "Moses laid hands on him", reference: "Deuteronomy 34:9", difficulty: "easy" },
-                    { question: "From which mountain did Moses view the Promised Land?", answer: ["nebo", "mount nebo"], hint: "He could see it but not enter", reference: "Deuteronomy 34:1", difficulty: "medium" },
-                    { question: "What is the greatest commandment according to Deuteronomy?", answer: ["love god", "love the lord"], hint: "With all your heart, soul, and strength", reference: "Deuteronomy 6:5", difficulty: "medium" }
-                ]
-            },
-
-            // Historical Books
-            joshua: {
-                book: "Joshua", chapters: 24, themes: ["Conquest", "Promised Land", "Faith", "Obedience"],
-                questions: [
-                    { question: "What city's walls fell down after marching around it?", answer: ["jericho"], hint: "They marched for seven days", reference: "Joshua 6:20", difficulty: "easy" },
-                    { question: "Who hid the Israelite spies in Jericho?", answer: ["rahab"], hint: "She was a prostitute who helped them", reference: "Joshua 2:1", difficulty: "medium" },
-                    { question: "What did Joshua make the sun and moon do?", answer: ["stand still", "stop"], hint: "During a battle", reference: "Joshua 10:13", difficulty: "medium" },
-                    { question: "Who sinned by taking forbidden items from Jericho?", answer: ["achan"], hint: "His sin caused defeat at Ai", reference: "Joshua 7:1", difficulty: "hard" }
-                ]
-            },
-            judges: {
-                book: "Judges", chapters: 21, themes: ["Cycle", "Deliverance", "Sin", "Judges"],
-                questions: [
-                    { question: "Which judge was known for his great strength?", answer: ["samson"], hint: "His strength was in his hair", reference: "Judges 16:17", difficulty: "easy" },
-                    { question: "Who defeated Sisera with a tent peg?", answer: ["jael"], hint: "A woman who killed the enemy commander", reference: "Judges 4:21", difficulty: "hard" },
-                    { question: "Which left-handed judge killed King Eglon?", answer: ["ehud"], hint: "He delivered Israel from Moab", reference: "Judges 3:21", difficulty: "hard" },
-                    { question: "How many men did Gideon have in his final army?", answer: ["300"], hint: "God reduced his army", reference: "Judges 7:7", difficulty: "medium" }
-                ]
-            },
-            ruth: {
-                book: "Ruth", chapters: 4, themes: ["Loyalty", "Redemption", "Love", "Covenant"],
-                questions: [
-                    { question: "What was the name of Ruth's mother-in-law?", answer: ["naomi"], hint: "Ruth refused to leave her", reference: "Ruth 1:16", difficulty: "easy" },
-                    { question: "Who did Ruth marry in Bethlehem?", answer: ["boaz"], hint: "A wealthy landowner", reference: "Ruth 4:13", difficulty: "medium" },
-                    { question: "What did Ruth glean in the fields?", answer: ["barley", "grain"], hint: "She gathered leftovers", reference: "Ruth 2:3", difficulty: "medium" }
-                ]
-            },
-
+        // Expanded Bible Question Pool for Random Generation
+        const bibleQuestionPool = [
+            // Original Revelation questions
+            { title: "The White Horse", question: "Who rode the white horse in Revelation 6:2?", answer: ["jesus", "christ", "lamb", "conqueror"], hint: "The one who conquers and will conquer", reference: "Revelation 6:2" },
+            { title: "The Red Horse", question: "What was the rider of the red horse given power to take from the earth?", answer: ["peace"], hint: "The opposite of war", reference: "Revelation 6:4" },
+            { title: "The Black Horse", question: "What did the rider of the black horse hold in his hand?", answer: ["scales", "balance", "balances"], hint: "Used for measuring and weighing", reference: "Revelation 6:5" },
+            { title: "The Pale Horse", question: "What was the name of the rider on the pale horse?", answer: ["death"], hint: "The end of life", reference: "Revelation 6:8" },
+            { title: "The Souls Under the Altar", question: "What were the souls under the altar given to wear?", answer: ["white robes", "robes", "white robe"], hint: "Garments of purity and righteousness", reference: "Revelation 6:11" },
+            { title: "The Great Earthquake", question: "What did the sun become like when the sixth seal was opened?", answer: ["black", "sackcloth", "dark"], hint: "Color of mourning cloth", reference: "Revelation 6:12" },
+            { title: "Silence in Heaven", question: "How long was there silence in heaven when the seventh seal was opened?", answer: ["half an hour", "30 minutes", "half hour"], hint: "A brief period of time", reference: "Revelation 8:1" },
+            
+            // Genesis
+            { title: "Creation Day 1", question: "What did God create on the first day?", answer: ["light"], hint: "And God said, 'Let there be...'", reference: "Genesis 1:3" },
+            { title: "First Man", question: "Who was the first man created by God?", answer: ["adam"], hint: "Made from the dust of the earth", reference: "Genesis 2:7" },
+            { title: "First Woman", question: "What was the name of the first woman?", answer: ["eve"], hint: "Mother of all living", reference: "Genesis 3:20" },
+            { title: "The Flood", question: "How many days and nights did it rain during the flood?", answer: ["40", "forty"], hint: "The same number Moses was on the mountain", reference: "Genesis 7:4" },
+            { title: "Abraham's Promise", question: "What did God promise Abraham would be as numerous as the stars?", answer: ["descendants", "offspring", "children"], hint: "His future family line", reference: "Genesis 15:5" },
+            { title: "Jacob's Dream", question: "What did Jacob see in his dream at Bethel?", answer: ["ladder", "stairway"], hint: "Angels ascending and descending", reference: "Genesis 28:12" },
+            { title: "Joseph's Brothers", question: "How many sons did Jacob have?", answer: ["12", "twelve"], hint: "They became the tribes of Israel", reference: "Genesis 35:22" },
+            
+            // Exodus
+            { title: "Moses' Calling", question: "Who led the Israelites out of Egypt?", answer: ["moses"], hint: "He was found in a basket as a baby", reference: "Exodus 2:10" },
+            { title: "Ten Plagues", question: "How many plagues did God send on Egypt?", answer: ["10", "ten"], hint: "The last one was the worst", reference: "Exodus 7-12" },
+            { title: "Red Sea", question: "What sea did the Israelites cross?", answer: ["red sea"], hint: "The waters parted", reference: "Exodus 14:21" },
+            { title: "Mount Sinai", question: "On which mountain did Moses receive the Ten Commandments?", answer: ["sinai", "mount sinai"], hint: "Also called Horeb", reference: "Exodus 19:20" },
+            { title: "Golden Calf", question: "What did the Israelites worship while Moses was on the mountain?", answer: ["golden calf"], hint: "An idol made from their jewelry", reference: "Exodus 32:4" },
+            { title: "Wilderness Food", question: "What food did God provide in the wilderness?", answer: ["manna"], hint: "Bread from heaven", reference: "Exodus 16:4" },
+            
             // New Testament - Gospels
-            matthew: {
-                book: "Matthew", chapters: 28, themes: ["Kingdom", "Messiah", "Fulfillment", "Teaching"],
-                questions: [
-                    { question: "Who were the first disciples Jesus called?", answer: ["peter and andrew", "simon and andrew"], hint: "Two fishermen brothers", reference: "Matthew 4:18", difficulty: "medium" },
-                    { question: "Where was Jesus born according to Matthew?", answer: ["bethlehem"], hint: "City of David", reference: "Matthew 2:1", difficulty: "easy" },
-                    { question: "How many wise men came to visit baby Jesus?", answer: ["not specified", "unknown"], hint: "The Bible doesn't say the exact number", reference: "Matthew 2:1", difficulty: "hard" },
-                    { question: "What did the wise men bring as gifts?", answer: ["gold frankincense myrrh"], hint: "Three types of gifts", reference: "Matthew 2:11", difficulty: "medium" },
-                    { question: "How many beatitudes are in the Sermon on the Mount?", answer: ["8", "nine", "eight"], hint: "Blessed are...", reference: "Matthew 5:3-11", difficulty: "hard" },
-                    { question: "What prayer did Jesus teach His disciples?", answer: ["lord's prayer", "our father"], hint: "Our Father who art in heaven", reference: "Matthew 6:9", difficulty: "easy" }
-                ]
-            },
-            mark: {
-                book: "Mark", chapters: 16, themes: ["Action", "Servant", "Miracles", "Suffering"],
-                questions: [
-                    { question: "Who baptized Jesus according to Mark?", answer: ["john", "john the baptist"], hint: "The voice crying in the wilderness", reference: "Mark 1:9", difficulty: "easy" },
-                    { question: "What did Jesus heal a man of in the synagogue?", answer: ["unclean spirit", "demon"], hint: "An evil spirit", reference: "Mark 1:25", difficulty: "medium" },
-                    { question: "How many baskets were left after feeding the 5000?", answer: ["12", "twelve"], hint: "One for each disciple", reference: "Mark 6:43", difficulty: "medium" }
-                ]
-            },
-            luke: {
-                book: "Luke", chapters: 24, themes: ["Compassion", "Universal", "Prayer", "Spirit"],
-                questions: [
-                    { question: "Who announced Jesus' birth to Mary?", answer: ["gabriel"], hint: "An archangel", reference: "Luke 1:26", difficulty: "medium" },
-                    { question: "Where was Jesus when His parents found Him at age 12?", answer: ["temple"], hint: "Sitting among the teachers", reference: "Luke 2:46", difficulty: "easy" },
-                    { question: "What was the name of the criminal who asked Jesus to remember him?", answer: ["penitent thief", "thief"], hint: "Crucified next to Jesus", reference: "Luke 23:42", difficulty: "hard" },
-                    { question: "In which town did Jesus raise a widow's son?", answer: ["nain"], hint: "A small town", reference: "Luke 7:11", difficulty: "hard" }
-                ]
-            },
-            john: {
-                book: "John", chapters: 21, themes: ["Divinity", "Life", "Light", "Love"],
-                questions: [
-                    { question: "What was Jesus' first miracle according to John?", answer: ["water to wine", "turning water into wine"], hint: "At a wedding in Cana", reference: "John 2:11", difficulty: "easy" },
-                    { question: "Who came to Jesus by night?", answer: ["nicodemus"], hint: "A Pharisee", reference: "John 3:1", difficulty: "medium" },
-                    { question: "How many 'I am' statements did Jesus make in John?", answer: ["7", "seven"], hint: "I am the bread of life, etc.", reference: "John's Gospel", difficulty: "hard" },
-                    { question: "Which disciple did Jesus love?", answer: ["john"], hint: "The author of this Gospel", reference: "John 13:23", difficulty: "medium" }
-                ]
-            },
-
-            // Acts and Letters
-            acts: {
-                book: "Acts", chapters: 28, themes: ["Church", "Mission", "Holy Spirit", "Growth"],
-                questions: [
-                    { question: "What happened on the Day of Pentecost?", answer: ["holy spirit came", "tongues of fire"], hint: "The Spirit descended like tongues of fire", reference: "Acts 2:3", difficulty: "medium" },
-                    { question: "Who was the first Christian martyr?", answer: ["stephen"], hint: "He saw Jesus standing at God's right hand", reference: "Acts 7:56", difficulty: "easy" },
-                    { question: "What was Paul's name before his conversion?", answer: ["saul"], hint: "Named after Israel's first king", reference: "Acts 9:4", difficulty: "easy" },
-                    { question: "On what road did Paul encounter Jesus?", answer: ["damascus"], hint: "He was blinded by the light", reference: "Acts 9:3", difficulty: "medium" },
-                    { question: "Who was Paul's companion on his first missionary journey?", answer: ["barnabas"], hint: "Son of Encouragement", reference: "Acts 13:2", difficulty: "medium" }
-                ]
-            },
-
-            // Paul's Letters
-            romans: {
-                book: "Romans", chapters: 16, themes: ["Salvation", "Grace", "Law", "Faith"],
-                questions: [
-                    { question: "Complete: 'For all have sinned and fall short of...'", answer: ["glory", "glory of god"], hint: "Romans 3:23", reference: "Romans 3:23", difficulty: "easy" },
-                    { question: "What is the wages of sin?", answer: ["death"], hint: "But the gift of God is eternal life", reference: "Romans 6:23", difficulty: "easy" },
-                    { question: "Who can separate us from the love of Christ?", answer: ["nothing", "no one"], hint: "Neither death nor life...", reference: "Romans 8:38", difficulty: "medium" }
-                ]
-            },
-
-            // Revelation
-            revelation: {
-                book: "Revelation", chapters: 22, themes: ["Prophecy", "End Times", "Victory", "Judgment"],
-                questions: [
-                    { question: "How many churches are addressed in Revelation?", answer: ["7", "seven"], hint: "In Asia Minor", reference: "Revelation 1:4", difficulty: "medium" },
-                    { question: "What color was the first horse of the apocalypse?", answer: ["white"], hint: "Its rider carried a bow", reference: "Revelation 6:2", difficulty: "medium" },
-                    { question: "What is the number of the beast?", answer: ["666"], hint: "The mark of the beast", reference: "Revelation 13:18", difficulty: "easy" },
-                    { question: "On which island did John receive the Revelation?", answer: ["patmos"], hint: "A place of exile", reference: "Revelation 1:9", difficulty: "medium" },
-                    { question: "What comes down from heaven like a bride?", answer: ["new jerusalem"], hint: "The holy city", reference: "Revelation 21:2", difficulty: "medium" }
-                ]
-            }
-        };
-
-        // Enhanced Question Generation System
-        class BibleQuestionGenerator {
-            constructor() {
-                this.usedQuestions = new Set();
-                this.sessionQuestions = [];
-                this.difficultyWeights = { easy: 0.4, medium: 0.4, hard: 0.2 };
-            }
-
-            // Generate balanced question set with no duplicates
-            generateQuestionSet(count = 7, themes = null) {
-                const availableQuestions = this.getAllAvailableQuestions(themes);
-                const selectedQuestions = [];
-                
-                // Calculate questions per difficulty
-                const easyCount = Math.floor(count * this.difficultyWeights.easy);
-                const mediumCount = Math.floor(count * this.difficultyWeights.medium);
-                const hardCount = count - easyCount - mediumCount;
-
-                // Select questions by difficulty
-                selectedQuestions.push(...this.selectByDifficulty(availableQuestions, 'easy', easyCount));
-                selectedQuestions.push(...this.selectByDifficulty(availableQuestions, 'medium', mediumCount));
-                selectedQuestions.push(...this.selectByDifficulty(availableQuestions, 'hard', hardCount));
-
-                // Shuffle and format
-                const shuffled = this.shuffleArray(selectedQuestions);
-                const formattedQuestions = shuffled.map((q, index) => ({
-                    number: index + 1,
-                    title: q.book || `${q.book} Challenge`,
-                    question: q.question,
-                    answer: q.answer,
-                    hint: q.hint,
-                    reference: q.reference,
-                    book: q.book,
-                    difficulty: q.difficulty
-                }));
-
-                // Track used questions
-                formattedQuestions.forEach(q => {
-                    this.usedQuestions.add(this.getQuestionKey(q));
-                });
-
-                this.sessionQuestions = formattedQuestions;
-                return formattedQuestions;
-            }
-
-            getAllAvailableQuestions(themes = null) {
-                const allQuestions = [];
-                
-                Object.values(fullBibleDataset).forEach(bookData => {
-                    if (bookData.questions) {
-                        bookData.questions.forEach(question => {
-                            const questionKey = this.getQuestionKey(question);
-                            
-                            // Skip if already used this session
-                            if (this.usedQuestions.has(questionKey)) return;
-                            
-                            // Filter by themes if specified
-                            if (themes && !themes.some(theme => 
-                                bookData.themes.includes(theme))) return;
-                            
-                            allQuestions.push({
-                                ...question,
-                                book: bookData.book
-                            });
-                        });
-                    }
-                });
-
-                return allQuestions;
-            }
-
-            selectByDifficulty(questions, difficulty, count) {
-                const filtered = questions.filter(q => q.difficulty === difficulty);
-                return this.shuffleArray(filtered).slice(0, count);
-            }
-
-            getQuestionKey(question) {
-                return `${question.book}-${question.question.substring(0, 50)}`;
-            }
-
-            shuffleArray(array) {
-                const shuffled = [...array];
-                for (let i = shuffled.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-                }
-                return shuffled;
-            }
-
-            // Generate themed question sets
-            generateThemedSet(theme, count = 7) {
-                const themeMap = {
-                    'creation': ['Creation', 'Fall'],
-                    'exodus': ['Deliverance', 'Wilderness'],
-                    'kings': ['Kingdom', 'Prophecy'],
-                    'gospels': ['Messiah', 'Teaching', 'Miracles'],
-                    'letters': ['Church', 'Grace', 'Faith'],
-                    'prophecy': ['Prophecy', 'End Times']
-                };
-
-                const themes = themeMap[theme] || null;
-                return this.generateQuestionSet(count, themes);
-            }
-
-            // Reset for new game session
-            resetSession() {
-                this.usedQuestions.clear();
-                this.sessionQuestions = [];
-            }
-        }
-
-        // Initialize question generator
-        let questionGenerator;
-        try {
-            questionGenerator = new BibleQuestionGenerator();
-            console.log('✅ Question generator initialized successfully');
+            { title: "Jesus' Birth", question: "In which city was Jesus born?", answer: ["bethlehem"], hint: "City of David", reference: "Matthew 2:1" },
+            { title: "Jesus' Baptism", question: "Who baptized Jesus?", answer: ["john", "john the baptist"], hint: "The voice crying in the wilderness", reference: "Matthew 3:13" },
+            { title: "The Twelve", question: "How many disciples did Jesus choose?", answer: ["12", "twelve"], hint: "The same number as the tribes of Israel", reference: "Matthew 10:1" },
+            { title: "The Betrayal", question: "Who betrayed Jesus?", answer: ["judas", "judas iscariot"], hint: "He did it for 30 pieces of silver", reference: "Matthew 26:14" },
+            { title: "The Denial", question: "Who denied Jesus three times?", answer: ["peter", "simon peter"], hint: "The rock upon which the church was built", reference: "Matthew 26:69" },
+            { title: "First Miracle", question: "What did Jesus turn water into at the wedding?", answer: ["wine"], hint: "His first miracle", reference: "John 2:11" },
+            { title: "Feeding 5000", question: "How many loaves fed the 5000?", answer: ["5", "five"], hint: "Plus two fish", reference: "Matthew 14:17" },
             
-            // Initialize with random puzzles and reset session
-            questionGenerator.resetSession();
-            selectRandomPuzzleSet();
-        } catch (error) {
-            console.error('❌ Error initializing question generator:', error);
+            // Acts
+            { title: "Pentecost", question: "What happened on the Day of Pentecost?", answer: ["holy spirit came", "tongues of fire"], hint: "The Spirit descended like tongues of fire", reference: "Acts 2:3" },
+            { title: "First Martyr", question: "Who was the first Christian martyr?", answer: ["stephen"], hint: "He saw Jesus standing at God's right hand", reference: "Acts 7:56" },
+            { title: "Paul's Conversion", question: "What was Paul's name before his conversion?", answer: ["saul"], hint: "Named after Israel's first king", reference: "Acts 9:4" },
+            { title: "Damascus Road", question: "On what road did Paul encounter Jesus?", answer: ["damascus"], hint: "He was blinded by the light", reference: "Acts 9:3" },
             
-            // Fallback to simple initialization
-            questionGenerator = {
-                resetSession: () => console.log('Fallback reset session'),
-                generateQuestionSet: (count) => generateLegacyRandomPuzzles(count),
-                generateThemedSet: (theme, count) => generateLegacyRandomPuzzles(count)
-            };
-            
-            // Use legacy random selection
-            selectRandomPuzzleSet();
-        }
-
-        // Legacy compatibility - keep existing structure
-        const bibleQuestionPool = {
-            // Old Testament - Genesis
-            genesis: [
-                { question: "Who was the first man created by God?", answer: ["adam"], hint: "Made from the dust of the earth", book: "Genesis" },
-                { question: "What was the name of the first woman?", answer: ["eve"], hint: "Mother of all living", book: "Genesis" },
-                { question: "Which son of Adam killed his brother?", answer: ["cain"], hint: "The first murderer", book: "Genesis" },
-                { question: "How many days and nights did it rain during the flood?", answer: ["40", "forty"], hint: "The same number Moses was on the mountain", book: "Genesis" },
-                { question: "What was the name of Noah's ark resting place?", answer: ["ararat", "mount ararat"], hint: "A mountain in modern-day Turkey", book: "Genesis" },
-                { question: "What did God promise Abraham that would be as numerous as the stars?", answer: ["descendants", "offspring", "children"], hint: "His future family line", book: "Genesis" },
-                { question: "What was the name of Abraham's nephew?", answer: ["lot"], hint: "He chose to live in Sodom", book: "Genesis" },
-                { question: "What did Jacob see in his dream at Bethel?", answer: ["ladder", "stairway"], hint: "Angels ascending and descending", book: "Genesis" },
-                { question: "How many sons did Jacob have?", answer: ["12", "twelve"], hint: "They became the tribes of Israel", book: "Genesis" },
-                { question: "Which son did Jacob love most?", answer: ["joseph"], hint: "He received a coat of many colors", book: "Genesis" }
-            ],
-            
-            // Old Testament - Exodus
-            exodus: [
-                { question: "Who led the Israelites out of Egypt?", answer: ["moses"], hint: "He was found in a basket as a baby", book: "Exodus" },
-                { question: "What was Moses' brother's name?", answer: ["aaron"], hint: "He became the first high priest", book: "Exodus" },
-                { question: "How many plagues did God send on Egypt?", answer: ["10", "ten"], hint: "The last one was the worst", book: "Exodus" },
-                { question: "What sea did the Israelites cross?", answer: ["red sea"], hint: "The waters parted", book: "Exodus" },
-                { question: "On which mountain did Moses receive the Ten Commandments?", answer: ["sinai", "mount sinai"], hint: "Also called Horeb", book: "Exodus" },
-                { question: "What did the Israelites worship while Moses was on the mountain?", answer: ["golden calf"], hint: "An idol made from their jewelry", book: "Exodus" },
-                { question: "How many commandments did Moses receive?", answer: ["10", "ten"], hint: "Written on stone tablets", book: "Exodus" },
-                { question: "What covered the Israelites by day in the wilderness?", answer: ["cloud"], hint: "God's presence protecting them from the sun", book: "Exodus" },
-                { question: "What guided the Israelites by night?", answer: ["fire", "pillar of fire"], hint: "A bright light in the darkness", book: "Exodus" },
-                { question: "What food did God provide in the wilderness?", answer: ["manna"], hint: "Bread from heaven", book: "Exodus" }
-            ],
-
-            // New Testament - Gospels
-            gospels: [
-                { question: "In which city was Jesus born?", answer: ["bethlehem"], hint: "City of David", book: "Matthew/Luke" },
-                { question: "Who baptized Jesus?", answer: ["john", "john the baptist"], hint: "The voice crying in the wilderness", book: "Matthew/Mark/Luke" },
-                { question: "How many disciples did Jesus choose?", answer: ["12", "twelve"], hint: "The same number as the tribes of Israel", book: "Gospels" },
-                { question: "Who betrayed Jesus?", answer: ["judas", "judas iscariot"], hint: "He did it for 30 pieces of silver", book: "Gospels" },
-                { question: "Who denied Jesus three times?", answer: ["peter", "simon peter"], hint: "The rock upon which the church was built", book: "Gospels" },
-                { question: "What did Jesus turn water into at the wedding?", answer: ["wine"], hint: "His first miracle", book: "John" },
-                { question: "How many loaves fed the 5000?", answer: ["5", "five"], hint: "Plus two fish", book: "Gospels" },
-                { question: "Who helped Jesus carry the cross?", answer: ["simon", "simon of cyrene"], hint: "A man from North Africa", book: "Gospels" },
-                { question: "On which day of the week did Jesus rise?", answer: ["sunday", "first day"], hint: "The day after the Sabbath", book: "Gospels" },
-                { question: "How many days after His death did Jesus appear to His disciples?", answer: ["3", "three", "third day"], hint: "As He prophesied", book: "Gospels" }
-            ],
-
-            // Acts and Early Church
-            acts: [
-                { question: "Who replaced Judas as an apostle?", answer: ["matthias"], hint: "Chosen by casting lots", book: "Acts" },
-                { question: "What language phenomenon occurred at Pentecost?", answer: ["tongues", "speaking in tongues"], hint: "Everyone heard in their own language", book: "Acts" },
-                { question: "Who was the first Christian martyr?", answer: ["stephen"], hint: "He saw Jesus standing at God's right hand", book: "Acts" },
-                { question: "What was Paul's name before his conversion?", answer: ["saul"], hint: "Named after Israel's first king", book: "Acts" },
-                { question: "On what road did Paul encounter Jesus?", answer: ["damascus"], hint: "He was blinded by the light", book: "Acts" },
-                { question: "Who was known as the apostle to the Gentiles?", answer: ["paul"], hint: "Formerly a persecutor of Christians", book: "Acts" },
-                { question: "What did Peter see in his vision at Joppa?", answer: ["sheet", "animals"], hint: "Clean and unclean animals", book: "Acts" },
-                { question: "Who was Paul's companion on his missionary journeys?", answer: ["barnabas", "silas", "timothy"], hint: "Multiple correct answers", book: "Acts" },
-                { question: "In which city did Paul and Silas sing in prison?", answer: ["philippi"], hint: "An earthquake freed them", book: "Acts" },
-                { question: "Who fell asleep during Paul's long sermon?", answer: ["eutychus"], hint: "He fell from a window but lived", book: "Acts" }
-            ],
-
             // Wisdom Literature
-            wisdom: [
-                { question: "Who is traditionally considered the wisest man?", answer: ["solomon"], hint: "He asked God for wisdom", book: "1 Kings/Proverbs" },
-                { question: "Complete: 'The fear of the Lord is the beginning of...'", answer: ["wisdom"], hint: "From Proverbs", book: "Proverbs" },
-                { question: "Who lost everything but remained faithful to God?", answer: ["job"], hint: "His patience is legendary", book: "Job" },
-                { question: "Which psalm begins 'The Lord is my shepherd'?", answer: ["psalm 23", "23"], hint: "The most famous psalm", book: "Psalms" },
-                { question: "Who wrote most of the Psalms?", answer: ["david"], hint: "The shepherd king", book: "Psalms" },
-                { question: "What does 'Ecclesiastes' mean?", answer: ["preacher", "teacher"], hint: "The writer who said 'vanity of vanities'", book: "Ecclesiastes" },
-                { question: "In Proverbs, what is more precious than rubies?", answer: ["wisdom"], hint: "Something you can't buy", book: "Proverbs" },
-                { question: "Who wrote the Song of Solomon?", answer: ["solomon"], hint: "The wise king", book: "Song of Solomon" },
-                { question: "What did Job scrape his sores with?", answer: ["potsherd", "pottery"], hint: "A broken piece of clay", book: "Job" },
-                { question: "How many friends came to comfort Job?", answer: ["3", "three"], hint: "Eliphaz, Bildad, and Zophar", book: "Job" }
-            ],
-
-            // Major Prophets
-            prophets: [
-                { question: "Which prophet was called when he was just a youth?", answer: ["jeremiah"], hint: "He said he was too young", book: "Jeremiah" },
-                { question: "Which prophet saw the valley of dry bones?", answer: ["ezekiel"], hint: "The bones came together", book: "Ezekiel" },
-                { question: "Who prophesied about the suffering servant?", answer: ["isaiah"], hint: "He saw the Lord high and lifted up", book: "Isaiah" },
-                { question: "Which prophet was swallowed by a great fish?", answer: ["jonah"], hint: "He didn't want to go to Nineveh", book: "Jonah" },
-                { question: "Who interpreted dreams for King Nebuchadnezzar?", answer: ["daniel"], hint: "He wouldn't defile himself", book: "Daniel" },
-                { question: "What did Daniel's three friends refuse to do?", answer: ["bow", "worship"], hint: "They wouldn't worship the golden image", book: "Daniel" },
-                { question: "Which prophet married a prostitute as an object lesson?", answer: ["hosea"], hint: "It showed God's love for unfaithful Israel", book: "Hosea" },
-                { question: "Who asked 'Can these bones live?'", answer: ["ezekiel"], hint: "In the valley of dry bones", book: "Ezekiel" },
-                { question: "Which prophet was taken up in a whirlwind?", answer: ["elijah"], hint: "He never died", book: "2 Kings" },
-                { question: "Who was Elijah's successor?", answer: ["elisha"], hint: "He received a double portion", book: "2 Kings" }
-            ],
-
+            { title: "The Wisest King", question: "Who is traditionally considered the wisest man?", answer: ["solomon"], hint: "He asked God for wisdom", reference: "1 Kings 3:9" },
+            { title: "The Good Shepherd", question: "Which psalm begins 'The Lord is my shepherd'?", answer: ["psalm 23", "23"], hint: "The most famous psalm", reference: "Psalm 23:1" },
+            { title: "Proverbs Wisdom", question: "Complete: 'The fear of the Lord is the beginning of...'", answer: ["wisdom"], hint: "From Proverbs", reference: "Proverbs 9:10" },
+            
             // Paul's Letters
-            epistles: [
-                { question: "What is the greatest of faith, hope, and love?", answer: ["love"], hint: "From 1 Corinthians 13", book: "1 Corinthians" },
-                { question: "Complete: 'For all have sinned and fall short of...'", answer: ["glory", "glory of god"], hint: "Romans 3:23", book: "Romans" },
-                { question: "What is the fruit of the Spirit? (Name one)", answer: ["love", "joy", "peace", "patience", "kindness", "goodness", "faithfulness", "gentleness", "self-control"], hint: "There are nine listed", book: "Galatians" },
-                { question: "Which letter was written to encourage slaves to be obedient?", answer: ["ephesians", "colossians"], hint: "Paul's household codes", book: "Ephesians" },
-                { question: "In which letter does Paul describe the armor of God?", answer: ["ephesians"], hint: "Stand against the devil's schemes", book: "Ephesians" },
-                { question: "Which church did Paul praise for their faith, hope, and love?", answer: ["thessalonians", "thessalonica"], hint: "His first letter to them", book: "1 Thessalonians" },
-                { question: "Who was Paul's 'beloved physician'?", answer: ["luke"], hint: "He wrote a Gospel and Acts", book: "Colossians" },
-                { question: "Which young pastor did Paul mentor?", answer: ["timothy", "titus"], hint: "Multiple correct answers", book: "1&2 Timothy/Titus" },
-                { question: "What should we be anxious about?", answer: ["nothing"], hint: "Philippians 4:6", book: "Philippians" },
-                { question: "For what purpose are the Scriptures profitable?", answer: ["teaching", "doctrine"], hint: "2 Timothy 3:16", book: "2 Timothy" }
-            ],
-
-            // Revelation and End Times
-            revelation: [
-                { question: "How many churches are addressed in Revelation?", answer: ["7", "seven"], hint: "In Asia Minor", book: "Revelation" },
-                { question: "What color was the first horse of the apocalypse?", answer: ["white"], hint: "Its rider carried a bow", book: "Revelation" },
-                { question: "How many seals are on the scroll?", answer: ["7", "seven"], hint: "The title of our game!", book: "Revelation" },
-                { question: "What is the number of the beast?", answer: ["666"], hint: "The mark of the beast", book: "Revelation" },
-                { question: "How many witnesses will prophesy for 1260 days?", answer: ["2", "two"], hint: "They have power over fire", book: "Revelation" },
-                { question: "What is the name of the final battle?", answer: ["armageddon"], hint: "The gathering place of armies", book: "Revelation" },
-                { question: "What comes down from heaven like a bride?", answer: ["new jerusalem"], hint: "The holy city", book: "Revelation" },
-                { question: "On which island did John receive the Revelation?", answer: ["patmos"], hint: "A place of exile", book: "Revelation" },
-                { question: "What was in the right hand of the one on the throne?", answer: ["scroll", "book"], hint: "Sealed with seven seals", book: "Revelation" },
-                { question: "Who is worthy to open the scroll?", answer: ["lamb", "jesus"], hint: "The Lion of Judah", book: "Revelation" }
-            ]
-        };
-
-        // Enhanced Random Puzzle Generation System
-        function generateRandomPuzzles(count = 7, theme = null) {
-            console.log('🎲 Generating random puzzles with enhanced system...');
+            { title: "All Have Sinned", question: "Complete: 'For all have sinned and fall short of...'", answer: ["glory", "glory of god"], hint: "Romans 3:23", reference: "Romans 3:23" },
+            { title: "Greatest Virtue", question: "What is the greatest of faith, hope, and love?", answer: ["love"], hint: "From 1 Corinthians 13", reference: "1 Corinthians 13:13" },
+            { title: "Armor of God", question: "In which letter does Paul describe the armor of God?", answer: ["ephesians"], hint: "Stand against the devil's schemes", reference: "Ephesians 6:11" },
             
-            // Use new generation system for better questions
-            if (theme) {
-                return questionGenerator.generateThemedSet(theme, count);
-            } else {
-                return questionGenerator.generateQuestionSet(count);
-            }
-        }
+            // More Revelation
+            { title: "Seven Churches", question: "How many churches are addressed in Revelation?", answer: ["7", "seven"], hint: "In Asia Minor", reference: "Revelation 1:4" },
+            { title: "Beast's Number", question: "What is the number of the beast?", answer: ["666"], hint: "The mark of the beast", reference: "Revelation 13:18" },
+            { title: "John's Exile", question: "On which island did John receive the Revelation?", answer: ["patmos"], hint: "A place of exile", reference: "Revelation 1:9" },
+            { title: "New Jerusalem", question: "What comes down from heaven like a bride?", answer: ["new jerusalem"], hint: "The holy city", reference: "Revelation 21:2" }
+        ];
 
-        // Legacy fallback for older generation system
-        function generateLegacyRandomPuzzles(count = 7) {
-            const allQuestions = [];
+        // Random Question Generation
+        function generateRandomSeals() {
+            const shuffled = [...bibleQuestionPool].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 7);
             
-            // Flatten all question categories into one array
-            Object.values(bibleQuestionPool).forEach(category => {
-                allQuestions.push(...category);
-            });
-
-            // Shuffle and select random questions
-            const shuffled = allQuestions.sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, count);
-
-            // Create numbered seals from selected questions
             return selected.map((question, index) => ({
                 number: index + 1,
-                title: question.book || `Seal ${index + 1}`,
-                question: question.question,
+                title: question.title,
+                question: question.reference ? `${question.question}\n\n📖 ${question.reference}` : question.question,
                 answer: question.answer,
-                hint: question.hint,
-                book: question.book
+                hint: question.hint
             }));
         }
 
-        // Keep original puzzle sets for variety
-        const puzzleSets = {
-            "revelation": {
-                name: "🌟 The Seven Seals of Revelation",
-                description: "Unlock the mysteries of the apocalypse",
-                seals: [
-                    {
-                        number: 1,
-                        title: "The White Horse",
-                        question: "Who rode the white horse in Revelation 6:2?",
-                        answer: ["jesus", "christ", "lamb", "conqueror"],
-                        hint: "The one who conquers and will conquer"
-                    },
-                    {
-                        number: 2,
-                        title: "The Red Horse",
-                        question: "What was the rider of the red horse given power to take from the earth?",
-                        answer: ["peace"],
-                        hint: "The opposite of war"
-                    },
-                    {
-                        number: 3,
-                        title: "The Black Horse",
-                        question: "What did the rider of the black horse hold in his hand?",
-                        answer: ["scales", "balance", "balances"],
-                        hint: "Used for measuring and weighing"
-                    },
-                    {
-                        number: 4,
-                        title: "The Pale Horse",
-                        question: "What was the name of the rider on the pale horse?",
-                        answer: ["death"],
-                        hint: "The end of life"
-                    },
-                    {
-                        number: 5,
-                        title: "The Souls Under the Altar",
-                        question: "What were the souls under the altar given to wear?",
-                        answer: ["white robes", "robes", "white robe"],
-                        hint: "Garments of purity and righteousness"
-                    },
-                    {
-                        number: 6,
-                        title: "The Great Earthquake",
-                        question: "What did the sun become like when the sixth seal was opened?",
-                        answer: ["black", "sackcloth", "dark"],
-                        hint: "Color of mourning cloth"
-                    },
-                    {
-                        number: 7,
-                        title: "Silence in Heaven",
-                        question: "How long was there silence in heaven when the seventh seal was opened?",
-                        answer: ["half an hour", "30 minutes", "half hour"],
-                        hint: "A brief period of time"
-                    }
-                ]
-            },
-            "creation": {
-                name: "🌿 The Garden Cipher",
-                description: "Arrange Genesis creation events in divine order",
-                seals: [
-                    {
-                        number: 1,
-                        title: "Day One",
-                        question: "What did God create on the first day? (Genesis 1:3)",
-                        answer: ["light"],
-                        hint: "And God said, 'Let there be...'"
-                    },
-                    {
-                        number: 2,
-                        title: "Day Two", 
-                        question: "God separated the waters above from the waters below, creating what?",
-                        answer: ["sky", "heaven", "firmament", "expanse"],
-                        hint: "The dome above us"
-                    },
-                    {
-                        number: 3,
-                        title: "Day Three",
-                        question: "On day three, God gathered waters and created what TWO things? (Name one)",
-                        answer: ["dry land", "land", "plants", "vegetation", "trees", "grass"],
-                        hint: "Something to stand on and something to grow"
-                    },
-                    {
-                        number: 4,
-                        title: "Day Four",
-                        question: "What did God create to rule the day and night?",
-                        answer: ["sun and moon", "sun", "moon", "stars", "lights"],
-                        hint: "Celestial bodies for time and seasons"
-                    },
-                    {
-                        number: 5,
-                        title: "Day Five",
-                        question: "God created creatures of the sea and what kind of animals?",
-                        answer: ["birds", "flying creatures", "winged creatures"],
-                        hint: "Creatures that soar in the sky"
-                    },
-                    {
-                        number: 6,
-                        title: "Day Six",
-                        question: "On day six, God created land animals and which special being 'in His image'?",
-                        answer: ["man", "humans", "mankind", "people", "adam"],
-                        hint: "The crown of creation"
-                    },
-                    {
-                        number: 7,
-                        title: "Day Seven",
-                        question: "What did God do on the seventh day?",
-                        answer: ["rested", "sabbath", "blessed", "sanctified"],
-                        hint: "He ceased from all His work"
-                    }
-                ]
-            },
-            "sacrifice": {
-                name: "🩸 The Blood Trail",
-                description: "Solve biblical sacrifice riddles",
-                seals: [
-                    {
-                        number: 1,
-                        title: "The First Offering",
-                        question: "Whose offering was accepted by God - Cain's or Abel's?",
-                        answer: ["abel", "abels"],
-                        hint: "The shepherd's sacrifice pleased God"
-                    },
-                    {
-                        number: 2,
-                        title: "The Great Test",
-                        question: "What did God provide as a substitute when Abraham was about to sacrifice Isaac?",
-                        answer: ["ram", "sheep", "lamb"],
-                        hint: "Caught in a thicket by its horns"
-                    },
-                    {
-                        number: 3,
-                        title: "The Passover",
-                        question: "What was put on the doorposts during the first Passover?",
-                        answer: ["blood", "lambs blood", "lamb blood"],
-                        hint: "Protection from the destroying angel"
-                    },
-                    {
-                        number: 4,
-                        title: "The Golden Calf",
-                        question: "Who made the golden calf while Moses was on Mount Sinai?",
-                        answer: ["aaron"],
-                        hint: "Moses' brother and high priest"
-                    },
-                    {
-                        number: 5,
-                        title: "The Day of Atonement",
-                        question: "On the Day of Atonement, what animal carried the sins into the wilderness?",
-                        answer: ["scapegoat", "goat"],
-                        hint: "Azazel's goat, sent away from the camp"
-                    },
-                    {
-                        number: 6,
-                        title: "The Bronze Serpent",
-                        question: "What did Moses lift up in the wilderness to heal those bitten by serpents?",
-                        answer: ["bronze serpent", "brazen serpent", "bronze snake", "serpent"],
-                        hint: "Look and live! A symbol of Christ"
-                    },
-                    {
-                        number: 7,
-                        title: "The Ultimate Sacrifice",
-                        question: "Who is called 'the Lamb of God who takes away the sin of the world'?",
-                        answer: ["jesus", "christ", "jesus christ"],
-                        hint: "John the Baptist proclaimed this truth"
-                    }
-                ]
-            },
-            "prophecy": {
-                name: "🔮 The Prophecy Scroll",
-                description: "Match ancient prophecies with their fulfillments",
-                seals: [
-                    {
-                        number: 1,
-                        title: "The Virgin Birth",
-                        question: "Which prophet foretold that a virgin would conceive and bear a son called Immanuel?",
-                        answer: ["isaiah"],
-                        hint: "The prophet of the coming Messiah"
-                    },
-                    {
-                        number: 2,
-                        title: "The Bethlehem Birth",
-                        question: "Which prophet said the Messiah would be born in Bethlehem?",
-                        answer: ["micah"],
-                        hint: "A minor prophet with a major prophecy"
-                    },
-                    {
-                        number: 3,
-                        title: "The Suffering Servant",
-                        question: "Complete this prophecy: 'He was pierced for our ___________'",
-                        answer: ["transgressions", "sins", "iniquities"],
-                        hint: "Isaiah 53:5 - our wrongdoings"
-                    },
-                    {
-                        number: 4,
-                        title: "The Triumphal Entry",
-                        question: "Which prophet said the king would come 'riding on a donkey'?",
-                        answer: ["zechariah"],
-                        hint: "Rejoice greatly, O daughter of Zion!"
-                    },
-                    {
-                        number: 5,
-                        title: "The Betrayal Price",
-                        question: "How many pieces of silver were prophesied as the betrayal price?",
-                        answer: ["30", "thirty"],
-                        hint: "Zechariah's prophecy, Judas' payment"
-                    },
-                    {
-                        number: 6,
-                        title: "The Pierced One",
-                        question: "Complete: 'They will look on me, the one they have ________'",
-                        answer: ["pierced"],
-                        hint: "Zechariah 12:10 - fulfilled at the cross"
-                    },
-                    {
-                        number: 7,
-                        title: "The Resurrection",
-                        question: "Which psalm prophesied that God's Holy One would not see decay?",
-                        answer: ["psalm 16", "16", "psalms 16"],
-                        hint: "David's prophetic psalm about the Messiah"
-                    }
-                ]
-            },
-            "parables": {
-                name: "🛤️ The Parable Labyrinth",
-                description: "Navigate through Jesus' teachings",
-                seals: [
-                    {
-                        number: 1,
-                        title: "The Sower",
-                        question: "In the parable of the sower, what represents the Word of God?",
-                        answer: ["seed", "seeds"],
-                        hint: "What the farmer plants"
-                    },
-                    {
-                        number: 2,
-                        title: "The Lost Sheep",
-                        question: "In the parable of the lost sheep, how many sheep did the shepherd leave to find the one?",
-                        answer: ["99", "ninety nine", "ninety-nine"],
-                        hint: "100 minus 1"
-                    },
-                    {
-                        number: 3,
-                        title: "The Prodigal Son",
-                        question: "What did the prodigal son ask for from his father before leaving?",
-                        answer: ["inheritance", "his inheritance", "his share"],
-                        hint: "His portion of the family wealth"
-                    },
-                    {
-                        number: 4,
-                        title: "The Good Samaritan",
-                        question: "Who helped the beaten traveler after the priest and Levite passed by?",
-                        answer: ["samaritan", "good samaritan"],
-                        hint: "Someone from a despised ethnic group"
-                    },
-                    {
-                        number: 5,
-                        title: "The Mustard Seed",
-                        question: "Jesus said the kingdom of heaven is like a mustard seed because it is what?",
-                        answer: ["small", "tiny", "smallest", "little"],
-                        hint: "Size comparison to other seeds"
-                    },
-                    {
-                        number: 6,
-                        title: "The Ten Virgins",
-                        question: "In the parable of the ten virgins, what did the foolish ones forget to bring?",
-                        answer: ["oil", "extra oil"],
-                        hint: "Fuel for their lamps"
-                    },
-                    {
-                        number: 7,
-                        title: "The Talents",
-                        question: "In the parable of the talents, how many talents did the lazy servant bury?",
-                        answer: ["1", "one"],
-                        hint: "The smallest amount given"
-                    }
-                ]
-            },
-            "apostles": {
-                name: "✉️ The Church Underground",
-                description: "Decode apostolic messages and early church mysteries",
-                seals: [
-                    {
-                        number: 1,
-                        title: "The Rock",
-                        question: "Which apostle did Jesus call 'the rock' upon which He would build His church?",
-                        answer: ["peter", "simon peter"],
-                        hint: "He denied Jesus three times but was restored"
-                    },
-                    {
-                        number: 2,
-                        title: "The Road to Damascus",
-                        question: "What was Paul's name before his conversion?",
-                        answer: ["saul"],
-                        hint: "Named after Israel's first king"
-                    },
-                    {
-                        number: 3,
-                        title: "The Beloved Disciple",
-                        question: "Which apostle was known as 'the disciple whom Jesus loved'?",
-                        answer: ["john"],
-                        hint: "Brother of James, wrote the Gospel and Revelation"
-                    },
-                    {
-                        number: 4,
-                        title: "The Doubter",
-                        question: "Which apostle doubted Jesus' resurrection until he saw the nail marks?",
-                        answer: ["thomas", "doubting thomas"],
-                        hint: "Called 'Doubting _______'"
-                    },
-                    {
-                        number: 5,
-                        title: "The First Martyr",
-                        question: "Who was the first Christian martyr, stoned for his faith?",
-                        answer: ["stephen"],
-                        hint: "He saw Jesus standing at God's right hand"
-                    },
-                    {
-                        number: 6,
-                        title: "The Gentile Apostle",
-                        question: "Paul was known as the apostle to which group of people?",
-                        answer: ["gentiles", "nations"],
-                        hint: "Non-Jewish people"
-                    },
-                    {
-                        number: 7,
-                        title: "The Final Word",
-                        question: "On which island did John receive the Revelation?",
-                        answer: ["patmos"],
-                        hint: "A rocky island where he was exiled"
-                    }
-                ]
-            },
-            "random": {
-                name: "🎲 Random Bible Challenge",
-                description: "Randomly generated questions from across the entire Bible",
-                seals: [] // Will be populated dynamically
-            }
-        };
-
-        // Current game state for puzzle sets
-        let currentPuzzleSet = 'random'; // Default to random challenges
-        let availablePuzzleSets = Object.keys(puzzleSets);
-        let currentGameSeals = []; // Store current generated seals
-
-        // Get current seals based on selected puzzle set
-        function getCurrentSeals() {
-            if (currentPuzzleSet === 'random') {
-                return currentGameSeals;
-            }
-            return puzzleSets[currentPuzzleSet].seals;
-        }
-
-        // Generate new random challenges
-        function generateNewRandomChallenges() {
-            if (currentPuzzleSet === 'random') {
-                currentGameSeals = generateRandomPuzzles(7);
-                puzzleSets.random.seals = currentGameSeals;
-                console.log('🎲 Generated new random Bible challenges!');
-            }
-        }
-
-        // Select random puzzle set (but prefer random generation)
-        function selectRandomPuzzleSet() {
-            // 80% chance for random generation, 20% for themed sets
-            if (Math.random() < 0.8) {
-                currentPuzzleSet = 'random';
-                generateNewRandomChallenges();
-            } else {
-                const themedSets = availablePuzzleSets.filter(set => set !== 'random');
-                const randomIndex = Math.floor(Math.random() * themedSets.length);
-                currentPuzzleSet = themedSets[randomIndex];
-            }
-            console.log('🎯 Selected puzzle set:', puzzleSets[currentPuzzleSet].name);
-            return currentPuzzleSet;
-        }
-
-        // Select specific puzzle set
-        function selectPuzzleSet(setKey) {
-            if (puzzleSets[setKey]) {
-                currentPuzzleSet = setKey;
-                if (setKey === 'random') {
-                    generateNewRandomChallenges();
-                }
-                console.log('🎯 Selected puzzle set:', puzzleSets[currentPuzzleSet].name);
-                return true;
-            }
-            return false;
-        }
+        // Generate random seals for each new game
+        let seals = generateRandomSeals();
 
         function renderSeals() {
             const sealsGrid = document.getElementById('sealsGrid');
             sealsGrid.innerHTML = '';
-            
-            const currentSeals = getCurrentSeals();
 
-            currentSeals.forEach(seal => {
+            seals.forEach(seal => {
                 const sealElement = document.createElement('div');
                 sealElement.className = `seal ${gameState.completedSeals.includes(seal.number) ? 'opened' : ''}`;
                 sealElement.onclick = () => openSeal(seal);
@@ -2154,39 +1252,17 @@
         }
 
         function openSeal(seal) {
-            // Check if game is locked or inactive
-            if (gameState.gameLocked || !gameState.isGameActive) {
-                showAlert('Game is locked! The challenge has ended.', 'error');
-                return;
-            }
-
             if (gameState.completedSeals.includes(seal.number)) {
                 showAlert('This seal is already opened!', 'error');
                 return;
             }
 
             gameState.currentPuzzle = seal;
-            
-            // Enhanced puzzle display with reference
-            const titleText = seal.reference ? 
-                `Seal ${seal.number}: ${seal.title}` : 
-                `Seal ${seal.number}: ${seal.title}`;
-            
-            const questionText = seal.reference ? 
-                `${seal.question}\n\n📖 Reference: ${seal.reference}` : 
-                seal.question;
-
-            document.getElementById('puzzleTitle').textContent = titleText;
-            document.getElementById('puzzleQuestion').innerHTML = questionText.replace(/\n/g, '<br>');
+            document.getElementById('puzzleTitle').textContent = `Seal ${seal.number}: ${seal.title}`;
+            document.getElementById('puzzleQuestion').textContent = seal.question;
             document.getElementById('puzzleAnswer').value = '';
-            document.getElementById('puzzleHint').style.display = 'none';
-            document.getElementById('hintText').textContent = seal.hint;
             document.getElementById('puzzleModal').style.display = 'flex';
             document.getElementById('puzzleAnswer').focus();
-        }
-
-        function showHint() {
-            document.getElementById('puzzleHint').style.display = 'block';
         }
 
         function submitAnswer() {
@@ -2216,7 +1292,7 @@
 
                 showAlert(`Seal ${gameState.currentPuzzle.number} opened!`, 'success');
 
-                if (gameState.completedSeals.length === getCurrentSeals().length) {
+                if (gameState.completedSeals.length === 7) {
                     finishGame();
                 }
             } else {
@@ -2231,169 +1307,13 @@
             const teamData = {
                 score: gameState.completedSeals.length,
                 completedSeals: gameState.completedSeals,
-                lastUpdate: firebase.database.ServerValue.TIMESTAMP,
-                isComplete: gameState.completedSeals.length >= getCurrentSeals().length
+                lastUpdate: firebase.database.ServerValue.TIMESTAMP
             };
 
-            console.log('📤 Updating team progress:', teamData);
-
-            // Optimistic UI update - update local leaderboard immediately
-            const currentTeamInList = gameState.teams.find(team => team.name === gameState.currentTeam);
-            if (currentTeamInList) {
-                currentTeamInList.score = teamData.score;
-                currentTeamInList.completedSeals = teamData.completedSeals;
-                currentTeamInList.isComplete = teamData.isComplete;
-                updateLeaderboard(); // Immediate UI update
-            }
-
             database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData)
-                .then(() => {
-                    console.log('✅ Team progress updated successfully');
-                    
-                    // Check if this team won (completed all seals)
-                    if (teamData.isComplete) {
-                        console.log('🏆 Team completed all seals! Checking for winner...');
-                        checkForWinner();
-                    }
-                })
                 .catch((error) => {
-                    console.error('❌ Failed to update team progress:', error);
-                    // Revert optimistic update on error
-                    if (currentTeamInList) {
-                        currentTeamInList.score = gameState.completedSeals.length - 1;
-                        updateLeaderboard();
-                    }
+                    console.error('Failed to update team progress:', error);
                 });
-        }
-
-        // Enhanced winner detection with game state locking
-        function checkForWinner() {
-            if (!gameState.roomCode || !database) return;
-
-            // Prevent multiple simultaneous winner checks
-            if (gameState.checkingWinner) return;
-            gameState.checkingWinner = true;
-
-            database.ref(`rooms/${gameState.roomCode}`).once('value')
-                .then((snapshot) => {
-                    const roomData = snapshot.val();
-                    if (!roomData || !roomData.teams) {
-                        gameState.checkingWinner = false;
-                        return;
-                    }
-
-                    // Check if game already ended
-                    if (roomData.gameEnded) {
-                        gameState.checkingWinner = false;
-                        return;
-                    }
-
-                    // Find completed teams
-                    const completedTeams = Object.values(roomData.teams).filter(team => 
-                        team.isComplete && team.score >= getCurrentSeals().length
-                    );
-
-                    if (completedTeams.length > 0) {
-                        // Sort by completion time (lastUpdate)
-                        completedTeams.sort((a, b) => a.lastUpdate - b.lastUpdate);
-                        const winner = completedTeams[0];
-
-                        console.log('🏆 Winner found:', winner.name);
-                        
-                        // Lock game state immediately for all players
-                        const updateData = {
-                            winner: winner.name,
-                            gameEnded: true,
-                            endTime: firebase.database.ServerValue.TIMESTAMP,
-                            gameLocked: true, // Prevent further inputs
-                            finalScores: roomData.teams
-                        };
-
-                        // Atomic update to prevent race conditions
-                        database.ref(`rooms/${gameState.roomCode}`).update(updateData)
-                            .then(() => {
-                                console.log('🔒 Game state locked with winner');
-                                // Immediate local game lock
-                                lockGameInputs();
-                                
-                                // Show winner announcement after brief delay
-                                setTimeout(() => {
-                                    showWinnerAnnouncement(winner.name);
-                                }, 500);
-                            });
-                    }
-                    
-                    gameState.checkingWinner = false;
-                })
-                .catch((error) => {
-                    console.error('❌ Error checking for winner:', error);
-                    gameState.checkingWinner = false;
-                });
-        }
-
-        // Lock game inputs when winner is declared
-        function lockGameInputs() {
-            gameState.isGameActive = false;
-            gameState.gameLocked = true;
-            
-            // Disable all seal clicks
-            document.querySelectorAll('.seal').forEach(seal => {
-                seal.style.pointerEvents = 'none';
-                seal.style.opacity = '0.7';
-            });
-            
-            console.log('🔒 Game inputs locked');
-        }
-
-        // Unlock game inputs for new game
-        function unlockGameInputs() {
-            gameState.gameLocked = false;
-            
-            // Re-enable seal clicks
-            document.querySelectorAll('.seal').forEach(seal => {
-                seal.style.pointerEvents = 'auto';
-                seal.style.opacity = '1';
-            });
-            
-            console.log('🔓 Game inputs unlocked');
-        }
-
-        // Show winner announcement
-        function showWinnerAnnouncement(winnerName) {
-            gameState.isGameActive = false;
-            
-            const isWinner = winnerName === gameState.currentTeam;
-            const message = isWinner ? 
-                `🏆 Congratulations! You are the WINNER! 🏆` : 
-                `🏆 ${winnerName} wins the challenge! 🏆`;
-            
-            const alertType = isWinner ? 'success' : 'info';
-            
-            showAlert(message, alertType);
-            
-            // Show celebration modal
-            setTimeout(() => {
-                showCelebrationModal(winnerName, isWinner);
-            }, 2000);
-        }
-
-        // Show celebration modal
-        function showCelebrationModal(winnerName, isWinner) {
-            document.getElementById('puzzleTitle').textContent = isWinner ? '🏆 VICTORY!' : '🏆 GAME OVER!';
-            document.getElementById('puzzleQuestion').innerHTML = isWinner ? 
-                `Congratulations! You have successfully unlocked all seven seals and emerged victorious!<br><br>🎉 Well done, champion! 🎉` :
-                `${winnerName} has unlocked all seven seals and won the challenge!<br><br>⚡ Better luck next time! ⚡`;
-            
-            document.getElementById('puzzleAnswer').style.display = 'none';
-            document.getElementById('puzzleHint').style.display = 'none';
-            
-            const buttonsDiv = document.querySelector('.puzzle-buttons');
-            buttonsDiv.innerHTML = `
-                <button class="button" onclick="closePuzzle(); goBack();">🏠 Back to Lobby</button>
-                <button class="button secondary" onclick="closePuzzle(); resetGameState();">🔄 Play Again</button>
-            `;
-            
-            document.getElementById('puzzleModal').style.display = 'flex';
         }
 
         function closePuzzle() {
@@ -2403,7 +1323,7 @@
 
         function updateProgress() {
             const completed = gameState.completedSeals.length;
-            const total = getCurrentSeals().length;
+            const total = seals.length;
             const percentage = (completed / total) * 100;
 
             document.getElementById('progressText').textContent = `${completed}/${total} Seals`;
@@ -2453,36 +1373,25 @@
         }
 
         function resetGameState() {
-            // Reset question generator for new session
-            questionGenerator.resetSession();
-            
-            // Generate new random questions for fresh experience
-            if (currentPuzzleSet === 'random') {
-                generateNewRandomChallenges();
-            }
+            // Generate new random questions for replayability
+            seals = generateRandomSeals();
             
             gameState.completedSeals = [];
             gameState.isGameActive = false;
-            gameState.gameLocked = false;
             gameState.startTime = null;
-            gameState.checkingWinner = false;
 
             // Reset team scores
             gameState.teams.forEach(team => {
                 team.score = 0;
                 team.completedSeals = [];
-                team.isComplete = false;
             });
-
-            // Unlock game inputs
-            unlockGameInputs();
 
             renderSeals();
             updateProgress();
             updateLeaderboard();
 
             document.getElementById('timer').textContent = '00:00';
-            showAlert('Game reset with fresh questions!', 'success');
+            showAlert('New questions generated! Game reset!', 'success');
         }
 
         function goBack() {
@@ -2537,52 +1446,6 @@
             }
         }
 
-        function updatePuzzleSetDisplay() {
-            const puzzleSetInfo = document.getElementById('puzzleSetInfo');
-            if (puzzleSetInfo) {
-                puzzleSetInfo.textContent = puzzleSets[currentPuzzleSet].name;
-            }
-        }
-
-        function showPuzzleSetSelector() {
-            const optionsContainer = document.getElementById('puzzleSetOptions');
-            optionsContainer.innerHTML = '';
-
-            Object.keys(puzzleSets).forEach(setKey => {
-                const puzzleSet = puzzleSets[setKey];
-                const option = document.createElement('div');
-                option.className = 'room-option';
-                option.style.cursor = 'pointer';
-                option.onclick = () => selectPuzzleSetAndStart(setKey);
-
-                option.innerHTML = `
-                    <div class="room-option-title">${puzzleSet.name}</div>
-                    <div class="room-option-desc">${puzzleSet.description}</div>
-                `;
-
-                optionsContainer.appendChild(option);
-            });
-
-            document.getElementById('puzzleSetModal').style.display = 'flex';
-        }
-
-        function selectPuzzleSetAndStart(setKey) {
-            selectPuzzleSet(setKey);
-            updatePuzzleSetDisplay();
-            closePuzzleSetSelector();
-            
-            // Reset and restart the game with new puzzle set
-            resetGameState();
-            renderSeals();
-            updateProgress();
-            
-            showAlert(`Challenge changed to: ${puzzleSets[currentPuzzleSet].name}`, 'success');
-        }
-
-        function closePuzzleSetSelector() {
-            document.getElementById('puzzleSetModal').style.display = 'none';
-        }
-
         function showAlert(message, type) {
             const alert = document.createElement('div');
             alert.className = `alert ${type}`;
@@ -2606,29 +1469,6 @@
                 }
             }
         });
-
-        // Initialize the game after all functions are defined
-        console.log('🎮 Starting game initialization...');
-        
-        // Start Firebase initialization
-        waitForFirebase();
-        
-        // Test Firebase after a delay
-        setTimeout(testFirebaseConnection, 3000);
-
-        // Check for room parameter in URL
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const roomParam = urlParams.get('room');
-            if (roomParam) {
-                // Auto-fill join form
-                document.getElementById('roomInput').value = roomParam;
-                selectMode('multiplayer');
-                showRoomJoin();
-            }
-        });
-
-        console.log('✅ Game initialization complete');
     </script>
 </body>
 
