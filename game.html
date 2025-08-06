@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scroll of Seven Seals - Real Multiplayer</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            z-index: 1000;
+        }
+        
+        .connected {
+            background: rgba(34, 139, 34, 0.8);
+            color: white;
+        }
+        
+        .disconnected {
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+        }
+        
+        .connecting {
+            background: rgba(255, 193, 7, 0.8);
+            color: black;
+        }
+
+        .multiplayer-setup {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #d4af37;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .setup-title {
+            color: #d4af37;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .team-input {
+            margin-bottom: 20px;
+        }
+        
+        .team-input label {
+            display: block;
+            color: #b8a082;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .team-input input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            border: 2px solid #6b4d37;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #f4f1e8;
+            font-family: inherit;
+        }
+        
+        .team-input input:focus {
+            outline: none;
+            border-color: #d4af37;
+            background: rgba(0, 0, 0, 0.5);
+        }
+        
+        .room-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .room-option {
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid #d4af37;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .room-option:hover {
+            background: rgba(212, 175, 55, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .room-option-title {
+            color: #d4af37;
+            font-size: 1.2em;
+            margin-bottom: 8px;
+        }
+        
+        .room-code-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .room-code {
+            font-size: 1.5em;
+            color: #4a90e2;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        
+        .share-url {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #6b4d37;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 0.85em;
+            color: #b8a082;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+        
+        .room-input-section {
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .room-input-section.active {
+            display: block;
+        }
+        
+        .lobby {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #4a90e2;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .lobby-title {
+            color: #4a90e2;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .teams-list {
+            margin-bottom: 20px;
+        }
+        
+        .team-item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #6b4d37;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .team-item.host {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.1);
+        }
+        
+        .team-name {
+            color: #d4af37;
+            font-weight: 600;
+        }
+        
+        .team-status {
+            color: #4a90e2;
+            font-size: 0.9em;
+        }
+
+        .leaderboard {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #d4af37;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .leaderboard-title {
+            color: #d4af37;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid #8b7355;
+        }
+        
+        .leaderboard-item.first { border-left-color: #ffd700; }
+        .leaderboard-item.second { border-left-color: #c0c0c0; }
+        .leaderboard-item.third { border-left-color: #cd7f32; }
+        .leaderboard-item.current { border: 2px solid #d4af37; }
+        
+        .leaderboard-rank {
+            color: #d4af37;
+            font-weight: bold;
+            width: 30px;
+        }
+        
+        .leaderboard-name {
+            flex: 1;
+            color: #f4f1e8;
+        }
+        
+        .leaderboard-score {
+            color: #4a90e2;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status connecting" id="connectionStatus">
+        🔄 Connecting to Firebase...
+    </div>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">🔮 The Scroll of Seven Seals</h1>
+            <p>Real-time Firebase Multiplayer Bible Mystery Adventure</p>
+        </div>
+
+        <!-- Game Mode Selection -->
+        <div id="modeSelection" class="game-mode">
+            <div class="mode-card" onclick="selectMode('single')">
+                <div class="mode-icon">🏠</div>
+                <h3 class="mode-title">Single Player</h3>
+                <p class="mode-description">Play solo and beat your best time</p>
+            </div>
+            <div class="mode-card" onclick="selectMode('multiplayer')">
+                <div class="mode-icon">🌐</div>
+                <h3 class="mode-title">Real Multiplayer</h3>
+                <p class="mode-description">Compete with friends across devices in real-time</p>
+            </div>
+        </div>
+
+        <!-- Multiplayer Setup -->
+        <div id="multiplayerSetup" class="multiplayer-setup">
+            <h2 class="setup-title">Firebase Multiplayer Setup</h2>
+            
+            <div class="team-input">
+                <label for="teamName">Team Name:</label>
+                <input type="text" id="teamName" placeholder="Enter your team name" maxlength="20">
+            </div>
+            
+            <div class="room-options">
+                <div class="room-option" onclick="showRoomCreation()">
+                    <div class="room-option-title">🏗️ Create Room</div>
+                    <div style="color: #b8a082; font-size: 0.9em;">Start a new game room</div>
+                </div>
+                <div class="room-option" onclick="showRoomJoin()">
+                    <div class="room-option-title">🚪 Join Room</div>
+                    <div style="color: #b8a082; font-size: 0.9em;">Join an existing room</div>
+                </div>
+            </div>
+            
+            <!-- Room Creation -->
+            <div id="roomCreation" class="room-input-section">
+                <div class="room-code-display">
+                    <div>Room Code:</div>
+                    <div class="room-code" id="generatedRoomCode">------</div>
+                </div>
+                <div class="share-url" id="shareUrl">Share URL will appear here...</div>
+                <button class="btn" onclick="createRoom()">Create Room</button>
+                <button class="btn" onclick="copyRoomUrl()">📋 Copy URL</button>
+            </div>
+            
+            <!-- Room Join -->
+            <div id="roomJoin" class="room-input-section">
+                <div class="team-input">
+                    <label for="roomInput">Room Code or URL:</label>
+                    <input type="text" id="roomInput" placeholder="Enter room code or paste URL">
+                </div>
+                <button class="btn" onclick="joinRoom()">Join Room</button>
+            </div>
+            
+            <button class="btn" onclick="goBack()" style="background: #8b7355; margin-top: 20px;">← Back</button>
+        </div>
+
+        <!-- Lobby -->
+        <div id="lobby" class="lobby">
+            <h2 class="lobby-title">Game Lobby</h2>
+            <div class="room-code-display">
+                <div>Room Code: <span class="room-code" id="lobbyRoomCode">------</span></div>
+            </div>
+            
+            <h3 style="color: #d4af37; margin-bottom: 15px;">Teams (<span id="teamCount">0</span>/6)</h3>
+            <div class="teams-list" id="teamsList"></div>
+            
+            <div style="text-align: center; padding-top: 20px; border-top: 1px solid #6b4d37;">
+                <div id="hostControls" class="hidden">
+                    <button class="btn" id="startGameBtn" onclick="startRoomGameplay()" disabled>🚀 Start Game</button>
+                    <p style="margin: 10px 0; font-size: 0.9em; opacity: 0.8;">Need at least 2 teams to start</p>
+                </div>
+                <button class="btn" onclick="leaveRoom()" style="background: #dc3545;">🚪 Leave Room</button>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="hidden">
+            <!-- Game Info Bar -->
+            <div class="game-info">
+                <div>
+                    <strong id="currentTeam">Team Name</strong>
+                    <div id="gameMode">Firebase Multiplayer</div>
+                </div>
+                <div class="timer" id="timer">00:00</div>
+                <button class="btn" onclick="resetGame()" style="background: #dc3545;">Reset Game</button>
+            </div>
+
+            <!-- Leaderboard -->
+            <div id="leaderboard" class="leaderboard">
+                <h3 class="leaderboard-title">🏆 Live Leaderboard</h3>
+                <div id="leaderboardContent"></div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div style="text-align: center; margin: 10px 0;">
+                <span id="progressText">0/7 Seals Broken</span>
+            </div>
+
+            <!-- Seals Grid -->
+            <div class="seals-grid" id="sealsGrid"></div>
+
+            <!-- Final Challenge -->
+            <div id="finalChallenge" class="final-challenge">
+                <h2>🎉 Final Challenge Complete!</h2>
+                <div id="victoryMessage"></div>
+                <button class="btn" onclick="resetGame()">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load Firebase config and game logic -->
+    <script src="js/firebase-config.js"></script>
+    <script>
+        // Game State
+        let gameState = {
+            mode: '',
+            currentTeam: '',
+            teams: [],
+            completedSeals: [],
+            startTime: null,
+            currentPuzzle: null,
+            isGameActive: false,
+            roomCode: '',
+            isHost: false,
+            roomRef: null,
+            isConnected: false
+        };
+
+        // Firebase connection check
+        let firebaseReady = false;
+        let connectionCheckInterval;
+
+        function checkFirebaseConnection() {
+            const statusEl = document.getElementById('connectionStatus');
+            
+            if (typeof firebase !== 'undefined' && database) {
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    const connected = snapshot.val();
+                    gameState.isConnected = connected;
+                    
+                    if (connected) {
+                        firebaseReady = true;
+                        statusEl.className = 'connection-status connected';
+                        statusEl.textContent = '✅ Firebase Connected';
+                        setTimeout(() => statusEl.style.display = 'none', 3000);
+                        
+                        if (connectionCheckInterval) {
+                            clearInterval(connectionCheckInterval);
+                        }
+                    } else {
+                        statusEl.className = 'connection-status disconnected';
+                        statusEl.textContent = '❌ Firebase Disconnected';
+                        statusEl.style.display = 'block';
+                    }
+                });
+            } else {
+                statusEl.className = 'connection-status connecting';
+                statusEl.textContent = '🔄 Connecting to Firebase...';
+            }
+        }
+
+        // Initialize Firebase connection check
+        connectionCheckInterval = setInterval(checkFirebaseConnection, 1000);
+        checkFirebaseConnection();
+
+        // Seal puzzles data
+        const seals = [
+            {
+                id: 1,
+                title: "The White Horse",
+                description: "Conquest rides forth",
+                question: "Who rode the white horse in Revelation 6:2?",
+                answers: ["jesus", "christ", "lamb", "conqueror"],
+                unlock: []
+            },
+            {
+                id: 2,
+                title: "The Red Horse",
+                description: "War follows conquest",
+                question: "What was the rider of the red horse given power to take from the earth?",
+                answers: ["peace"],
+                unlock: [1]
+            },
+            {
+                id: 3,
+                title: "The Black Horse",
+                description: "Famine in the wake of war",
+                question: "What did the rider of the black horse hold in his hand?",
+                answers: ["scales", "balance", "balances"],
+                unlock: [1, 2]
+            },
+            {
+                id: 4,
+                title: "The Pale Horse",
+                description: "Death follows all",
+                question: "What was the name of the rider on the pale horse?",
+                answers: ["death"],
+                unlock: [1, 2, 3]
+            },
+            {
+                id: 5,
+                title: "The Souls Under the Altar",
+                description: "Martyrs cry for justice",
+                question: "What were the souls under the altar given to wear?",
+                answers: ["white robes", "robes", "white robe"],
+                unlock: [1, 2, 3, 4]
+            },
+            {
+                id: 6,
+                title: "The Great Earthquake",
+                description: "Cosmic signs appear",
+                question: "What did the sun become like when the sixth seal was opened?",
+                answers: ["black", "sackcloth", "dark"],
+                unlock: [1, 2, 3, 4, 5]
+            },
+            {
+                id: 7,
+                title: "Silence in Heaven",
+                description: "The final seal opens",
+                question: "How long was there silence in heaven when the seventh seal was opened?",
+                answers: ["half an hour", "30 minutes", "half hour"],
+                unlock: [1, 2, 3, 4, 5, 6]
+            }
+        ];
+
+        // Utility functions
+        function formatTime(ms) {
+            const seconds = Math.floor(ms / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function generateRoomCode() {
+            return Math.random().toString(36).substr(2, 6).toUpperCase();
+        }
+
+        function showError(message) {
+            showNotification(message, 'error');
+        }
+
+        function showSuccess(message) {
+            showNotification(message, 'success');
+        }
+
+        function showNotification(message, type) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 1001;
+                opacity: 0;
+                transition: all 0.3s ease;
+                max-width: 300px;
+                ${type === 'success' ? 'background: rgba(34, 139, 34, 0.9); color: white; border: 1px solid #228b22;' : 'background: rgba(220, 53, 69, 0.9); color: white; border: 1px solid #dc3545;'}
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => notification.style.opacity = '1', 100);
+            
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => document.body.removeChild(notification), 300);
+            }, 3000);
+        }
+
+        // Game Mode Selection
+        function selectMode(mode) {
+            if (mode === 'multiplayer' && !firebaseReady) {
+                showError('Firebase not connected. Please check your internet connection and refresh.');
+                return;
+            }
+
+            gameState.mode = mode;
+            document.getElementById('modeSelection').style.display = 'none';
+            
+            if (mode === 'single') {
+                startSinglePlayerGame();
+            } else if (mode === 'multiplayer') {
+                document.getElementById('multiplayerSetup').style.display = 'block';
+            }
+        }
+
+        function goBack() {
+            document.getElementById('modeSelection').style.display = 'grid';
+            document.getElementById('multiplayerSetup').style.display = 'none';
+            document.getElementById('joinRoomDiv').classList.add('hidden');
+            resetGameState();
+        }
+
+        function resetGameState() {
+            if (gameState.roomRef) {
+                gameState.roomRef.off();
+            }
+            gameState = {
+                mode: '',
+                currentTeam: '',
+                teams: [],
+                completedSeals: [],
+                startTime: null,
+                currentPuzzle: null,
+                isGameActive: false,
+                roomCode: '',
+                isHost: false,
+                roomRef: null,
+                isConnected: gameState.isConnected
+            };
+        }
+
+        // Room Functions
+        function showRoomCreation() {
+            document.getElementById('roomCreation').classList.add('active');
+            document.getElementById('roomJoin').classList.remove('active');
+            
+            const roomCode = generateRoomCode();
+            gameState.roomCode = roomCode;
+            document.getElementById('generatedRoomCode').textContent = roomCode;
+            
+            const shareUrl = `${window.location.origin}${window.location.pathname}?room=${roomCode}`;
+            document.getElementById('shareUrl').textContent = shareUrl;
+        }
+
+        function showRoomJoin() {
+            document.getElementById('roomJoin').classList.add('active');
+            document.getElementById('roomCreation').classList.remove('active');
+        }
+
+        function createRoom() {
+            if (!firebaseReady) {
+                showError('Firebase not connected. Please check your connection.');
+                return;
+            }
+
+            const teamName = document.getElementById('teamName').value.trim();
+            if (!teamName) {
+                showError('Please enter a team name first');
+                return;
+            }
+
+            gameState.currentTeam = teamName;
+            gameState.isHost = true;
+
+            // Create room in Firebase
+            const roomData = {
+                code: gameState.roomCode,
+                host: teamName,
+                teams: {
+                    [teamName]: { 
+                        name: teamName, 
+                        isHost: true, 
+                        joinTime: firebase.database.ServerValue.TIMESTAMP, 
+                        seals: 0, 
+                        finished: false,
+                        time: 0,
+                        completedSeals: []
+                    }
+                },
+                status: 'waiting',
+                gameStarted: false,
+                createdAt: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            database.ref(`rooms/${gameState.roomCode}`).set(roomData)
+                .then(() => {
+                    showSuccess(`Room ${gameState.roomCode} created successfully!`);
+                    showLobby();
+                })
+                .catch((error) => {
+                    showError('Failed to create room: ' + error.message);
+                });
+        }
+
+        function joinRoom() {
+            if (!firebaseReady) {
+                showError('Firebase not connected. Please check your connection.');
+                return;
+            }
+
+            let roomCode = document.getElementById('roomInput').value.trim().toUpperCase();
+            const teamName = document.getElementById('teamName').value.trim();
+            
+            // Extract room code from URL if provided
+            if (roomCode.includes('?room=')) {
+                roomCode = roomCode.split('?room=')[1].split('&')[0].toUpperCase();
+            }
+            
+            if (!roomCode || !teamName) {
+                showError('Please enter both room code and team name');
+                return;
+            }
+
+            // Check if room exists
+            database.ref(`rooms/${roomCode}`).once('value')
+                .then((snapshot) => {
+                    const roomData = snapshot.val();
+                    
+                    if (!roomData) {
+                        showError('Room not found. Please check the room code.');
+                        return;
+                    }
+
+                    if (roomData.status !== 'waiting') {
+                        showError('This game has already started or finished.');
+                        return;
+                    }
+
+                    const teamCount = Object.keys(roomData.teams || {}).length;
+                    if (teamCount >= 6) {
+                        showError('This room is full (maximum 6 teams).');
+                        return;
+                    }
+
+                    // Check if team name already exists
+                    if (roomData.teams && roomData.teams[teamName]) {
+                        showError('A team with this name already exists in the room.');
+                        return;
+                    }
+
+                    // Join the room
+                    gameState.roomCode = roomCode;
+                    gameState.isHost = false;
+                    gameState.currentTeam = teamName;
+
+                    const teamData = { 
+                        name: teamName, 
+                        isHost: false, 
+                        joinTime: firebase.database.ServerValue.TIMESTAMP, 
+                        seals: 0, 
+                        finished: false,
+                        time: 0,
+                        completedSeals: []
+                    };
+
+                    database.ref(`rooms/${roomCode}/teams/${teamName}`).set(teamData)
+                        .then(() => {
+                            showSuccess(`Joined room ${roomCode} successfully!`);
+                            showLobby();
+                        })
+                        .catch((error) => {
+                            showError('Failed to join room: ' + error.message);
+                        });
+                })
+                .catch((error) => {
+                    showError('Error checking room: ' + error.message);
+                });
+        }
+
+        function showLobby() {
+            document.getElementById('multiplayerSetup').style.display = 'none';
+            document.getElementById('lobby').style.display = 'block';
+            document.getElementById('lobbyRoomCode').textContent = gameState.roomCode;
+            
+            if (gameState.isHost) {
+                document.getElementById('hostControls').classList.remove('hidden');
+            } else {
+                document.getElementById('hostControls').classList.add('hidden');
+            }
+
+            // Listen for room updates
+            gameState.roomRef = database.ref(`rooms/${gameState.roomCode}`);
+            gameState.roomRef.on('value', (snapshot) => {
+                const roomData = snapshot.val();
+                if (roomData) {
+                    updateLobby(roomData);
+                    
+                    // Check if game started
+                    if (roomData.gameStarted && !gameState.isGameActive) {
+                        startRoomGameplay();
+                    }
+                } else {
+                    showError('Room no longer exists');
+                    leaveRoom();
+                }
+            });
+        }
+
+        function updateLobby(roomData) {
+            // Update team count
+            const teamCount = Object.keys(roomData.teams || {}).length;
+            document.getElementById('teamCount').textContent = teamCount;
+
+            // Update teams list
+            let teamsHtml = '';
+            Object.values(roomData.teams || {}).forEach(team => {
+                const hostBadge = team.isHost ? ' 👑' : '';
+                teamsHtml += `
+                    <div class="team-item ${team.isHost ? 'host' : ''}">
+                        <div>
+                            <span class="team-name">${team.name}${hostBadge}</span>
+                        </div>
+                        <div class="team-status">Ready</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('teamsList').innerHTML = teamsHtml;
+
+            // Update start button for host
+            if (gameState.isHost) {
+                const startBtn = document.getElementById('startGameBtn');
+                const canStart = teamCount >= 2;
+                startBtn.disabled = !canStart;
+                startBtn.textContent = canStart ? '🚀 Start Game' : '🚀 Start Game (Need 2+ teams)';
+            }
+        }
+
+        function startRoomGameplay() {
+            if (!gameState.isHost) return;
+
+            database.ref(`rooms/${gameState.roomCode}`).update({
+                gameStarted: true,
+                status: 'playing',
+                startTime: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                showSuccess('Game started!');
+            }).catch((error) => {
+                showError('Failed to start game: ' + error.message);
+            });
+        }
+
+        function startRoomGameplay() {
+            gameState.startTime = Date.now();
+            gameState.isGameActive = true;
+            gameState.completedSeals = [];
+
+            // Show game screen
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('currentTeam').textContent = gameState.currentTeam;
+            document.getElementById('leaderboard').style.display = 'block';
+
+            renderSeals();
+            startTimer();
+            
+            // Listen for room updates during game
+            if (gameState.roomRef) {
+                gameState.roomRef.on('value', (snapshot) => {
+                    const roomData = snapshot.val();
+                    if (roomData && roomData.teams) {
+                        updateRoomLeaderboard(Object.values(roomData.teams));
+                    }
+                });
+            }
+        }
+
+        function updateRoomLeaderboard(teams) {
+            // Sort teams by progress and time
+            const sortedTeams = [...teams].sort((a, b) => {
+                if (a.finished && !b.finished) return -1;
+                if (!a.finished && b.finished) return 1;
+                if (a.finished && b.finished) return a.time - b.time;
+                return b.seals - a.seals || a.time - b.time;
+            });
+
+            let html = '';
+            sortedTeams.forEach((team, index) => {
+                const rank = index + 1;
+                const timeStr = formatTime(team.time || 0);
+                const statusClass = rank === 1 ? 'first' : rank === 2 ? 'second' : rank === 3 ? 'third' : '';
+                const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `#${rank}`;
+                const status = team.finished ? '✅ Finished' : `${team.seals}/7 seals`;
+                const isCurrentTeam = team.name === gameState.currentTeam;
+                
+                html += `
+                    <div class="leaderboard-item ${statusClass}" style="${isCurrentTeam ? 'border: 2px solid #d4af37;' : ''}">
+                        <div class="leaderboard-rank">${medal}</div>
+                        <div class="leaderboard-name">${team.name}${isCurrentTeam ? ' (You)' : ''}</div>
+                        <div class="leaderboard-score">${status}</div>
+                        <div style="text-align: right; font-size: 0.9em;">${timeStr}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('leaderboardContent').innerHTML = html;
+        }
+
+        function updateTeamProgress() {
+            if (gameState.mode === 'multiplayer' && gameState.isConnected && gameState.roomCode) {
+                const teamData = {
+                    seals: gameState.completedSeals.length,
+                    time: Date.now() - gameState.startTime,
+                    finished: gameState.completedSeals.length === 7,
+                    completedSeals: gameState.completedSeals
+                };
+
+                database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData)
+                    .catch((error) => {
+                        console.error('Failed to update team progress:', error);
+                    });
+            }
+        }
+
+        function leaveRoom() {
+            if (gameState.roomRef) {
+                gameState.roomRef.off();
+            }
+
+            if (gameState.isConnected && gameState.roomCode && gameState.currentTeam) {
+                // Remove team from room
+                database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).remove()
+                    .then(() => {
+                        // If host is leaving, delete entire room
+                        if (gameState.isHost) {
+                            return database.ref(`rooms/${gameState.roomCode}`).remove();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error('Error leaving room:', error);
+                    });
+            }
+
+            // Reset to main menu
+            document.getElementById('lobby').style.display = 'none';
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('modeSelection').style.display = 'grid';
+            document.getElementById('teamName').value = '';
+            document.getElementById('roomInput').value = '';
+            
+            resetGameState();
+        }
+
+        function copyRoomUrl() {
+            const shareUrl = document.getElementById('shareUrl').textContent;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                showSuccess('Room URL copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = shareUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showSuccess('Room URL copied to clipboard!');
+            });
+        }
+
+        // Game Functions
+        function startSinglePlayerGame() {
+            gameState.currentTeam = 'Player';
+            gameState.startTime = Date.now();
+            gameState.isGameActive = true;
+            gameState.completedSeals = [];
+
+            // Show game screen
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('currentTeam').textContent = 'Player';
+            document.getElementById('gameMode').textContent = 'Single Player Mode';
+
+            renderSeals();
+            startTimer();
+        }
+
+        function renderSeals() {
+            let html = '';
+            
+            seals.forEach(seal => {
+                const completed = gameState.completedSeals.includes(seal.id);
+                const canOpen = seal.unlock.every(req => gameState.completedSeals.includes(req));
+                const locked = !canOpen && !completed;
+                
+                let statusClass = '';
+                if (completed) statusClass = 'completed';
+                else if (locked) statusClass = 'locked';
+                
+                html += `
+                    <div class="seal ${statusClass}" onclick="${locked ? '' : `openSeal(${seal.id})`}">
+                        <div class="seal-number">${seal.id}</div>
+                        <div class="seal-title">${seal.title}</div>
+                        <p>${seal.description}</p>
+                        ${completed ? '<div style="color: #228b22; margin-top: 10px;">✅ Completed</div>' : ''}
+                        ${locked ? '<div style="color: #dc3545; margin-top: 10px;">🔒 Locked</div>' : ''}
+                    </div>
+                `;
+            });
+            
+            document.getElementById('sealsGrid').innerHTML = html;
+            updateProgress();
+        }
+
+        function openSeal(sealId) {
+            const seal = seals.find(s => s.id === sealId);
+            if (!seal) return;
+
+            // Create simple prompt for answer
+            const answer = prompt(`${seal.title}\n\n${seal.question}`);
+            
+            if (answer && seal.answers.some(correct => answer.toLowerCase().includes(correct.toLowerCase()))) {
+                if (!gameState.completedSeals.includes(sealId)) {
+                    gameState.completedSeals.push(sealId);
+                    showSuccess(`🎉 Seal ${sealId} completed!`);
+                    
+                    updateTeamProgress();
+                    renderSeals();
+                    
+                    // Check if all seals completed
+                    if (gameState.completedSeals.length === 7) {
+                        finishGame();
+                    }
+                }
+            } else if (answer) {
+                showError('Incorrect answer. Try again!');
+            }
+        }
+
+        function finishGame() {
+            gameState.isGameActive = false;
+            const completionTime = Date.now() - gameState.startTime;
+            const timeStr = formatTime(completionTime);
+            
+            updateTeamProgress();
+            
+            document.getElementById('victoryMessage').innerHTML = `
+                <h3>🏆 Congratulations!</h3>
+                <p><strong>Completion Time: ${timeStr}</strong></p>
+            `;
+            document.getElementById('finalChallenge').style.display = 'block';
+        }
+
+        function updateProgress() {
+            const progress = (gameState.completedSeals.length / 7) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = `${gameState.completedSeals.length}/7 Seals Broken`;
+        }
+
+        function startTimer() {
+            const timerElement = document.getElementById('timer');
+            
+            function updateTimer() {
+                if (!gameState.isGameActive) return;
+                
+                const elapsed = Date.now() - gameState.startTime;
+                timerElement.textContent = formatTime(elapsed);
+                
+                setTimeout(updateTimer, 1000);
+            }
+            
+            updateTimer();
+        }
+
+        function resetGame() {
+            if (confirm('Are you sure you want to reset the game?')) {
+                if (gameState.mode === 'multiplayer') {
+                    leaveRoom();
+                } else {
+                    document.getElementById('gameScreen').classList.add('hidden');
+                    document.getElementById('finalChallenge').style.display = 'none';
+                    document.getElementById('modeSelection').style.display = 'grid';
+                    resetGameState();
+                }
+            }
+        }
+
+        // Check for room code in URL on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomCode = urlParams.get('room');
+            
+            if (roomCode) {
+                // Wait for Firebase to be ready
+                const waitForFirebase = () => {
+                    if (firebaseReady) {
+                        selectMode('multiplayer');
+                        document.getElementById('roomInput').value = roomCode;
+                        showRoomJoin();
+                    } else {
+                        setTimeout(waitForFirebase, 500);
+                    }
+                };
+                waitForFirebase();
+            }
+        });
+    </script>
+</body>
+</html>
