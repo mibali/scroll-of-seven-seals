@@ -10,9 +10,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
-    
-    <!-- Firebase Configuration -->
-    <script src="js/firebase-config.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
@@ -918,24 +915,6 @@
                 console.error('❌ Firebase connection test failed:', error);
             }
         }
-
-        // Start Firebase initialization
-        waitForFirebase();
-        
-        // Test Firebase after a delay
-        setTimeout(testFirebaseConnection, 3000);
-
-        // Check for room parameter in URL
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const roomParam = urlParams.get('room');
-            if (roomParam) {
-                // Auto-fill join form
-                document.getElementById('roomInput').value = roomParam;
-                selectMode('multiplayer');
-                showRoomJoin();
-            }
-        });
 
         function selectMode(mode) {
             gameState.mode = mode;
@@ -2627,6 +2606,29 @@
                 }
             }
         });
+
+        // Initialize the game after all functions are defined
+        console.log('🎮 Starting game initialization...');
+        
+        // Start Firebase initialization
+        waitForFirebase();
+        
+        // Test Firebase after a delay
+        setTimeout(testFirebaseConnection, 3000);
+
+        // Check for room parameter in URL
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const roomParam = urlParams.get('room');
+            if (roomParam) {
+                // Auto-fill join form
+                document.getElementById('roomInput').value = roomParam;
+                selectMode('multiplayer');
+                showRoomJoin();
+            }
+        });
+
+        console.log('✅ Game initialization complete');
     </script>
 </body>
 
