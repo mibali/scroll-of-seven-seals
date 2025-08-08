@@ -830,16 +830,10 @@
                 <div class="mode-description">Compete against AI opponents</div>
             </div>
 
-            <div class="mode-card" onclick="selectMode('multiplayer-create')">
+            <div class="mode-card" onclick="selectMode('multiplayer')">
                 <span class="mode-icon">🌐</span>
-                <div class="mode-title">Create Multiplayer</div>
-                <div class="mode-description">Create a room for online competition with friends</div>
-            </div>
-
-            <div class="mode-card" onclick="selectMode('multiplayer-join')">
-                <span class="mode-icon">🔗</span>
-                <div class="mode-title">Join Multiplayer</div>
-                <div class="mode-description">Join an existing multiplayer room</div>
+                <div class="mode-title">Real Multiplayer</div>
+                <div class="mode-description">Compete with friends online using Firebase</div>
             </div>
         </div>
 
@@ -3135,11 +3129,8 @@
                 case 'ai':
                     startAIMode();
                     break;
-                case 'multiplayer-create':
-                    showMultiplayerSetup();
-                    break;
-                case 'multiplayer-join':
-                    joinMultiplayerGame();
+                case 'multiplayer':
+                    showMultiplayerChoice();
                     break;
                 default:
                     console.error('Unknown game mode:', mode);
@@ -3189,8 +3180,58 @@
             document.getElementById('aiSetup').style.display = 'block';
         }
 
-        function showMultiplayerSetup() {
-            console.log('👥 Starting Multiplayer Create with complexity:', gameComplexity.level);
+        function showMultiplayerChoice() {
+            console.log('🌐 Starting Multiplayer with complexity:', gameComplexity.level);
+            
+            // Show choice modal for create vs join
+            const choiceModal = `
+                <div id="multiplayerChoiceModal" style="
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.8); display: flex; justify-content: center; 
+                    align-items: center; z-index: 1002;">
+                    <div style="
+                        background: linear-gradient(135deg, #2c1810, #4a3425);
+                        border: 3px solid #d4af37; border-radius: 15px; padding: 40px;
+                        text-align: center; max-width: 500px; width: 95%;">
+                        <h2 style="color: #d4af37; font-size: 2em; margin-bottom: 30px;">🌐 Multiplayer Mode</h2>
+                        <p style="color: #b8a082; margin-bottom: 30px; font-size: 1.1em;">
+                            Would you like to create a new room or join an existing one?
+                        </p>
+                        <div style="display: flex; gap: 20px; justify-content: center;">
+                            <button onclick="createMultiplayerRoom()" style="
+                                background: #d4af37; color: #2c1810; border: none; padding: 15px 25px;
+                                border-radius: 8px; font-size: 1.1em; cursor: pointer; font-weight: bold;">
+                                🏠 Create Room
+                            </button>
+                            <button onclick="joinMultiplayerRoom()" style="
+                                background: #6b4d37; color: #f4f1e8; border: none; padding: 15px 25px;
+                                border-radius: 8px; font-size: 1.1em; cursor: pointer; font-weight: bold;">
+                                🔗 Join Room
+                            </button>
+                        </div>
+                        <button onclick="closeMultiplayerChoice()" style="
+                            background: transparent; color: #b8a082; border: 1px solid #6b4d37; 
+                            padding: 10px 20px; border-radius: 5px; font-size: 1em; cursor: pointer; 
+                            margin-top: 20px;">
+                            ← Back
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', choiceModal);
+        }
+
+        function closeMultiplayerChoice() {
+            const modal = document.getElementById('multiplayerChoiceModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function createMultiplayerRoom() {
+            closeMultiplayerChoice();
+            console.log('👥 Creating multiplayer room with complexity:', gameComplexity.level);
             
             document.getElementById('modeSelection').style.display = 'none';
             document.getElementById('multiplayerSetup').style.display = 'block';
@@ -3200,8 +3241,9 @@
             document.getElementById('joinRoom').style.display = 'none';
         }
 
-        function joinMultiplayerGame() {
-            console.log('🔗 Starting Multiplayer Join with complexity:', gameComplexity.level);
+        function joinMultiplayerRoom() {
+            closeMultiplayerChoice();
+            console.log('🔗 Joining multiplayer room with complexity:', gameComplexity.level);
             
             document.getElementById('modeSelection').style.display = 'none';
             document.getElementById('multiplayerSetup').style.display = 'block';
