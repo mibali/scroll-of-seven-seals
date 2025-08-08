@@ -10,6 +10,10 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    
+    <!-- Enhanced Challenge System - Load BEFORE main game script -->
+    <script src="js/game-data.js"></script>
+    <script src="js/puzzles.js"></script>
 
     <link rel="stylesheet" href="enhanced-styles.css">
     <style>
@@ -817,6 +821,24 @@
             aiDifficulty: 'medium'
         };
 
+        // Ensure enhanced data is loaded
+        function initializeEnhancedGame() {
+            if (!window.GameData) {
+                console.error('❌ GameData not loaded! Check console for script errors.');
+                showAlert('Enhanced challenges failed to load!', 'error');
+                return false;
+            }
+            if (!window.PuzzleManager) {
+                console.error('❌ PuzzleManager not loaded! Check console for script errors.');
+                showAlert('Enhanced challenges failed to load!', 'error');
+                return false;
+            }
+            
+            console.log('✅ Enhanced challenge system initialized');
+            console.log('📚 Available seals:', window.GameData.seals.length);
+            return true;
+        }
+
         // Firebase connection monitoring
         let isFirebaseReady = false;
         let app, database, auth;
@@ -1249,6 +1271,12 @@
                 });
             }
 
+            // Initialize enhanced game system
+            if (!initializeEnhancedGame()) {
+                showAlert('Failed to load enhanced challenges!', 'error');
+                return;
+            }
+
             // Start local game
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'block';
@@ -1266,8 +1294,11 @@
         }
 
         function startSinglePlayerGame() {
-            // Generate fresh questions for each game
-            seals = generateRandomSeals();
+            // Initialize enhanced game system
+            if (!initializeEnhancedGame()) {
+                showAlert('Failed to load enhanced challenges!', 'error');
+                return;
+            }
             
             gameState.currentTeam = 'Player';
             gameState.teams = [{ name: 'Player', score: 0, completedSeals: [] }];
@@ -1314,8 +1345,11 @@
 
             console.log('🤖 Starting AI Game:', { playerTeamName, aiTeamCount, aiDifficulty });
 
-            // Generate fresh questions for each game
-            seals = generateRandomSeals();
+            // Initialize enhanced game system
+            if (!initializeEnhancedGame()) {
+                showAlert('Failed to load enhanced challenges!', 'error');
+                return;
+            }
             
             // Setup game state
             gameState.mode = 'ai';
@@ -1641,13 +1675,16 @@
             }));
         }
 
-        // Use enhanced seals from game-data.js
-        let seals = window.GameData ? window.GameData.seals : [];
+        // Use enhanced seals from game-data.js - no redeclaration needed
+        function getSeals() {
+            return window.GameData ? window.GameData.seals : [];
+        }
 
         function renderSeals() {
             const sealsGrid = document.getElementById('sealsGrid');
             sealsGrid.innerHTML = '';
 
+            const seals = getSeals();
             seals.forEach(seal => {
                 const sealElement = document.createElement('div');
                 sealElement.className = `seal ${gameState.completedSeals.includes(seal.id) ? 'opened' : ''}`;
@@ -1923,7 +1960,7 @@
 
         function updateProgress() {
             const completed = gameState.completedSeals.length;
-            const total = seals.length;
+            const total = 7; // Always 7 seals
             const percentage = (completed / total) * 100;
 
             document.getElementById('progressText').textContent = `${completed}/${total} Seals`;
@@ -2446,7 +2483,7 @@
 
         function resetGameState() {
             // Generate new random questions for replayability
-            seals = generateRandomSeals();
+            // Use enhanced seals - no regeneration needed
             
             gameState.completedSeals = [];
             gameState.isGameActive = false;
@@ -2553,10 +2590,6 @@
             }
         });
     </script>
-    
-    <!-- Enhanced Challenge System -->
-    <script src="js/game-data.js"></script>
-    <script src="js/puzzles.js"></script>
 </body>
 
 </html>
