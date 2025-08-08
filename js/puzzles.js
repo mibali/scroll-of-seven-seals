@@ -780,11 +780,50 @@ function checkMetaphoricalScripture() {
     let allCorrect = true;
     const results = [];
     
-    variation.interpretations.forEach((interpretation, index) => {
-        const userAnswer = document.getElementById(`metaphor${index + 1}`).value.trim().toUpperCase();
-        const correctAnswer = interpretation.answer.toUpperCase();
+    // Helper function to check if spiritual interpretation is acceptable
+    function isAcceptableInterpretation(userAnswer, expectedAnswer, passage) {
+        const user = userAnswer.toUpperCase();
+        const expected = expectedAnswer.toUpperCase();
         
-        if (userAnswer === correctAnswer) {
+        // Direct match
+        if (user === expected) return true;
+        
+        // Flexible matching based on passage
+        if (passage.includes('vine, you are the branches')) {
+            // Fruit represents works/deeds that flow from connection to Christ
+            return user.includes('GOOD WORKS') || user.includes('WORKS') || user.includes('DEEDS') || 
+                   user.includes('FRUIT') || user.includes('BELIEVERS') || user.includes('ACTIONS') ||
+                   user.includes('SERVICE') || user.includes('MINISTRY') || user.includes('LOVE');
+        } else if (passage.includes('mustard seed')) {
+            // Growth represents faith expanding and spreading
+            return user.includes('FAITH EXPANSION') || user.includes('FAITH') || user.includes('GROWTH') ||
+                   user.includes('EXPANSION') || user.includes('SPREAD') || user.includes('INFLUENCE') ||
+                   user.includes('KINGDOM GROWTH') || user.includes('IMPACT');
+        } else if (passage.includes('wise as serpents, innocent as doves')) {
+            // Balance of wisdom and purity/innocence
+            return user.includes('DISCERNMENT WITH PURITY') || user.includes('DISCERNMENT') || 
+                   user.includes('WISDOM') || user.includes('BALANCE') || user.includes('PURITY') ||
+                   user.includes('INNOCENT') || user.includes('WISE') || user.includes('SHREWD') ||
+                   user.includes('CAREFUL') || user.includes('PRUDENT');
+        } else if (passage.includes('light of the world')) {
+            // Shining light means witnessing/testimony
+            return user.includes('WITNESSING') || user.includes('WITNESS') || user.includes('TESTIMONY') ||
+                   user.includes('SHARING') || user.includes('EVANGELISM') || user.includes('EXAMPLE') ||
+                   user.includes('LIVING') || user.includes('SHOWING');
+        } else if (passage.includes('bread of life')) {
+            // Eating bread means believing/accepting Christ
+            return user.includes('BELIEVING') || user.includes('BELIEF') || user.includes('FAITH') ||
+                   user.includes('ACCEPTING') || user.includes('RECEIVING') || user.includes('TRUSTING') ||
+                   user.includes('FOLLOWING');
+        }
+        
+        return false;
+    }
+    
+    variation.interpretations.forEach((interpretation, index) => {
+        const userAnswer = document.getElementById(`metaphor${index + 1}`).value.trim();
+        
+        if (isAcceptableInterpretation(userAnswer, interpretation.answer, interpretation.passage)) {
             results.push(`✅ Metaphor ${index + 1}: Spiritually discerned`);
         } else {
             results.push(`❌ Metaphor ${index + 1}: Literal interpretation`);
