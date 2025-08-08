@@ -1480,14 +1480,27 @@
             // Show winner modal with rankings
             const isPlayerWinner = !winningTeam.isAI;
             console.log('🎉 Showing winner modal - Is player winner?', isPlayerWinner);
+            console.log('🎉 Winner team name:', winningTeam.name);
+            console.log('🎉 Final rankings:', finalRankings);
             
             try {
+                // Force display of winner modal
+                console.log('🚀 FORCING WINNER MODAL DISPLAY');
                 showWinnerModalWithRankings(winningTeam.name, completionTime, finalRankings, isPlayerWinner);
                 console.log('✅ Winner modal displayed successfully');
             } catch (error) {
                 console.error('❌ Error showing winner modal:', error);
-                // Fallback to simple alert
-                showAlert(`🏆 Game Over! ${winningTeam.name} wins!`, 'success');
+                console.error('❌ Error details:', error.stack);
+                
+                // Enhanced fallback - show both alert and try simple modal
+                showAlert(`🏆 GAME OVER! ${winningTeam.name} WINS! Time: ${Math.floor(completionTime/60000)}:${Math.floor((completionTime%60000)/1000).toString().padStart(2,'0')}`, 'success');
+                
+                // Try showing the simple winner modal as backup
+                try {
+                    showWinnerModal(winningTeam.name, completionTime, isPlayerWinner);
+                } catch (fallbackError) {
+                    console.error('❌ Fallback modal also failed:', fallbackError);
+                }
             }
             
             // Lock game inputs
@@ -1693,14 +1706,18 @@
 
                 showAlert(`Seal ${gameState.currentPuzzle.number} opened!`, 'success');
 
+                // Enhanced check for 7-seal completion
+                console.log('🔍 CHECKING COMPLETION - Seals completed:', gameState.completedSeals.length, 'Total:', gameState.completedSeals);
+                
                 if (gameState.completedSeals.length === 7) {
                     console.log('🎉 TEAM COMPLETED ALL 7 SEALS!', gameState.currentTeam);
                     console.log('🎮 Game Mode:', gameState.mode);
                     console.log('🎮 Room code:', gameState.roomCode);
                     console.log('🔥 Is multiplayer?', !!gameState.roomCode);
                     console.log('🤖 Is AI mode?', gameState.mode === 'ai');
+                    console.log('🏆 Is game still active?', gameState.isGameActive);
                     
-                    // Special handling for AI mode - immediate winner detection and timer cleanup
+                    // Enhanced AI mode handling with immediate winner declaration
                     if (gameState.mode === 'ai') {
                         console.log('🏆 AI MODE: Player wins by completing 7 seals first!');
                         
@@ -1712,10 +1729,29 @@
                             gameState.aiTimers = [];
                         }
                         
-                        finishGame();
+                        // Force immediate winner handling for player
+                        console.log('🚀 FORCING IMMEDIATE PLAYER VICTORY HANDLING');
+                        const elapsed = Date.now() - gameState.startTime;
+                        const playerTeam = gameState.teams.find(team => !team.isAI) || { name: gameState.currentTeam, isAI: false };
+                        
+                        // Update player team with completion data
+                        if (playerTeam) {
+                            playerTeam.score = 7;
+                            playerTeam.completedSeals = [...gameState.completedSeals];
+                            playerTeam.lastSealTime = Date.now();
+                            console.log('✅ Final player team state:', playerTeam);
+                        }
+                        
+                        // Immediate winner modal display
+                        console.log('🏆 CALLING handleAIGameEnd IMMEDIATELY');
+                        handleAIGameEnd(playerTeam, elapsed);
+                        
                     } else {
+                        console.log('📞 Calling finishGame() for non-AI mode');
                         finishGame();
                     }
+                } else {
+                    console.log('🔄 Not enough seals yet:', gameState.completedSeals.length, '< 7');
                 }
             } else {
                 showAlert('Incorrect answer. Try again!', 'error');
