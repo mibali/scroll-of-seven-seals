@@ -1420,23 +1420,44 @@
         }
 
         function handleAIGameEnd(winningTeam, completionTime) {
-            console.log('🏆 AI Game ended, winner:', winningTeam.name);
+            console.log('🏆 handleAIGameEnd called');
+            console.log('🏆 AI Game ended, winner:', winningTeam ? winningTeam.name : 'Unknown');
+            console.log('🏆 Winning team details:', winningTeam);
+            console.log('🏆 Completion time:', completionTime);
+            console.log('🏆 Current teams state:', gameState.teams);
             
+            // Ensure game is marked as inactive
             gameState.isGameActive = false;
             
-            // Clear all AI timers
-            gameState.aiTimers.forEach(timer => clearTimeout(timer));
-            gameState.aiTimers = [];
+            // Clear all AI timers to stop further AI progression
+            if (gameState.aiTimers && gameState.aiTimers.length > 0) {
+                console.log('🛑 Clearing', gameState.aiTimers.length, 'AI timers');
+                gameState.aiTimers.forEach(timer => clearTimeout(timer));
+                gameState.aiTimers = [];
+            }
             
             // Calculate final rankings
+            console.log('📊 Calculating final rankings...');
             const finalRankings = calculateAIFinalRankings();
+            console.log('📊 Final rankings calculated:', finalRankings);
             
             // Show winner modal with rankings
             const isPlayerWinner = !winningTeam.isAI;
-            showWinnerModalWithRankings(winningTeam.name, completionTime, finalRankings, isPlayerWinner);
+            console.log('🎉 Showing winner modal - Is player winner?', isPlayerWinner);
+            
+            try {
+                showWinnerModalWithRankings(winningTeam.name, completionTime, finalRankings, isPlayerWinner);
+                console.log('✅ Winner modal displayed successfully');
+            } catch (error) {
+                console.error('❌ Error showing winner modal:', error);
+                // Fallback to simple alert
+                showAlert(`🏆 Game Over! ${winningTeam.name} wins!`, 'success');
+            }
             
             // Lock game inputs
+            console.log('🔒 Locking game inputs...');
             lockGameInputs();
+            console.log('✅ AI game end handling complete');
         }
 
         function calculateAIFinalRankings() {
@@ -1614,7 +1635,13 @@
                 if (currentTeam) {
                     currentTeam.score = gameState.completedSeals.length;
                     currentTeam.completedSeals = [...gameState.completedSeals];
+                    // For AI mode, also update lastSealTime for proper ranking
+                    if (gameState.mode === 'ai') {
+                        currentTeam.lastSealTime = Date.now();
+                    }
                 }
+
+                console.log('🎯 SEAL COMPLETED - Mode:', gameState.mode, 'Team:', gameState.currentTeam, 'Score:', gameState.completedSeals.length);
 
                 // Update Firebase if in multiplayer (check for roomCode instead of mode)
                 if (gameState.roomCode && gameState.currentTeam) {
@@ -1632,9 +1659,18 @@
 
                 if (gameState.completedSeals.length === 7) {
                     console.log('🎉 TEAM COMPLETED ALL 7 SEALS!', gameState.currentTeam);
+                    console.log('🎮 Game Mode:', gameState.mode);
                     console.log('🎮 Room code:', gameState.roomCode);
                     console.log('🔥 Is multiplayer?', !!gameState.roomCode);
-                    finishGame();
+                    console.log('🤖 Is AI mode?', gameState.mode === 'ai');
+                    
+                    // Special handling for AI mode - immediate winner detection
+                    if (gameState.mode === 'ai') {
+                        console.log('🏆 AI MODE: Player wins by completing 7 seals first!');
+                        finishGame();
+                    } else {
+                        finishGame();
+                    }
                 }
             } else {
                 showAlert('Incorrect answer. Try again!', 'error');
@@ -1763,8 +1799,9 @@
             console.log('🏁 finishGame() called');
             console.log('🎮 gameState.mode:', gameState.mode);
             console.log('👥 gameState.currentTeam:', gameState.currentTeam);
+            console.log('📊 gameState.teams:', gameState.teams);
+            console.log('🏆 gameState.isGameActive:', gameState.isGameActive);
             
-            gameState.isGameActive = false;
             const elapsed = Date.now() - gameState.startTime;
             const minutes = Math.floor(elapsed / 60000);
             const seconds = Math.floor((elapsed % 60000) / 1000);
@@ -1772,13 +1809,23 @@
             if (gameState.mode === 'ai') {
                 // AI mode - player won!
                 console.log('🏆 AI mode - player completed all seals first!');
+                
+                // Find and update the player team
                 const playerTeam = gameState.teams.find(team => !team.isAI);
+                console.log('🎯 Found player team:', playerTeam);
+                
                 if (playerTeam) {
-                    playerTeam.score = 7;
+                    // Ensure player team has correct completion data
+                    playerTeam.score = Math.max(playerTeam.score, 7); // Ensure it's 7
                     playerTeam.completedSeals = [...gameState.completedSeals];
                     playerTeam.lastSealTime = Date.now();
+                    console.log('✅ Updated player team:', playerTeam);
                 }
-                handleAIGameEnd(playerTeam, elapsed);
+                
+                // End the game and show winner modal
+                console.log('🎉 Calling handleAIGameEnd for player victory');
+                handleAIGameEnd(playerTeam || { name: gameState.currentTeam, isAI: false }, elapsed);
+                
             } else if (gameState.roomCode) {
                 // Multiplayer mode - winner detection handled in Firebase update
                 console.log('🏆 Multiplayer mode - winner detection handled in Firebase update');
