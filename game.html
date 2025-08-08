@@ -2076,7 +2076,8 @@
                 const sealElement = document.createElement('div');
                 sealElement.className = `seal ${gameState.completedSeals.includes(seal.id) ? 'opened' : ''}`;
                 sealElement.setAttribute('data-challenge-type', seal.challengeType);
-                sealElement.onclick = () => openSeal(seal);
+                sealElement.setAttribute('data-seal-id', seal.id);
+                sealElement.onclick = () => openSeal(seal.id);
 
                 sealElement.innerHTML = `
                     <div class="seal-number">${seal.id}</div>
@@ -2089,54 +2090,7 @@
             });
         }
 
-        async function openSeal(seal) {
-            // Check if game is still active
-            if (!gameState.isGameActive) {
-                showAlert('Game has ended. No more seals can be opened!', 'error');
-                return;
-            }
-            
-            if (gameState.completedSeals.includes(seal.id)) {
-                showAlert('This seal is already opened!', 'error');
-                return;
-            }
 
-            // Check if required seals are completed
-            if (seal.requiredSeals && seal.requiredSeals.length > 0) {
-                const missingSeals = seal.requiredSeals.filter(reqId => !gameState.completedSeals.includes(reqId));
-                if (missingSeals.length > 0) {
-                    showAlert(`Complete seals ${missingSeals.join(', ')} first!`, 'error');
-                    return;
-                }
-            }
-
-            gameState.currentPuzzle = seal;
-            document.getElementById('puzzleTitle').textContent = `Seal ${seal.id}: ${seal.title}`;
-            
-            // Clear any previous content
-            document.getElementById('puzzleQuestion').innerHTML = '';
-            
-            // Hide legacy inputs for enhanced challenges
-            document.getElementById('legacyInputs').style.display = 'none';
-            
-            // Generate enhanced challenge content
-            if (window.PuzzleManager && window.GameData) {
-                console.log('🎯 Loading enhanced challenge for seal:', seal.id, 'puzzle:', seal.puzzle);
-                const challengeContent = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
-                document.getElementById('puzzleQuestion').innerHTML = challengeContent;
-            } else {
-                console.error('❌ Enhanced system not available, falling back to description');
-                document.getElementById('puzzleQuestion').innerHTML = `
-                    <div style="text-align: center; padding: 20px;">
-                        <h3>🔄 Loading Challenge...</h3>
-                        <p>${seal.description}</p>
-                        <p style="color: #ff6b6b;">Enhanced challenge system not available.</p>
-                    </div>
-                `;
-            }
-            
-            document.getElementById('puzzleModal').style.display = 'flex';
-        }
 
         // Enhanced seal completion function for new challenge system
         function completeSeal(sealId) {
@@ -3532,9 +3486,30 @@
         async function openSeal(sealId) {
             const seal = window.GameData.seals.find(s => s.id === sealId);
             if (!seal) return;
+
+            // Check if game is still active
+            if (!gameState.isGameActive) {
+                showAlert('Game has ended. No more seals can be opened!', 'error');
+                return;
+            }
             
-            // Find the seal element for visual effects
-            const sealElement = document.querySelector(`[onclick="openSeal(${sealId})"]`);
+            if (gameState.completedSeals.includes(seal.id)) {
+                showAlert('This seal is already opened!', 'error');
+                return;
+            }
+
+            // Check if required seals are completed
+            if (seal.requiredSeals && seal.requiredSeals.length > 0) {
+                const missingSeals = seal.requiredSeals.filter(reqId => !gameState.completedSeals.includes(reqId));
+                if (missingSeals.length > 0) {
+                    showAlert(`Complete seals ${missingSeals.join(', ')} first!`, 'error');
+                    return;
+                }
+            }
+            
+            // Find the seal element for visual effects (fix selector to work with onclick function)
+            const sealElement = document.querySelector(`[data-seal-id="${sealId}"]`) || 
+                               document.querySelector(`.seal:nth-child(${sealId})`);
             
             // Trigger immersive seal activation
             if (window.ImmersionEngine && sealElement) {
