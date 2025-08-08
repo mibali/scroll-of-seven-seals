@@ -10,11 +10,12 @@ class EnhancedPuzzleManager {
 
     // Generate challenge content for a specific seal
     async generatePuzzleContent(sealId, puzzleType) {
-        // Try dynamic generation first if AI engine is available
+        // Always try dynamic generation first if AI engine is available
         if (window.BibleGameAI && window.gameState?.complexity?.level) {
             const dynamicContent = await this.generateDynamicContent(sealId, puzzleType);
             if (dynamicContent) {
-                console.log(`🤖 AI-Generated content for ${puzzleType} - Seal ${sealId}`);
+                console.log(`🤖 AI-Generated FRESH content for ${puzzleType} - Seal ${sealId}`);
+                // Don't cache AI content - generate fresh each time for uniqueness
                 return this.renderDynamicContent(dynamicContent, puzzleType);
             }
         }
@@ -779,16 +780,22 @@ class EnhancedPuzzleManager {
         this.currentPuzzles = {};
         this.teamInputs = {};
         
-        // Pre-generate all puzzle variations to ensure fresh content
-        const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
-        puzzleTypes.forEach(type => {
-            const variations = window.GameData.puzzleVariations[type];
-            if (variations && variations.length > 0) {
-                const randomIndex = Math.floor(Math.random() * variations.length);
-                this.currentPuzzles[type] = variations[randomIndex];
-                console.log(`🎲 Pre-generated ${type} - variation ${randomIndex + 1}/${variations.length}`);
-            }
-        });
+        // Clear cached content to force AI regeneration if available
+        if (window.BibleGameAI && window.gameState?.complexity?.level) {
+            console.log('🤖 AI engine available - will generate fresh dynamic content for each seal');
+            // Don't pre-cache anything - let AI generate fresh content each time
+        } else {
+            // Fallback: Pre-generate random variations from static content
+            const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
+            puzzleTypes.forEach(type => {
+                const variations = window.GameData.puzzleVariations[type];
+                if (variations && variations.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * variations.length);
+                    this.currentPuzzles[type] = variations[randomIndex];
+                    console.log(`🎲 Pre-generated ${type} - variation ${randomIndex + 1}/${variations.length}`);
+                }
+            });
+        }
         
         console.log('✅ All puzzles regenerated for fresh game experience!');
     }
@@ -1363,7 +1370,7 @@ function checkBibleKnowledge() {
     const resultDiv = document.getElementById('bibleKnowledgeResult');
     if (allCorrect) {
         // Record success for learning system
-        this.recordSealSuccess('bibleKnowledge', variation, 1);
+        window.PuzzleManager.recordSealSuccess('bibleKnowledge', variation, 1);
         
         // Enhanced success message with immersion
         const successMessage = window.ImmersionEngine ? 
@@ -1385,7 +1392,7 @@ function checkBibleKnowledge() {
         setTimeout(() => window.completeSeal(1), 1500);
     } else {
         // Record attempt for learning
-        this.recordSealAttempt('bibleKnowledge', variation, 1, false);
+        window.PuzzleManager.recordSealAttempt('bibleKnowledge', variation, 1, false);
         
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">

@@ -208,13 +208,27 @@ class BibleGameAI {
         const pool = this.contentPools.bibleKnowledge[theme];
         const selected = this.selectRandom(pool);
         
+        // Generate timestamp-based seed for unique questions
+        const seed = Date.now() + Math.random() * 1000;
+        const templateIndex = Math.floor(seed % 100);
+        
         const questionTemplates = {
             characters: [
                 `Who was the prophet that confronted King Ahab?`,
                 `Which biblical figure was known as the 'man after God's own heart'?`,
                 `Who interpreted dreams for Pharaoh in Egypt?`,
                 `Which woman became queen and saved her people?`,
-                `Who led the Israelites across the Jordan River?`
+                `Who led the Israelites across the Jordan River?`,
+                `Which judge defeated the Midianites with 300 men?`,
+                `Who was swallowed by a great fish?`,
+                `Which apostle was known as 'the rock'?`,
+                `Who was the first martyr of the early church?`,
+                `Which king built the first temple in Jerusalem?`,
+                `Who was the mother of Samuel?`,
+                `Which prophet was taken up in a whirlwind?`,
+                `Who betrayed Jesus for thirty pieces of silver?`,
+                `Which disciple doubted Jesus' resurrection?`,
+                `Who was the tax collector that climbed a tree?`
             ],
             numbers: [
                 `How many days did it rain during Noah's flood?`,
@@ -233,7 +247,8 @@ class BibleGameAI {
         };
 
         const templates = questionTemplates[theme] || questionTemplates.characters;
-        const questionTemplate = this.selectRandom(templates);
+        // Use time-based seed for more randomization
+        const questionTemplate = templates[templateIndex % templates.length];
         
         return {
             question: this.adaptQuestionComplexity(questionTemplate, profile),
