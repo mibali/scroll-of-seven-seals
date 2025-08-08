@@ -1373,7 +1373,16 @@
         }
 
         function scheduleNextAISeal(aiTeam) {
-            if (!gameState.isGameActive || aiTeam.score >= 7) return;
+            // Enhanced check to prevent scheduling after game ends
+            if (!gameState.isGameActive) {
+                console.log(`🛑 Not scheduling next seal for ${aiTeam.name} - game inactive`);
+                return;
+            }
+            
+            if (aiTeam.score >= 7) {
+                console.log(`🛑 Not scheduling next seal for ${aiTeam.name} - already completed`);
+                return;
+            }
 
             const settings = aiDifficultySettings[gameState.aiDifficulty];
             
@@ -1385,18 +1394,35 @@
             console.log(`🤖 ${aiTeam.name} next seal in ${Math.round(nextSealTime/1000)}s`);
             
             const timer = setTimeout(() => {
+                // Triple check before executing - game state can change
                 if (gameState.isGameActive && aiTeam.score < 7) {
                     completeAISeal(aiTeam);
+                } else {
+                    console.log(`🛑 ${aiTeam.name} timer fired but game inactive or team completed`);
                 }
             }, nextSealTime);
             
-            // Store timer for cleanup
-            gameState.aiTimers.push(timer);
-            aiTeam.nextSealTime = Date.now() + nextSealTime;
+            // Store timer for cleanup only if game is still active
+            if (gameState.isGameActive) {
+                gameState.aiTimers.push(timer);
+                aiTeam.nextSealTime = Date.now() + nextSealTime;
+            } else {
+                // Clear the timer immediately if game became inactive
+                clearTimeout(timer);
+            }
         }
 
         function completeAISeal(aiTeam) {
-            if (!gameState.isGameActive || aiTeam.score >= 7) return;
+            // CRITICAL: Double check game is still active - player might have won
+            if (!gameState.isGameActive) {
+                console.log(`🛑 ${aiTeam.name} seal completion cancelled - game already ended`);
+                return;
+            }
+            
+            if (aiTeam.score >= 7) {
+                console.log(`🛑 ${aiTeam.name} already completed all seals`);
+                return;
+            }
 
             const sealNumber = aiTeam.score + 1;
             aiTeam.score = sealNumber;
@@ -1405,16 +1431,26 @@
 
             console.log(`🤖 ${aiTeam.name} completed seal ${sealNumber}!`);
 
-            // Update UI
-            updateLeaderboard();
+            // Update UI only if game is still active
+            if (gameState.isGameActive) {
+                updateLeaderboard();
+            }
 
-            // Check for winner
-            if (sealNumber === 7) {
+            // Check for winner - but only if game is still active
+            if (sealNumber === 7 && gameState.isGameActive) {
                 console.log(`🏆 AI team ${aiTeam.name} completed all seals!`);
                 const completionTime = Date.now() - gameState.startTime;
+                
+                // Final check before declaring AI winner - ensure player hasn't already won
+                const playerTeam = gameState.teams.find(team => !team.isAI);
+                if (playerTeam && playerTeam.score >= 7) {
+                    console.log(`🛑 Player already won - ignoring AI completion`);
+                    return;
+                }
+                
                 handleAIGameEnd(aiTeam, completionTime);
-            } else {
-                // Schedule next seal
+            } else if (gameState.isGameActive) {
+                // Schedule next seal only if game is still active
                 scheduleNextAISeal(aiTeam);
             }
         }
@@ -1664,9 +1700,18 @@
                     console.log('🔥 Is multiplayer?', !!gameState.roomCode);
                     console.log('🤖 Is AI mode?', gameState.mode === 'ai');
                     
-                    // Special handling for AI mode - immediate winner detection
+                    // Special handling for AI mode - immediate winner detection and timer cleanup
                     if (gameState.mode === 'ai') {
                         console.log('🏆 AI MODE: Player wins by completing 7 seals first!');
+                        
+                        // CRITICAL: Immediately stop the game and clear all AI timers to prevent race conditions
+                        gameState.isGameActive = false;
+                        if (gameState.aiTimers && gameState.aiTimers.length > 0) {
+                            console.log('🛑 EMERGENCY: Clearing', gameState.aiTimers.length, 'AI timers to prevent race condition');
+                            gameState.aiTimers.forEach(timer => clearTimeout(timer));
+                            gameState.aiTimers = [];
+                        }
+                        
                         finishGame();
                     } else {
                         finishGame();
