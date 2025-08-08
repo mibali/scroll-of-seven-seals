@@ -1097,11 +1097,36 @@
                         console.log('🏆 ROOM LISTENER: Game ended, winner detected:', roomData.winner);
                         console.log('🏆 ROOM LISTENER: Current team:', gameState.currentTeam);
                         console.log('🏆 ROOM LISTENER: Is game active?', gameState.isGameActive);
+                        console.log('🏆 ROOM LISTENER: Final rankings available?', !!roomData.finalRankings);
+                        
                         const isWinner = roomData.winner === gameState.currentTeam;
                         console.log('🏆 ROOM LISTENER: Is current team winner?', isWinner);
-                        showWinnerModal(roomData.winner, roomData.completionTime || 0, isWinner);
-                    } else {
-                        console.log('🔍 ROOM LISTENER: Room status:', roomData.status, 'Winner:', roomData.winner, 'Game active:', gameState.isGameActive);
+                        
+                        // Show enhanced modal with rankings if available, otherwise fallback to simple modal
+                        if (roomData.finalRankings) {
+                            showWinnerModalWithRankings(roomData.winner, roomData.completionTime || 0, roomData.finalRankings, isWinner);
+                        } else {
+                            showWinnerModal(roomData.winner, roomData.completionTime || 0, isWinner);
+                        }
+                    } 
+                    // Also check for gameActive flag to lock the game immediately
+                    else if (roomData.gameActive === false && gameState.isGameActive) {
+                        console.log('🔒 ROOM LISTENER: Game deactivated, locking UI');
+                        lockGameInputs();
+                        
+                        // If there's winner data but status isn't finished yet, prepare for incoming winner announcement
+                        if (roomData.winner) {
+                            console.log('🏆 ROOM LISTENER: Winner exists, showing modal soon');
+                            const isWinner = roomData.winner === gameState.currentTeam;
+                            if (roomData.finalRankings) {
+                                showWinnerModalWithRankings(roomData.winner, roomData.completionTime || 0, roomData.finalRankings, isWinner);
+                            } else {
+                                showWinnerModal(roomData.winner, roomData.completionTime || 0, isWinner);
+                            }
+                        }
+                    }
+                    else {
+                        console.log('🔍 ROOM LISTENER: Room status:', roomData.status, 'Winner:', roomData.winner, 'Game active:', roomData.gameActive, 'Local game active:', gameState.isGameActive);
                     }
                 } else {
                     showAlert('Room no longer exists', 'error');
@@ -1147,6 +1172,7 @@
                 // Host starts the game for everyone
                 database.ref(`rooms/${gameState.roomCode}`).update({
                     gameStarted: true,
+                    gameActive: true,
                     status: 'playing',
                     startTime: firebase.database.ServerValue.TIMESTAMP
                 });
@@ -1284,6 +1310,12 @@
         }
 
         function openSeal(seal) {
+            // Check if game is still active
+            if (!gameState.isGameActive) {
+                showAlert('Game has ended. No more seals can be opened!', 'error');
+                return;
+            }
+            
             if (gameState.completedSeals.includes(seal.number)) {
                 showAlert('This seal is already opened!', 'error');
                 return;
@@ -1298,6 +1330,13 @@
         }
 
         function submitAnswer() {
+            // Check if game is still active
+            if (!gameState.isGameActive) {
+                showAlert('Game has ended. No more answers can be submitted!', 'error');
+                closePuzzle();
+                return;
+            }
+            
             const answer = document.getElementById('puzzleAnswer').value.trim().toLowerCase();
             const correctAnswers = gameState.currentPuzzle.answer;
 
@@ -1344,7 +1383,8 @@
             const teamData = {
                 score: gameState.completedSeals.length,
                 completedSeals: gameState.completedSeals,
-                lastUpdate: firebase.database.ServerValue.TIMESTAMP
+                lastUpdate: firebase.database.ServerValue.TIMESTAMP,
+                lastSealTime: Date.now() // Track when this seal was completed for tiebreaking
             };
 
             console.log('💾 FIREBASE UPDATE: Updating team progress...', teamData);
@@ -1473,7 +1513,7 @@
             }
         }
 
-        // Check for game winner in multiplayer
+        // Enhanced winner detection and ranking system for multi-team scenarios
         async function checkForGameWinner(completionTime) {
             try {
                 console.log('🏆 checkForGameWinner() called with time:', completionTime);
@@ -1487,12 +1527,13 @@
 
                 console.log('🏆 Checking for game winner...');
                 
-                // Mark this team as completed with timestamp
+                // Mark this team as completed with timestamp and last seal time
                 const teamCompletionData = {
                     completed: true,
                     completionTime: completionTime,
                     completedAt: firebase.database.ServerValue.TIMESTAMP,
-                    finalScore: gameState.completedSeals.length
+                    finalScore: gameState.completedSeals.length,
+                    lastSealTime: Date.now() // Track when last seal was clicked for tiebreaking
                 };
 
                 console.log('💾 Updating team data:', teamCompletionData);
@@ -1509,7 +1550,7 @@
                 console.log('📊 Current room data:', roomData);
 
                 if (roomData && roomData.teams) {
-                    // Check for teams that completed 7 seals (not just marked as completed)
+                    // Check for teams that completed 7 seals
                     const teams = Object.values(roomData.teams);
                     const teamsWithSevenSeals = teams.filter(team => {
                         const sealsCount = team.completedSeals ? team.completedSeals.length : (team.score || 0);
@@ -1527,25 +1568,34 @@
                         // This is the winner! End the game for everyone
                         console.log('🏆 First team to complete - declaring winner!');
                         
-                        const winnerData = {
+                        // Calculate final rankings for all teams
+                        const finalRankings = await calculateFinalRankings(teams);
+                        
+                        const gameEndData = {
                             winner: gameState.currentTeam,
                             completionTime: completionTime,
                             endedAt: firebase.database.ServerValue.TIMESTAMP,
-                            status: 'finished'
+                            gameActive: false,
+                            status: 'finished',
+                            finalRankings: finalRankings
                         };
 
-                        console.log('💾 Setting winner data:', winnerData);
-                        await database.ref(`rooms/${gameState.roomCode}`).update(winnerData);
-                        console.log('✅ Winner data saved to Firebase');
+                        console.log('💾 Setting game end data:', gameEndData);
+                        await database.ref(`rooms/${gameState.roomCode}`).update(gameEndData);
+                        console.log('✅ Game end data saved to Firebase');
                         
-                        // Show winner modal to all players
-                        console.log('🎉 Showing winner modal...');
-                        showWinnerModal(gameState.currentTeam, completionTime, true);
+                        // Show winner modal with rankings to all players
+                        console.log('🎉 Showing winner modal with rankings...');
+                        showWinnerModalWithRankings(gameState.currentTeam, completionTime, finalRankings, true);
                     } else if (teamsWithSevenSeals.length > 1) {
-                        // Someone else already won - find the first one
+                        // Someone else already won - show existing rankings if available
                         console.log('🥈 Another team already won');
-                        const winner = teamsWithSevenSeals[0];
-                        showWinnerModal(winner.name || 'Another team', winner.completionTime || completionTime, false);
+                        if (roomData.finalRankings) {
+                            showWinnerModalWithRankings(roomData.winner, roomData.completionTime, roomData.finalRankings, false);
+                        } else {
+                            const winner = teamsWithSevenSeals[0];
+                            showWinnerModal(winner.name || 'Another team', winner.completionTime || completionTime, false);
+                        }
                     } else {
                         console.log('🔄 No teams with 7 seals yet');
                     }
@@ -1561,7 +1611,158 @@
             }
         }
 
-        // Show winner modal to all players
+        // Calculate final rankings for all teams
+        async function calculateFinalRankings(teams) {
+            console.log('📊 Calculating final rankings for teams:', teams.length);
+            
+            const rankings = teams.map(team => {
+                const sealsCount = team.completedSeals ? team.completedSeals.length : (team.score || 0);
+                return {
+                    teamName: team.name,
+                    sealsCompleted: sealsCount,
+                    completionTime: team.completionTime || null,
+                    lastSealTime: team.lastSealTime || Date.now(),
+                    completed: team.completed || false
+                };
+            });
+
+            // Sort rankings:
+            // 1. By completion status (completed teams first)
+            // 2. By number of seals completed (higher is better)
+            // 3. By completion time for completed teams (faster is better)
+            // 4. By last seal time for incomplete teams (faster last seal is better)
+            rankings.sort((a, b) => {
+                // Completed teams come first
+                if (a.completed && !b.completed) return -1;
+                if (!a.completed && b.completed) return 1;
+                
+                // Both completed or both incomplete - sort by seals
+                if (a.sealsCompleted !== b.sealsCompleted) {
+                    return b.sealsCompleted - a.sealsCompleted; // Higher seals first
+                }
+                
+                // Same number of seals - use time
+                if (a.completed && b.completed && a.completionTime && b.completionTime) {
+                    return a.completionTime - b.completionTime; // Faster completion first
+                }
+                
+                // For incomplete teams with same seals, use last seal time
+                if (a.lastSealTime && b.lastSealTime) {
+                    return a.lastSealTime - b.lastSealTime; // Earlier last seal first
+                }
+                
+                return 0;
+            });
+
+            // Add rank positions
+            rankings.forEach((team, index) => {
+                team.rank = index + 1;
+            });
+
+            console.log('🏆 Final rankings calculated:', rankings);
+            return rankings;
+        }
+
+        // Enhanced winner modal with final rankings for multi-team scenarios
+        function showWinnerModalWithRankings(winnerTeam, completionTime, rankings, isWinner) {
+            console.log('🎉 showWinnerModalWithRankings() called');
+            console.log('🏆 Winner team:', winnerTeam);
+            console.log('⏰ Completion time:', completionTime);
+            console.log('📊 Rankings:', rankings);
+            console.log('🎯 Is winner?', isWinner);
+            
+            const minutes = Math.floor(completionTime / 60000);
+            const seconds = Math.floor((completionTime % 60000) / 1000);
+            const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            const modalTitle = isWinner ? '🏆 CONGRATULATIONS!' : '🎮 GAME OVER';
+            const modalMessage = isWinner ? 
+                `YOUR TEAM HAS WON THE GAME!` : 
+                `${winnerTeam} HAS WON THE GAME!`;
+
+            // Generate rankings HTML
+            let rankingsHTML = '';
+            if (rankings && rankings.length > 0) {
+                rankingsHTML = `
+                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #c9a96e; 
+                                border-radius: 8px; padding: 15px; margin: 15px 0; max-height: 250px; overflow-y: auto;">
+                        <h3 style="color: #ffd700; margin-bottom: 15px; text-align: center;">🏅 Final Rankings</h3>
+                        <div style="text-align: left;">
+                `;
+                
+                rankings.forEach((team, index) => {
+                    const rank = team.rank || (index + 1);
+                    const isCurrentTeam = team.teamName === gameState.currentTeam;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+                    const completionDisplay = team.completed ? 
+                        `✅ ${Math.floor((team.completionTime || 0) / 60000)}:${Math.floor(((team.completionTime || 0) % 60000) / 1000).toString().padStart(2, '0')}` : 
+                        `⏱️ ${team.sealsCompleted}/7 seals`;
+                    
+                    rankingsHTML += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; 
+                                    padding: 8px 12px; margin: 5px 0; background: rgba(0, 0, 0, 0.2); 
+                                    border-radius: 5px; ${isCurrentTeam ? 'border: 1px solid #ffd700;' : ''}">
+                            <span style="color: #ffd700; font-weight: bold; min-width: 30px;">${medal}</span>
+                            <span style="color: ${isCurrentTeam ? '#ffd700' : '#e8dcc0'}; flex: 1; margin: 0 10px; font-weight: ${isCurrentTeam ? 'bold' : 'normal'};">
+                                ${team.teamName}${isCurrentTeam ? ' (YOU)' : ''}
+                            </span>
+                            <span style="color: #c9a96e; font-size: 0.9em;">${completionDisplay}</span>
+                        </div>
+                    `;
+                });
+                
+                rankingsHTML += `
+                        </div>
+                    </div>
+                `;
+            }
+                
+            console.log('🎨 Creating enhanced modal with rankings');
+
+            const modalHTML = `
+                <div id="winnerModal" style="
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                    background: rgba(0,0,0,0.8); display: flex; justify-content: center; 
+                    align-items: center; z-index: 10000;">
+                    <div style="
+                        background: linear-gradient(145deg, #2c1810, #3a1f12);
+                        border: 3px solid #ffd700; border-radius: 15px; padding: 30px;
+                        text-align: center; max-width: 600px; width: 95%; max-height: 90%; overflow-y: auto;
+                        box-shadow: 0 8px 30px rgba(255, 215, 0, 0.3);">
+                        <h2 style="color: #ffd700; font-size: 2.5em; margin-bottom: 20px; 
+                                   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">${modalTitle}</h2>
+                        <div style="margin: 20px 0;">
+                            <div style="font-size: 1.4em; color: #c9a96e; margin-bottom: 15px; font-weight: bold;">
+                                ${modalMessage}
+                            </div>
+                            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid #c9a96e; 
+                                        border-radius: 8px; padding: 15px; margin: 15px 0;">
+                                <p style="margin: 8px 0; color: #e8dcc0;"><strong style="color: #ffd700;">Winning Team:</strong> ${winnerTeam}</p>
+                                <p style="margin: 8px 0; color: #e8dcc0;"><strong style="color: #ffd700;">Completion Time:</strong> ${timeString}</p>
+                            </div>
+                            ${rankingsHTML}
+                        </div>
+                        <button onclick="closeWinnerModal()" style="
+                            background: #d4af37; color: #2c1810; border: none; padding: 12px 24px;
+                            border-radius: 5px; font-size: 1.1em; cursor: pointer; font-weight: bold;">
+                            Return to Lobby
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            // Lock the game for all players
+            lockGameInputs();
+
+            // Auto-close after 45 seconds (more time to view rankings)
+            setTimeout(() => {
+                closeWinnerModal();
+            }, 45000);
+        }
+
+        // Show winner modal to all players (legacy function for backward compatibility)
         function showWinnerModal(winnerTeam, completionTime, isWinner) {
             console.log('🎉 showWinnerModal() called');
             console.log('🏆 Winner team:', winnerTeam);
@@ -1630,13 +1831,57 @@
             sealButtons.forEach(button => {
                 button.onclick = null;
                 button.style.pointerEvents = 'none';
-                button.style.opacity = '0.7';
+                button.style.opacity = '0.5';
+                button.style.cursor = 'not-allowed';
             });
 
             // Close any open puzzle modals
             const puzzleModal = document.getElementById('puzzleModal');
             if (puzzleModal) {
                 puzzleModal.style.display = 'none';
+            }
+
+            // Add visual indicator that game has ended
+            const gameContainer = document.getElementById('gameContainer');
+            if (gameContainer) {
+                gameContainer.style.filter = 'grayscale(30%)';
+                
+                // Add overlay message
+                const overlay = document.createElement('div');
+                overlay.id = 'gameEndOverlay';
+                overlay.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.3);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 5000;
+                    pointer-events: none;
+                `;
+                overlay.innerHTML = `
+                    <div style="
+                        background: rgba(139, 0, 0, 0.9);
+                        color: #ffd700;
+                        padding: 20px 40px;
+                        border-radius: 10px;
+                        border: 2px solid #ffd700;
+                        font-size: 1.5em;
+                        font-weight: bold;
+                        text-align: center;
+                        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+                    ">
+                        🔒 GAME ENDED
+                        <br>
+                        <span style="font-size: 0.7em; margin-top: 10px; display: block;">
+                            A team has completed all seven seals
+                        </span>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
             }
 
             console.log('🔒 Game inputs locked - game has ended');
@@ -1647,6 +1892,18 @@
             const modal = document.getElementById('winnerModal');
             if (modal) {
                 modal.remove();
+            }
+            
+            // Clean up game end overlay
+            const overlay = document.getElementById('gameEndOverlay');
+            if (overlay) {
+                overlay.remove();
+            }
+            
+            // Reset game container filter
+            const gameContainer = document.getElementById('gameContainer');
+            if (gameContainer) {
+                gameContainer.style.filter = '';
             }
             
             // Go back to lobby
