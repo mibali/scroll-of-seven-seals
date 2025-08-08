@@ -670,6 +670,52 @@
             </div>
         </div>
 
+        <!-- AI Mode Setup -->
+        <div id="aiSetup" class="multiplayer-setup" style="display: none;">
+            <div class="setup-title">🤖 VS Computer Teams Setup</div>
+
+            <div class="team-input">
+                <label for="playerTeamName">Your Team Name:</label>
+                <input type="text" id="playerTeamName" placeholder="Enter your team name" maxlength="20" value="Player">
+            </div>
+
+            <div class="team-input">
+                <label for="aiTeamCount">Number of AI Opponents:</label>
+                <select id="aiTeamCount" style="width: 100%; padding: 12px; font-size: 1em; border: 2px solid #6b4d37; border-radius: 8px; background: rgba(0, 0, 0, 0.3); color: #f4f1e8; font-family: inherit;">
+                    <option value="1">1 AI Team</option>
+                    <option value="2" selected>2 AI Teams</option>
+                    <option value="3">3 AI Teams</option>
+                    <option value="4">4 AI Teams</option>
+                    <option value="5">5 AI Teams</option>
+                </select>
+            </div>
+
+            <div class="team-input">
+                <label for="aiDifficulty">AI Difficulty:</label>
+                <select id="aiDifficulty" style="width: 100%; padding: 12px; font-size: 1em; border: 2px solid #6b4d37; border-radius: 8px; background: rgba(0, 0, 0, 0.3); color: #f4f1e8; font-family: inherit;">
+                    <option value="easy">🟢 Easy - AI completes seals every 45-90 seconds</option>
+                    <option value="medium" selected>🟡 Medium - AI completes seals every 30-60 seconds</option>
+                    <option value="hard">🔴 Hard - AI completes seals every 15-45 seconds</option>
+                    <option value="expert">🔥 Expert - AI completes seals every 10-30 seconds</option>
+                </select>
+            </div>
+
+            <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid #c9a96e; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                <h4 style="color: #d4af37; margin-bottom: 10px;">🎮 How it Works:</h4>
+                <ul style="color: #e8dcc0; margin: 0; padding-left: 20px;">
+                    <li>You compete against AI teams that solve seals automatically</li>
+                    <li>First team (you or AI) to complete all 7 seals wins</li>
+                    <li>Game ends immediately when someone wins</li>
+                    <li>Final rankings show all teams' performance</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="button" onclick="startAIGame()">🚀 Start Competition</button>
+                <button class="button secondary" onclick="goBack()">← Back</button>
+            </div>
+        </div>
+
         <!-- Lobby -->
         <div id="lobby" class="lobby">
             <div class="lobby-title">Firebase Game Lobby</div>
@@ -746,7 +792,11 @@
             isGameActive: false,
             roomCode: '',
             isHost: false,
-            roomRef: null
+            roomRef: null,
+            // AI Mode specific
+            aiTeams: [],
+            aiTimers: [],
+            aiDifficulty: 'medium'
         };
 
         // Firebase connection monitoring
@@ -878,8 +928,11 @@
                     return;
                 }
                 document.getElementById('multiplayerSetup').style.display = 'block';
+            } else if (mode === 'ai') {
+                // Show AI mode setup
+                document.getElementById('aiSetup').style.display = 'block';
             } else {
-                // Start single player or AI mode directly
+                // Start single player mode directly
                 startSinglePlayerGame();
             }
         }
@@ -1214,6 +1267,218 @@
             updateLeaderboard();
         }
 
+        // AI team name pool
+        const aiTeamNames = [
+            'Scripture Scholars', 'Bible Blazers', 'Faith Warriors', 'Gospel Guardians',
+            'Verse Virtuosos', 'Holy Hunters', 'Divine Detectives', 'Sacred Seekers',
+            'Truth Trackers', 'Word Warriors', 'Righteous Runners', 'Glory Gatherers',
+            'Heaven Hounds', 'Salvation Squad', 'Psalm Pioneers', 'Covenant Crusaders',
+            'Prophecy Pros', 'Testament Titans', 'Miracle Masters', 'Grace Gladiators'
+        ];
+
+        // AI difficulty settings
+        const aiDifficultySettings = {
+            easy: { minTime: 45000, maxTime: 90000, variance: 0.3 },      // 45-90 seconds
+            medium: { minTime: 30000, maxTime: 60000, variance: 0.4 },    // 30-60 seconds  
+            hard: { minTime: 15000, maxTime: 45000, variance: 0.5 },      // 15-45 seconds
+            expert: { minTime: 10000, maxTime: 30000, variance: 0.6 }     // 10-30 seconds
+        };
+
+        function startAIGame() {
+            const playerTeamName = document.getElementById('playerTeamName').value.trim() || 'Player';
+            const aiTeamCount = parseInt(document.getElementById('aiTeamCount').value);
+            const aiDifficulty = document.getElementById('aiDifficulty').value;
+
+            if (!playerTeamName) {
+                showAlert('Please enter your team name', 'error');
+                return;
+            }
+
+            console.log('🤖 Starting AI Game:', { playerTeamName, aiTeamCount, aiDifficulty });
+
+            // Generate fresh questions for each game
+            seals = generateRandomSeals();
+            
+            // Setup game state
+            gameState.mode = 'ai';
+            gameState.currentTeam = playerTeamName;
+            gameState.aiDifficulty = aiDifficulty;
+            gameState.completedSeals = [];
+            gameState.aiTeams = [];
+            gameState.aiTimers = [];
+
+            // Create player team
+            const playerTeam = { 
+                name: playerTeamName, 
+                score: 0, 
+                completedSeals: [], 
+                isAI: false,
+                lastSealTime: null
+            };
+
+            // Create AI teams
+            const selectedAINames = aiTeamNames
+                .sort(() => Math.random() - 0.5)  // Shuffle
+                .slice(0, aiTeamCount);           // Take required number
+
+            const aiTeams = selectedAINames.map(name => ({
+                name: name,
+                score: 0,
+                completedSeals: [],
+                isAI: true,
+                lastSealTime: null,
+                nextSealTime: null
+            }));
+
+            // Combine all teams
+            gameState.teams = [playerTeam, ...aiTeams];
+            gameState.aiTeams = aiTeams;
+
+            console.log('🤖 Teams created:', gameState.teams);
+
+            // Hide setup and show game
+            document.getElementById('aiSetup').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+
+            // Start game
+            gameState.isGameActive = true;
+            gameState.startTime = Date.now();
+
+            renderSeals();
+            startTimer();
+            updateProgress();
+            updateLeaderboard();
+
+            // Start AI progression
+            startAIProgression();
+
+            showAlert(`🤖 Competition started against ${aiTeamCount} AI team${aiTeamCount > 1 ? 's' : ''}!`, 'success');
+        }
+
+        function startAIProgression() {
+            console.log('🤖 Starting AI progression with difficulty:', gameState.aiDifficulty);
+            
+            const settings = aiDifficultySettings[gameState.aiDifficulty];
+            
+            gameState.aiTeams.forEach((aiTeam, index) => {
+                // Schedule first seal for each AI team with some initial delay and randomization
+                const initialDelay = (index + 1) * 2000 + Math.random() * 5000; // 2-7 seconds staggered start
+                
+                setTimeout(() => {
+                    if (gameState.isGameActive) {
+                        scheduleNextAISeal(aiTeam);
+                    }
+                }, initialDelay);
+            });
+        }
+
+        function scheduleNextAISeal(aiTeam) {
+            if (!gameState.isGameActive || aiTeam.score >= 7) return;
+
+            const settings = aiDifficultySettings[gameState.aiDifficulty];
+            
+            // Calculate next seal time with variance
+            const baseTime = settings.minTime + Math.random() * (settings.maxTime - settings.minTime);
+            const variance = (Math.random() - 0.5) * 2 * settings.variance; // -variance to +variance
+            const nextSealTime = baseTime * (1 + variance);
+            
+            console.log(`🤖 ${aiTeam.name} next seal in ${Math.round(nextSealTime/1000)}s`);
+            
+            const timer = setTimeout(() => {
+                if (gameState.isGameActive && aiTeam.score < 7) {
+                    completeAISeal(aiTeam);
+                }
+            }, nextSealTime);
+            
+            // Store timer for cleanup
+            gameState.aiTimers.push(timer);
+            aiTeam.nextSealTime = Date.now() + nextSealTime;
+        }
+
+        function completeAISeal(aiTeam) {
+            if (!gameState.isGameActive || aiTeam.score >= 7) return;
+
+            const sealNumber = aiTeam.score + 1;
+            aiTeam.score = sealNumber;
+            aiTeam.completedSeals.push(sealNumber);
+            aiTeam.lastSealTime = Date.now();
+
+            console.log(`🤖 ${aiTeam.name} completed seal ${sealNumber}!`);
+
+            // Update UI
+            updateLeaderboard();
+
+            // Check for winner
+            if (sealNumber === 7) {
+                console.log(`🏆 AI team ${aiTeam.name} completed all seals!`);
+                const completionTime = Date.now() - gameState.startTime;
+                handleAIGameEnd(aiTeam, completionTime);
+            } else {
+                // Schedule next seal
+                scheduleNextAISeal(aiTeam);
+            }
+        }
+
+        function handleAIGameEnd(winningTeam, completionTime) {
+            console.log('🏆 AI Game ended, winner:', winningTeam.name);
+            
+            gameState.isGameActive = false;
+            
+            // Clear all AI timers
+            gameState.aiTimers.forEach(timer => clearTimeout(timer));
+            gameState.aiTimers = [];
+            
+            // Calculate final rankings
+            const finalRankings = calculateAIFinalRankings();
+            
+            // Show winner modal with rankings
+            const isPlayerWinner = !winningTeam.isAI;
+            showWinnerModalWithRankings(winningTeam.name, completionTime, finalRankings, isPlayerWinner);
+            
+            // Lock game inputs
+            lockGameInputs();
+        }
+
+        function calculateAIFinalRankings() {
+            console.log('📊 Calculating AI game final rankings');
+            
+            const rankings = gameState.teams.map(team => ({
+                teamName: team.name,
+                sealsCompleted: team.score,
+                completionTime: team.score === 7 ? (Date.now() - gameState.startTime) : null,
+                lastSealTime: team.lastSealTime || Date.now(),
+                completed: team.score === 7,
+                isAI: team.isAI || false
+            }));
+
+            // Sort rankings: completed first, then by seals, then by completion/last seal time
+            rankings.sort((a, b) => {
+                if (a.completed && !b.completed) return -1;
+                if (!a.completed && b.completed) return 1;
+                
+                if (a.sealsCompleted !== b.sealsCompleted) {
+                    return b.sealsCompleted - a.sealsCompleted;
+                }
+                
+                if (a.completed && b.completed && a.completionTime && b.completionTime) {
+                    return a.completionTime - b.completionTime;
+                }
+                
+                if (a.lastSealTime && b.lastSealTime) {
+                    return a.lastSealTime - b.lastSealTime;
+                }
+                
+                return 0;
+            });
+
+            rankings.forEach((team, index) => {
+                team.rank = index + 1;
+            });
+
+            console.log('🏆 AI Final rankings:', rankings);
+            return rankings;
+        }
+
         // Expanded Bible Question Pool for Random Generation
         const bibleQuestionPool = [
             // Original Revelation questions
@@ -1430,9 +1695,10 @@
                 const item = document.createElement('div');
                 item.className = 'leaderboard-item';
                 const isCurrentTeam = team.name === gameState.currentTeam;
+                const teamLabel = isCurrentTeam ? ' (You)' : (team.isAI ? ' 🤖' : '');
                 item.innerHTML = `
                     <span class="leaderboard-rank">#${index + 1}</span>
-                    <span class="leaderboard-name">${team.name}${isCurrentTeam ? ' (You)' : ''}</span>
+                    <span class="leaderboard-name">${team.name}${teamLabel}</span>
                     <span class="leaderboard-score">${team.score}/7</span>
                 `;
                 leaderboardList.appendChild(item);
@@ -1495,7 +1761,7 @@
 
         function finishGame() {
             console.log('🏁 finishGame() called');
-            console.log('🎮 gameState.roomCode:', gameState.roomCode);
+            console.log('🎮 gameState.mode:', gameState.mode);
             console.log('👥 gameState.currentTeam:', gameState.currentTeam);
             
             gameState.isGameActive = false;
@@ -1503,13 +1769,23 @@
             const minutes = Math.floor(elapsed / 60000);
             const seconds = Math.floor((elapsed % 60000) / 1000);
 
-            // Winner detection is now handled in updateTeamProgressInFirebase()
-            // This function just handles single player completion
-            if (!gameState.roomCode || !gameState.currentTeam) {
+            if (gameState.mode === 'ai') {
+                // AI mode - player won!
+                console.log('🏆 AI mode - player completed all seals first!');
+                const playerTeam = gameState.teams.find(team => !team.isAI);
+                if (playerTeam) {
+                    playerTeam.score = 7;
+                    playerTeam.completedSeals = [...gameState.completedSeals];
+                    playerTeam.lastSealTime = Date.now();
+                }
+                handleAIGameEnd(playerTeam, elapsed);
+            } else if (gameState.roomCode) {
+                // Multiplayer mode - winner detection handled in Firebase update
+                console.log('🏆 Multiplayer mode - winner detection handled in Firebase update');
+            } else {
+                // Single player mode
                 console.log('🎮 Single player mode - showing completion message');
                 showAlert(`🎉 Congratulations! All seals opened in ${minutes}:${seconds.toString().padStart(2, '0')}!`, 'success');
-            } else {
-                console.log('🏆 Multiplayer mode - winner detection handled in Firebase update');
             }
         }
 
@@ -1697,6 +1973,7 @@
                     const completionDisplay = team.completed ? 
                         `✅ ${Math.floor((team.completionTime || 0) / 60000)}:${Math.floor(((team.completionTime || 0) % 60000) / 1000).toString().padStart(2, '0')}` : 
                         `⏱️ ${team.sealsCompleted}/7 seals`;
+                    const teamLabel = isCurrentTeam ? ' (YOU)' : (team.isAI ? ' 🤖' : '');
                     
                     rankingsHTML += `
                         <div style="display: flex; justify-content: space-between; align-items: center; 
@@ -1704,7 +1981,7 @@
                                     border-radius: 5px; ${isCurrentTeam ? 'border: 1px solid #ffd700;' : ''}">
                             <span style="color: #ffd700; font-weight: bold; min-width: 30px;">${medal}</span>
                             <span style="color: ${isCurrentTeam ? '#ffd700' : '#e8dcc0'}; flex: 1; margin: 0 10px; font-weight: ${isCurrentTeam ? 'bold' : 'normal'};">
-                                ${team.teamName}${isCurrentTeam ? ' (YOU)' : ''}
+                                ${team.teamName}${teamLabel}
                             </span>
                             <span style="color: #c9a96e; font-size: 0.9em;">${completionDisplay}</span>
                         </div>
@@ -1939,8 +2216,15 @@
                 gameState.roomRef = null;
             }
 
+            // Clean up AI timers
+            if (gameState.aiTimers) {
+                gameState.aiTimers.forEach(timer => clearTimeout(timer));
+                gameState.aiTimers = [];
+            }
+
             // Hide all game sections
             document.getElementById('multiplayerSetup').style.display = 'none';
+            document.getElementById('aiSetup').style.display = 'none';
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'none';
 
@@ -1958,7 +2242,11 @@
                 isGameActive: false,
                 roomCode: '',
                 isHost: false,
-                roomRef: null
+                roomRef: null,
+                // AI Mode specific
+                aiTeams: [],
+                aiTimers: [],
+                aiDifficulty: 'medium'
             };
 
             // Clear URL parameters
