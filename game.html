@@ -1088,9 +1088,14 @@
 
                     // Check if game has ended with a winner
                     if (roomData.status === 'finished' && roomData.winner && gameState.isGameActive) {
-                        console.log('🏆 Game ended, winner detected:', roomData.winner);
+                        console.log('🏆 ROOM LISTENER: Game ended, winner detected:', roomData.winner);
+                        console.log('🏆 ROOM LISTENER: Current team:', gameState.currentTeam);
+                        console.log('🏆 ROOM LISTENER: Is game active?', gameState.isGameActive);
                         const isWinner = roomData.winner === gameState.currentTeam;
+                        console.log('🏆 ROOM LISTENER: Is current team winner?', isWinner);
                         showWinnerModal(roomData.winner, roomData.completionTime || 0, isWinner);
+                    } else {
+                        console.log('🔍 ROOM LISTENER: Room status:', roomData.status, 'Winner:', roomData.winner, 'Game active:', gameState.isGameActive);
                     }
                 } else {
                     showAlert('Room no longer exists', 'error');
@@ -1314,6 +1319,9 @@
                 showAlert(`Seal ${gameState.currentPuzzle.number} opened!`, 'success');
 
                 if (gameState.completedSeals.length === 7) {
+                    console.log('🎉 TEAM COMPLETED ALL 7 SEALS!', gameState.currentTeam);
+                    console.log('🎮 Room code:', gameState.roomCode);
+                    console.log('🔥 Is multiplayer?', !!gameState.roomCode);
                     finishGame();
                 }
             } else {
@@ -1385,6 +1393,10 @@
         }
 
         function finishGame() {
+            console.log('🏁 finishGame() called');
+            console.log('🎮 gameState.roomCode:', gameState.roomCode);
+            console.log('👥 gameState.currentTeam:', gameState.currentTeam);
+            
             gameState.isGameActive = false;
             const elapsed = Date.now() - gameState.startTime;
             const minutes = Math.floor(elapsed / 60000);
@@ -1392,8 +1404,10 @@
 
             // Check if this is multiplayer and handle winner detection
             if (gameState.roomCode && gameState.currentTeam) {
+                console.log('🏆 Calling checkForGameWinner for multiplayer');
                 checkForGameWinner(elapsed);
             } else {
+                console.log('🎮 Single player mode - showing completion message');
                 // Single player completion
                 showAlert(`🎉 Congratulations! All seals opened in ${minutes}:${seconds.toString().padStart(2, '0')}!`, 'success');
             }
@@ -1402,7 +1416,14 @@
         // Check for game winner in multiplayer
         async function checkForGameWinner(completionTime) {
             try {
-                if (!database || !gameState.roomCode) return;
+                console.log('🏆 checkForGameWinner() called with time:', completionTime);
+                console.log('📡 Database available?', !!database);
+                console.log('🎮 Room code:', gameState.roomCode);
+                
+                if (!database || !gameState.roomCode) {
+                    console.log('❌ Missing database or room code, returning');
+                    return;
+                }
 
                 console.log('🏆 Checking for game winner...');
                 
@@ -1414,15 +1435,25 @@
                     finalScore: gameState.completedSeals.length
                 };
 
+                console.log('💾 Updating team data:', teamCompletionData);
+                console.log('📍 Path:', `rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`);
+                
                 await database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamCompletionData);
+                console.log('✅ Team data updated successfully');
 
                 // Check if this is the first team to complete
+                console.log('🔍 Checking room data for other completed teams...');
                 const roomSnapshot = await database.ref(`rooms/${gameState.roomCode}`).once('value');
                 const roomData = roomSnapshot.val();
+                
+                console.log('📊 Current room data:', roomData);
 
                 if (roomData && roomData.teams) {
                     const teams = Object.values(roomData.teams);
                     const completedTeams = teams.filter(team => team.completed);
+                    
+                    console.log('👥 All teams:', teams.map(t => ({ name: t.name, completed: t.completed })));
+                    console.log('🏁 Completed teams count:', completedTeams.length);
 
                     if (completedTeams.length === 1) {
                         // This is the winner! End the game for everyone
@@ -1435,15 +1466,21 @@
                             status: 'finished'
                         };
 
+                        console.log('💾 Setting winner data:', winnerData);
                         await database.ref(`rooms/${gameState.roomCode}`).update(winnerData);
+                        console.log('✅ Winner data saved to Firebase');
                         
                         // Show winner modal to all players
+                        console.log('🎉 Showing winner modal...');
                         showWinnerModal(gameState.currentTeam, completionTime, true);
                     } else {
                         // Someone else already won
+                        console.log('🥈 Another team already won');
                         const winner = completedTeams[0];
                         showWinnerModal(winner.name || 'Another team', winner.completionTime || 0, false);
                     }
+                } else {
+                    console.log('❌ No room data or teams found');
                 }
 
             } catch (error) {
@@ -1456,6 +1493,11 @@
 
         // Show winner modal to all players
         function showWinnerModal(winnerTeam, completionTime, isWinner) {
+            console.log('🎉 showWinnerModal() called');
+            console.log('🏆 Winner team:', winnerTeam);
+            console.log('⏰ Completion time:', completionTime);
+            console.log('🎯 Is winner?', isWinner);
+            
             const minutes = Math.floor(completionTime / 60000);
             const seconds = Math.floor((completionTime % 60000) / 1000);
             const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -1464,6 +1506,8 @@
             const modalMessage = isWinner ? 
                 `Your team has won the game!` : 
                 `${winnerTeam} has won the game!`;
+                
+            console.log('🎨 Creating modal with title:', modalTitle);
 
             const modalHTML = `
                 <div id="winnerModal" style="
