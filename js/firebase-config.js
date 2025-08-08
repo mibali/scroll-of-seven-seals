@@ -21,12 +21,19 @@ try {
         
         console.log('🔥 Firebase initialized successfully');
         
+        // Test connectivity after a short delay to ensure auth is ready
+        setTimeout(async () => {
+            await FirebaseUtils.testConnectivity();
+        }, 2000);
+        
         // Set up authentication state listener
         auth.onAuthStateChanged((user) => {
             if (user) {
                 console.log('👤 User authenticated:', user.uid);
+                console.log('👤 User details:', { uid: user.uid, isAnonymous: user.isAnonymous });
                 window.currentUser = user;
             } else {
+                console.log('👤 No user authenticated, signing in anonymously...');
                 // Sign in anonymously for game participation
                 auth.signInAnonymously().catch((error) => {
                     console.error('Authentication error:', error);
@@ -136,6 +143,28 @@ const FirebaseUtils = {
     // Validate room code format
     isValidRoomCode: (code) => {
         return /^[A-Z0-9]{6}$/.test(code);
+    },
+    
+    // Test Firebase connectivity
+    testConnectivity: async () => {
+        try {
+            console.log('🧪 Testing Firebase connectivity...');
+            const testRef = window.database.ref('test');
+            await testRef.set({ timestamp: Date.now(), test: 'connectivity' });
+            console.log('✅ Firebase write test successful');
+            
+            const snapshot = await testRef.once('value');
+            const data = snapshot.val();
+            console.log('✅ Firebase read test successful:', data);
+            
+            await testRef.remove();
+            console.log('✅ Firebase delete test successful');
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Firebase connectivity test failed:', error);
+            return false;
+        }
     }
 };
 

@@ -34,7 +34,12 @@ class MultiplayerManager {
 
             // Create the game in Firebase
             const gameRef = FirebaseUtils.ref(`games/${gameId}`);
+            console.log('🎮 Creating game with data:', gameData);
+            console.log('🏷️ Room code being saved:', roomCode);
+            console.log('📍 Game path:', `games/${gameId}`);
+            
             await gameRef.set(gameData);
+            console.log('✅ Game created successfully in Firebase');
 
             // Add the host team
             const teamData = await this.joinGameAsTeam(gameId, hostTeamName, hostTeamSize, true);
@@ -59,15 +64,25 @@ class MultiplayerManager {
     // Join an existing game with room code
     async joinGame(roomCode, teamName, teamSize) {
         try {
+            console.log('🚪 Attempting to join game with room code:', roomCode);
+            console.log('👥 Team details:', { teamName, teamSize });
+            
             if (!FirebaseUtils.isValidRoomCode(roomCode)) {
+                console.log('❌ Invalid room code format:', roomCode);
                 throw new Error('Invalid room code format');
             }
+            console.log('✅ Room code format is valid');
 
             // Find game by room code
+            console.log('🔍 Searching for game...');
             const gameId = await this.findGameByRoomCode(roomCode);
+            console.log('🔍 Search result - Game ID:', gameId);
+            
             if (!gameId) {
+                console.log('❌ Game not found for room code:', roomCode);
                 throw new Error('Game not found');
             }
+            console.log('✅ Game found:', gameId);
 
             // Check if game is available for joining
             const gameRef = FirebaseUtils.ref(`games/${gameId}`);
@@ -144,18 +159,33 @@ class MultiplayerManager {
     // Find game by room code
     async findGameByRoomCode(roomCode) {
         try {
+            console.log('🔍 Searching for room code:', roomCode);
+            
             const gamesRef = FirebaseUtils.ref('games');
+            console.log('📡 Games ref created, querying Firebase...');
+            
             const snapshot = await gamesRef.orderByChild('roomCode').equalTo(roomCode).once('value');
             const games = snapshot.val();
             
+            console.log('📊 Firebase query result:', games);
+            console.log('📊 Snapshot exists:', snapshot.exists());
+            
+            // Also try to get all games to see what's in the database
+            const allGamesSnapshot = await gamesRef.once('value');
+            const allGames = allGamesSnapshot.val();
+            console.log('📋 All games in database:', allGames);
+            
             if (games) {
                 const gameIds = Object.keys(games);
+                console.log('✅ Found game IDs:', gameIds);
                 return gameIds[0]; // Return the first (should be only) match
             }
             
+            console.log('❌ No games found for room code:', roomCode);
             return null;
         } catch (error) {
-            console.error('Error finding game:', error);
+            console.error('❌ Error finding game:', error);
+            console.error('Error details:', error.message, error.stack);
             return null;
         }
     }
