@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Scroll of Seven Seals - Final Multiplayer v1.2.1</title>
+    <title>The Scroll of Seven Seals - FIXED WINNER v1.3.0</title>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -782,7 +782,7 @@
         };
 
         // VERSION CHECK - Force browser cache refresh
-        console.log('🚀 GAME VERSION: v1.2.1 - Enhanced AI Winner Detection');
+        console.log('🚀 GAME VERSION: v1.3.0 - AGGRESSIVE WINNER FIX');
         console.log('📅 Code loaded at:', new Date().toISOString());
         
         // EMERGENCY WINNER TESTING - Call from console if needed
@@ -1708,6 +1708,59 @@
                 }
 
                 console.log('🎯 SEAL COMPLETED - Mode:', gameState.mode, 'Team:', gameState.currentTeam, 'Score:', gameState.completedSeals.length);
+                
+                // AGGRESSIVE IMMEDIATE WINNER CHECK - Check after EVERY seal completion
+                if (gameState.mode === 'ai' && gameState.completedSeals.length === 7) {
+                    console.log('🚨 IMMEDIATE AI MODE WIN DETECTED - FORCING WINNER MODAL NOW!');
+                    
+                    // Stop everything immediately
+                    gameState.isGameActive = false;
+                    
+                    // Clear all AI timers
+                    if (gameState.aiTimers) {
+                        gameState.aiTimers.forEach(timer => clearTimeout(timer));
+                        gameState.aiTimers = [];
+                    }
+                    
+                    // Force immediate winner handling
+                    const elapsed = Date.now() - gameState.startTime;
+                    const playerTeam = gameState.teams.find(team => !team.isAI) || { 
+                        name: gameState.currentTeam, 
+                        isAI: false, 
+                        score: 7,
+                        completedSeals: [...gameState.completedSeals],
+                        lastSealTime: Date.now()
+                    };
+                    
+                    console.log('🏆 CALLING DIRECT WINNER MODAL DISPLAY');
+                    
+                    // Calculate rankings immediately
+                    const finalRankings = gameState.teams.map(team => ({
+                        teamName: team.name,
+                        sealsCompleted: team.name === gameState.currentTeam ? 7 : (team.score || 0),
+                        completionTime: team.name === gameState.currentTeam ? elapsed : null,
+                        lastSealTime: team.lastSealTime || Date.now(),
+                        completed: team.name === gameState.currentTeam,
+                        isAI: team.isAI || false,
+                        rank: 0
+                    })).sort((a, b) => {
+                        if (a.completed && !b.completed) return -1;
+                        if (!a.completed && b.completed) return 1;
+                        if (a.sealsCompleted !== b.sealsCompleted) return b.sealsCompleted - a.sealsCompleted;
+                        return (a.completionTime || 999999) - (b.completionTime || 999999);
+                    }).map((team, index) => ({ ...team, rank: index + 1 }));
+                    
+                    // Show winner modal immediately
+                    try {
+                        showWinnerModalWithRankings(gameState.currentTeam, elapsed, finalRankings, true);
+                        lockGameInputs();
+                    } catch (error) {
+                        console.error('Winner modal failed:', error);
+                        alert(`🏆 CONGRATULATIONS! You won in ${Math.floor(elapsed/60000)}:${Math.floor((elapsed%60000)/1000).toString().padStart(2,'0')}!`);
+                    }
+                    
+                    return; // Exit early to prevent double processing
+                }
 
                 // Update Firebase if in multiplayer (check for roomCode instead of mode)
                 if (gameState.roomCode && gameState.currentTeam) {
