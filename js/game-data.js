@@ -1,235 +1,381 @@
-// Game Data - Seals and Puzzle Variations
+// Game Data - Enhanced Seal Challenges
 const seals = [
     {
         id: 1,
-        title: "The Garden Cipher",
-        theme: "Creation & Fall",
-        description: "Decode the sequence of creation events in the Garden of Eden. Arrange the events in chronological order to reveal the hidden keyword.",
-        puzzle: "gardenCipher",
+        title: "The Scripture Knowledge Trial",
+        theme: "Biblical Foundation",
+        description: "BIBLE KNOWLEDGE CHALLENGE: Answer precise scriptural questions requiring deep biblical recall. No hints provided - pure knowledge test.",
+        puzzle: "bibleKnowledge",
+        challengeType: "Bible Knowledge",
         requiredSeals: []
     },
     {
         id: 2,
-        title: "The Blood Trail",
-        theme: "Sacrifice & Redemption", 
-        description: "Follow the trail of sacrificial blood through the Old Testament. Solve riddles about biblical sacrifices to unlock the keyword.",
-        puzzle: "bloodTrail",
+        title: "The Covenant Logic Puzzle",
+        theme: "Divine Reasoning",
+        description: "LOGICAL REASONING CHALLENGE: Solve complex deduction problems based on biblical principles and logical patterns. Use Scripture-based clues to reach the solution.",
+        puzzle: "logicalReasoning",
+        challengeType: "Logical Reasoning",
         requiredSeals: [1]
     },
     {
         id: 3,
-        title: "The Prophecy Scroll",
-        theme: "Prophets & Fulfillment",
-        description: "Match Old Testament prophecies with their New Testament fulfillments. Correct matching reveals the prophetic keyword.",
-        puzzle: "prophetsPuzzle", 
+        title: "The Unity Communication Matrix",
+        theme: "Team Coordination",
+        description: "TEAM COMMUNICATION CHALLENGE: Coordinate with your team to solve interconnected puzzles. Each member must contribute specific biblical knowledge to unlock the seal.",
+        puzzle: "teamCommunication",
+        challengeType: "Team Communication",
         requiredSeals: [2]
     },
     {
         id: 4,
-        title: "The Parable Labyrinth",
-        theme: "Teachings & Parables",
-        description: "Navigate through Jesus' parables by answering questions correctly. Each correct path leads closer to the truth.",
-        puzzle: "parableLabyrinth",
+        title: "The Ancient Cipher of Solomon",
+        theme: "Hidden Wisdom",
+        description: "CODE-BREAKING CHALLENGE: Decipher complex biblical codes and ancient ciphers. Break encrypted messages using scriptural patterns and numerical systems.",
+        puzzle: "codeBreaking",
+        challengeType: "Code-Breaking",
         requiredSeals: [3]
     },
     {
         id: 5,
-        title: "The Upper Room Lockbox",
-        theme: "Last Supper & Betrayal",
-        description: "Unlock the mysterious lockbox using clues from the Last Supper. Numbers and symbols hold the key to the combination.",
-        puzzle: "upperRoomLockbox",
+        title: "The Parable Interpretation Challenge",
+        theme: "Spiritual Insight",
+        description: "METAPHORICAL SCRIPTURE CHALLENGE: Interpret deep spiritual meanings hidden within parables and symbolic passages. Uncover the non-literal truths.",
+        puzzle: "metaphoricalScripture",
+        challengeType: "Interpreting Metaphorical Scripture",
         requiredSeals: [4]
     },
     {
         id: 6,
-        title: "The Church Underground",
-        theme: "Early Church & Persecution",
-        description: "Decode secret messages from the persecuted early church. Break the cipher to read the apostolic letters.",
-        puzzle: "churchUnderground", 
+        title: "The Prophecy Logic Network",
+        theme: "Prophetic Reasoning",
+        description: "LOGICAL REASONING CHALLENGE: Connect prophetic timelines and logical sequences. Use deductive reasoning to solve complex biblical mysteries.",
+        puzzle: "prophethicLogic",
+        challengeType: "Logical Reasoning",
         requiredSeals: [5]
     },
     {
         id: 7,
-        title: "The Apocalypse Map",
-        theme: "Revelation & End Times",
-        description: "Decipher the symbolic language of Revelation. Solve the final mysteries to unlock the ultimate truth.",
-        puzzle: "apocalypseMap",
+        title: "The Revelation Code Matrix",
+        theme: "End Times Mystery",
+        description: "CODE-BREAKING CHALLENGE: Decrypt the ultimate biblical mystery using advanced symbolic patterns and numerical codes from Revelation.",
+        puzzle: "revelationCode",
+        challengeType: "Code-Breaking",
         requiredSeals: [6]
     }
 ];
 
-// Multiple puzzle variations for replayability
+// Enhanced Challenge Variations for replayability
 const puzzleVariations = {
-    gardenCipher: [
+    // SEAL 1: Bible Knowledge Challenge - Deep Scriptural Recall
+    bibleKnowledge: [
         {
-            keyword: "INNOCENCE",
-            events: [
-                {text: "In the beginning God created light", letter: "I", order: 1},
-                {text: "Next God separated the waters above from below", letter: "N", order: 2},
-                {text: "Now dry land appeared and was called Earth", letter: "N", order: 3},
-                {text: "On the fourth day God made sun and moon", letter: "O", order: 4},
-                {text: "Creatures of the sea were brought forth", letter: "C", order: 5},
-                {text: "Every beast of the earth was created", letter: "E", order: 6},
-                {text: "Now man was formed from dust of the ground", letter: "N", order: 7},
-                {text: "Carefully God formed woman from man's rib", letter: "C", order: 8},
-                {text: "Evil entered when serpent tempted Eve", letter: "E", order: 9}
+            keyword: "SALVATION",
+            questions: [
+                {question: "How many days did it rain during Noah's flood?", correctAnswer: "40", type: "exact"},
+                {question: "Who was the mother of Samuel the prophet?", correctAnswer: "HANNAH", type: "exact"},
+                {question: "What mountain did Moses receive the Ten Commandments?", correctAnswer: "SINAI", type: "exact"},
+                {question: "How many times did Peter deny Jesus?", correctAnswer: "3", type: "exact"},
+                {question: "What was the name of Abraham's wife?", correctAnswer: "SARAH", type: "exact"},
+                {question: "In which book is 'For God so loved the world' found?", correctAnswer: "JOHN", type: "exact"},
+                {question: "How many plagues were sent upon Egypt?", correctAnswer: "10", type: "exact"},
+                {question: "What was the name of the first high priest of Israel?", correctAnswer: "AARON", type: "exact"}
             ]
         },
         {
-            keyword: "BEGINNING",
-            events: [
-                {text: "Before anything existed, God was", letter: "B", order: 1},
-                {text: "Earth was formless and empty", letter: "E", order: 2},
-                {text: "God's Spirit moved over the waters", letter: "G", order: 3},
-                {text: "Into darkness God spoke 'Let there be light'", letter: "I", order: 4},
-                {text: "Night and day were separated", letter: "N", order: 5},
-                {text: "Next came the expanse called Heaven", letter: "N", order: 6},
-                {text: "Initially plants and trees were made", letter: "I", order: 7},
-                {text: "Nature received the gift of man", letter: "N", order: 8},
-                {text: "Grace was given through the breath of life", letter: "G", order: 9}
-            ]
-        },
-        {
-            keyword: "PARADISE",
-            events: [
-                {text: "Perfect harmony existed in the beginning", letter: "P", order: 1},
-                {text: "All was very good in God's sight", letter: "A", order: 2},
-                {text: "Rivers watered the garden of Eden", letter: "R", order: 3},
-                {text: "Animals came to Adam to be named", letter: "A", order: 4},
-                {text: "Deep sleep fell upon the man", letter: "D", order: 5},
-                {text: "Into being came woman as helper", letter: "I", order: 6},
-                {text: "Serpent was more cunning than any beast", letter: "S", order: 7},
-                {text: "Eve saw the fruit was good for food", letter: "E", order: 8}
+            keyword: "REDEMPTION",
+            questions: [
+                {question: "How many stones did David pick for his battle with Goliath?", correctAnswer: "5", type: "exact"},
+                {question: "What was the name of the prophetess who spoke over baby Jesus?", correctAnswer: "ANNA", type: "exact"},
+                {question: "Which king built the first temple in Jerusalem?", correctAnswer: "SOLOMON", type: "exact"},
+                {question: "How many years did the Israelites wander in the desert?", correctAnswer: "40", type: "exact"},
+                {question: "What was the name of Moses' brother?", correctAnswer: "AARON", type: "exact"},
+                {question: "In what city was Jesus born?", correctAnswer: "BETHLEHEM", type: "exact"},
+                {question: "How many disciples did Jesus choose?", correctAnswer: "12", type: "exact"},
+                {question: "What was the name of the first martyr?", correctAnswer: "STEPHEN", type: "exact"}
             ]
         }
     ],
     
-    bloodTrail: [
+    // SEAL 2: Logical Reasoning Challenge - Biblical Deduction
+    logicalReasoning: [
         {
-            keyword: "GRACE",
-            riddles: [
-                {question: "The offering that pleased God more than Cain's (Genesis 4)", answer: "GOAT", placeholder: "G___"},
-                {question: "What Abraham almost sacrificed (Genesis 22)", answer: "RAM", placeholder: "R__"},
-                {question: "The bronze serpent maker (Numbers 21)", answer: "AARON", placeholder: "A____"},
-                {question: "David's sin offering location (2 Samuel 24)", answer: "CORNER", placeholder: "C_____"},
-                {question: "What saved Israel's firstborn (Exodus 12)", answer: "EXODUS", placeholder: "E_____"}
+            keyword: "COVENANT",
+            puzzles: [
+                {
+                    type: "sequence",
+                    question: "Complete the biblical number sequence: 7 (days of creation), 40 (flood), 12 (tribes), ?, 70 (years of captivity)",
+                    options: ["144", "153", "50", "3"],
+                    correctAnswer: "50",
+                    explanation: "50 represents Pentecost (50 days after Passover)"
+                },
+                {
+                    type: "logical",
+                    question: "If David was a shepherd, king, and psalmist, and Solomon was a king, builder, and wise man, what role connects all Old Testament leaders mentioned?",
+                    correctAnswer: "KING",
+                    explanation: "The common thread is leadership/kingship"
+                },
+                {
+                    type: "deduction",
+                    question: "Three disciples were closest to Jesus. Peter denied Him, John stood at the cross. Using logical deduction, who was the third?",
+                    correctAnswer: "JAMES",
+                    explanation: "James was part of the inner circle with Peter and John"
+                }
             ]
         },
         {
-            keyword: "MERCY",
-            riddles: [
-                {question: "The high priest who entered the holy of holies", answer: "MOSES", placeholder: "M____"},
-                {question: "What covered the ark of the covenant", answer: "EPHOD", placeholder: "E____"},
-                {question: "The place where blood was sprinkled yearly", answer: "ROOM", placeholder: "R___"},
-                {question: "Offering for unintentional sin", answer: "CITIES", placeholder: "C_____"},
-                {question: "Day of Atonement occurs in this month", answer: "YEAR", placeholder: "Y___"}
+            keyword: "WISDOM", 
+            puzzles: [
+                {
+                    type: "pattern",
+                    question: "Pattern: Moses (Exodus), Joshua (Conquest), David (Kingdom), Solomon (?). What comes next logically?",
+                    options: ["Division", "Temple", "Exile", "Peace"],
+                    correctAnswer: "Division",
+                    explanation: "The kingdom split after Solomon's reign"
+                },
+                {
+                    type: "reasoning",
+                    question: "If Abraham had faith, Isaac was promised, and Jacob was chosen, what logical attribute defines Joseph?",
+                    correctAnswer: "PERSEVERANCE",
+                    explanation: "Joseph persevered through trials to fulfill God's plan"
+                }
             ]
         }
     ],
-    
-    prophetsPuzzle: [
+
+    // SEAL 3: Team Communication Challenge - Coordinated Biblical Knowledge
+    teamCommunication: [
+        {
+            keyword: "UNITY",
+            challenges: [
+                {
+                    type: "collaborative",
+                    title: "The Trinity Formation",
+                    description: "Each team member must provide one aspect of God's nature that works together",
+                    parts: [
+                        {role: "Member 1", task: "Name the Father's primary attribute", answer: "CREATOR"},
+                        {role: "Member 2", task: "Name the Son's earthly mission", answer: "REDEEMER"},  
+                        {role: "Member 3", task: "Name the Spirit's current work", answer: "COMFORTER"}
+                    ],
+                    completionRequirement: "All three answers must be provided by different team members"
+                },
+                {
+                    type: "chain",
+                    title: "The Covenant Chain",
+                    description: "Build the covenant progression where each member adds one link",
+                    sequence: [
+                        {order: 1, clue: "Started with Adam", answer: "CREATION"},
+                        {order: 2, clue: "Continued with Noah", answer: "PRESERVATION"},
+                        {order: 3, clue: "Established with Abraham", answer: "PROMISE"},
+                        {order: 4, clue: "Fulfilled through Christ", answer: "SALVATION"}
+                    ]
+                }
+            ]
+        },
+        {
+            keyword: "FELLOWSHIP",
+            challenges: [
+                {
+                    type: "division",
+                    title: "The Apostle Network",
+                    description: "Each member must identify different apostles and their unique contributions",
+                    parts: [
+                        {role: "Leader", task: "The rock of the church", answer: "PETER"},
+                        {role: "Scholar", task: "The apostle to the Gentiles", answer: "PAUL"},
+                        {role: "Witness", task: "The beloved disciple", answer: "JOHN"}
+                    ]
+                }
+            ]
+        }
+    ],
+
+    // SEAL 4: Code-Breaking Challenge - Biblical Ciphers
+    codeBreaking: [
+        {
+            keyword: "MYSTERY",
+            codes: [
+                {
+                    type: "gematria",
+                    cipher: "Hebrew Letter Values",
+                    message: "י ה ו ה",
+                    hint: "Add the values: Yod(10) + He(5) + Vav(6) + He(5)",
+                    solution: "26",
+                    verification: "The sacred name equals 26"
+                },
+                {
+                    type: "atbash",
+                    cipher: "Atbash Cipher (A=Z, B=Y, etc.)",
+                    message: "SVOOL",
+                    solution: "HELLO",
+                    hint: "Biblical scribes used this cipher in Jeremiah"
+                },
+                {
+                    type: "biblical_substitution",
+                    cipher: "Book of Numbers Cipher",
+                    message: "7 12 15 22 5",
+                    hint: "Each number represents a Bible book position (Genesis=1, Exodus=2, etc.)",
+                    solution: "GLORY",
+                    explanation: "Judges(7)=G, Kings(12)=L, Proverbs(15)=O, Revelation(22)=R, Deuteronomy(5)=Y"
+                }
+            ]
+        },
+        {
+            keyword: "REVELATION",
+            codes: [
+                {
+                    type: "cross_reference",
+                    cipher: "Scripture Cross-Reference Code",
+                    message: "John 3:16, Romans 6:23, Ephesians 2:8-9",
+                    hint: "What doctrine do these verses teach?",
+                    solution: "SALVATION",
+                    explanation: "All verses teach salvation by grace through faith"
+                },
+                {
+                    type: "numerical",
+                    cipher: "Biblical Number Code",
+                    message: "3 (Trinity) + 12 (Disciples) + 40 (Testing) - 8 (New Beginning) = ?",
+                    solution: "47",
+                    hint: "Calculate the biblical significance sum"
+                }
+            ]
+        }
+    ],
+
+    // SEAL 5: Metaphorical Scripture Challenge - Spiritual Interpretation
+    metaphoricalScripture: [
         {
             keyword: "TRUTH",
-            prophecies: [
-                {prophecy: "Born in Bethlehem (Micah 5:2)", fulfillment: "Jesus born in Bethlehem (Luke 2:4-7)", id: 1},
-                {prophecy: "Born of a virgin (Isaiah 7:14)", fulfillment: "Jesus born of Mary (Luke 1:27-31)", id: 2},
-                {prophecy: "Betrayed for 30 pieces (Zechariah 11:12)", fulfillment: "Judas' betrayal (Matthew 26:14-16)", id: 3},
-                {prophecy: "Pierced hands and feet (Psalm 22:16)", fulfillment: "Jesus crucified (John 19:18)", id: 4},
-                {prophecy: "Rise from the dead (Psalm 16:10)", fulfillment: "Jesus rises on third day (Luke 24:6-7)", id: 5}
+            interpretations: [
+                {
+                    passage: "I am the vine, you are the branches",
+                    surface: "Jesus uses agricultural metaphor",
+                    deeper: "Spiritual connection and dependence on Christ for life",
+                    question: "What does the 'fruit' represent in this metaphor?",
+                    answer: "GOOD WORKS",
+                    explanation: "The fruit represents the good works that flow from our connection to Christ"
+                },
+                {
+                    passage: "The kingdom of heaven is like a mustard seed",
+                    surface: "Small seed grows into large plant",
+                    deeper: "Small beginnings can have great spiritual impact",
+                    question: "What does the 'growth' symbolize?",
+                    answer: "FAITH EXPANSION",
+                    explanation: "The growth represents how faith spreads and influences others"
+                },
+                {
+                    passage: "Be wise as serpents, innocent as doves",
+                    surface: "Conflicting animal characteristics",
+                    deeper: "Balance wisdom with purity in spiritual life",
+                    question: "What is the spiritual balance being taught?",
+                    answer: "DISCERNMENT WITH PURITY",
+                    explanation: "Christians should be discerning yet maintain moral innocence"
+                }
             ]
         },
         {
             keyword: "LIGHT",
-            prophecies: [
-                {prophecy: "Suffering servant (Isaiah 53:3)", fulfillment: "Jesus despised and rejected (John 1:11)", id: 1},
-                {prophecy: "Silent before accusers (Isaiah 53:7)", fulfillment: "Jesus silent before Pilate (Matthew 27:14)", id: 2},
-                {prophecy: "Divided garments (Psalm 22:18)", fulfillment: "Soldiers cast lots for Jesus' clothes (John 19:24)", id: 3},
-                {prophecy: "Given vinegar to drink (Psalm 69:21)", fulfillment: "Jesus given sour wine (John 19:29)", id: 4},
-                {prophecy: "Ascended on high (Psalm 68:18)", fulfillment: "Jesus ascends to heaven (Acts 1:9)", id: 5}
+            interpretations: [
+                {
+                    passage: "You are the light of the world",
+                    surface: "Christians compared to light",
+                    deeper: "Believers illuminate spiritual darkness for others",
+                    question: "What does 'shining your light' mean spiritually?",
+                    answer: "WITNESSING",
+                    explanation: "Letting others see Christ through our actions and words"
+                },
+                {
+                    passage: "I am the bread of life",
+                    surface: "Jesus compared to food",
+                    deeper: "Jesus provides spiritual sustenance for eternal life",
+                    question: "What does 'eating this bread' represent?",
+                    answer: "BELIEVING",
+                    explanation: "Spiritual consumption means accepting and believing in Jesus"
+                }
             ]
         }
     ],
-    
-    parableLabyrinth: [
+
+    // SEAL 6: Advanced Logical Reasoning - Prophetic Logic
+    prophethicLogic: [
         {
-            keyword: "WISDOM",
-            questions: [
-                {question: "In the Parable of the Sower, what represents the Word of God?", options: ["The sower", "The soil", "The birds", "The seed"], correct: 3},
-                {question: "In the Parable of the Lost Sheep, how many sheep were safe?", options: ["98", "100", "99", "97"], correct: 2},
-                {question: "In the Parable of the Talents, what happened to the servant who buried his talent?", options: ["Rewarded", "Punished", "Forgiven", "Promoted"], correct: 1}
-            ]
-        },
-        {
-            keyword: "KINGDOM",
-            questions: [
-                {question: "What is the Kingdom of Heaven like according to Jesus?", options: ["A mustard seed", "A treasure", "A pearl", "All of these"], correct: 3},
-                {question: "In the parable of the wedding feast, who was invited first?", options: ["The poor", "The rich", "The invited guests", "Everyone"], correct: 2},
-                {question: "What did the good Samaritan do that others didn't?", options: ["Prayed", "Gave money", "Showed mercy", "Called for help"], correct: 2}
-            ]
-        }
-    ],
-    
-    upperRoomLockbox: [
-        {
-            keyword: "LOVE",
-            code: "1312",
-            clues: [
-                {text: "The number of disciples present at the Last Supper", answer: "12"},
-                {text: "The new commandment Jesus gave (John chapter)", answer: "13"},
-                {text: "First digit: John chapter of the new commandment", hint: "13"},
-                {text: "Last two digits: Number of disciples at the table", hint: "12"}
-            ]
-        },
-        {
-            keyword: "FAITH", 
-            code: "3316",
-            clues: [
-                {text: "For God so loved the world (John 3:__)", answer: "16"},
-                {text: "The most famous verse number in John 3", answer: "16"},
-                {text: "First two digits: John chapter with famous verse", hint: "33"},
-                {text: "Last two digits: The verse number", hint: "16"}
-            ]
-        }
-    ],
-    
-    churchUnderground: [
-        {
-            keyword: "HOPE",
-            letters: [
-                {sender: "Paul", cipher: "Caesar +3", encrypted: "KROG RQWR IDLWK", decrypted: "HOLD ONTO FAITH"},
-                {sender: "Peter", cipher: "Reverse", encrypted: "EPOH NI TSIRCH", decrypted: "HOPE IN CHRIST"},
-                {sender: "John", cipher: "Caesar +5", encrypted: "QTAK NS QNAJ", decrypted: "LOVE IS LIFE"}
-            ]
-        },
-        {
-            keyword: "PEACE",
-            letters: [
-                {sender: "Paul", cipher: "Caesar +2", encrypted: "RGEEG KG EJTKUV", decrypted: "PEACE IN CHRIST"},
-                {sender: "Peter", cipher: "Reverse", encrypted: "ECAEP EB HTIW UOY", decrypted: "PEACE BE WITH YOU"},
-                {sender: "James", cipher: "Caesar +1", encrypted: "GBJUI CSVJHUT VT", decrypted: "FAITH BRINGS US"}
-            ]
-        }
-    ],
-    
-    apocalypseMap: [
-        {
-            keyword: "VICTORY",
-            puzzles: [
-                {question: "How many churches received letters in Revelation?", options: ["5", "6", "7", "8"], correct: "7"},
-                {question: "The number of seals on the scroll", answer: "7"},
-                {question: "How many trumpets were blown?", options: ["6", "7", "8", "9"], correct: "7"},
-                {question: "The number of bowls of wrath", answer: "7"},
-                {question: "What number appears most in Revelation?", options: ["3", "7", "12", "666"], correct: "7"}
+            keyword: "PROMISE",
+            logic_chains: [
+                {
+                    premise1: "All of God's promises are Yes and Amen in Christ",
+                    premise2: "Abraham was given a promise about his descendants",
+                    premise3: "Christ is Abraham's ultimate descendant",
+                    conclusion_question: "Therefore, what is fulfilled in Christ?",
+                    answer: "ALL PROMISES",
+                    explanation: "Christ fulfills all of God's promises to Abraham and beyond"
+                },
+                {
+                    timeline: "Promise → Prophecy → Fulfillment",
+                    events: [
+                        {stage: "Promise", content: "Messiah promised to Adam and Eve"},
+                        {stage: "Prophecy", content: "Details given through prophets"},
+                        {stage: "Fulfillment", content: "Jesus fulfills all prophecies"}
+                    ],
+                    question: "What logical principle governs biblical prophecy?",
+                    answer: "DIVINE FAITHFULNESS",
+                    explanation: "God's faithfulness ensures all prophecies are fulfilled"
+                }
             ]
         },
         {
             keyword: "ETERNAL",
-            puzzles: [
-                {question: "The beast's number (Revelation 13:18)", answer: "666"},
-                {question: "How many elders around the throne?", options: ["12", "24", "36", "48"], correct: "24"},
-                {question: "The number of tribes sealed", answer: "12"},
-                {question: "Dimensions of New Jerusalem (thousand stadia)", answer: "12"},
-                {question: "Gates in the New Jerusalem", options: ["8", "10", "12", "16"], correct: "12"}
+            logic_chains: [
+                {
+                    syllogism: "If God is eternal, and Jesus is God, then Jesus is eternal",
+                    question: "What does this mean for salvation?",
+                    answer: "ETERNAL SECURITY",
+                    explanation: "Salvation secured by an eternal Savior is itself eternal"
+                }
+            ]
+        }
+    ],
+
+    // SEAL 7: Advanced Code-Breaking - Revelation Mysteries
+    revelationCode: [
+        {
+            keyword: "VICTORY",
+            ultimate_codes: [
+                {
+                    type: "symbolic_matrix",
+                    cipher: "Seven-fold Pattern Cipher",
+                    elements: ["7 Churches", "7 Seals", "7 Trumpets", "7 Bowls", "7 Spirits", "7 Stars", "7 Lampstands"],
+                    pattern: "7x7=49",
+                    question: "What does the completion of seven sevens represent?",
+                    answer: "PERFECT COMPLETION",
+                    explanation: "Seven represents completion; seven sevens represents God's perfect completion"
+                },
+                {
+                    type: "numerical_prophecy",
+                    cipher: "Revelation Number Code",
+                    sequence: "144,000 (sealed) ÷ 12 (tribes) ÷ 12 (foundations) = ?",
+                    solution: "1000",
+                    meaning: "Complete perfection in God's people",
+                    verification: "1000 represents divine completeness"
+                },
+                {
+                    type: "symbolic_interpretation",
+                    cipher: "Beast Number Reverse",
+                    message: "If 666 represents imperfection, what represents perfection?",
+                    answer: "777",
+                    explanation: "777 represents divine perfection as the opposite of 666"
+                }
+            ]
+        },
+        {
+            keyword: "OMEGA",
+            ultimate_codes: [
+                {
+                    type: "alpha_omega",
+                    cipher: "Beginning and End Code",
+                    message: "I am the Alpha and the Omega",
+                    question: "What does this title reveal about Christ's nature?",
+                    answer: "ETERNAL EXISTENCE",
+                    explanation: "Christ exists from beginning to end of all things"
+                }
             ]
         }
     ]

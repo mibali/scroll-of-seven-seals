@@ -11,6 +11,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
 
+    <link rel="stylesheet" href="enhanced-styles.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
 
@@ -1640,8 +1641,8 @@
             }));
         }
 
-        // Generate random seals for each new game
-        let seals = generateRandomSeals();
+        // Use enhanced seals from game-data.js
+        let seals = window.GameData ? window.GameData.seals : [];
 
         function renderSeals() {
             const sealsGrid = document.getElementById('sealsGrid');
@@ -1649,12 +1650,15 @@
 
             seals.forEach(seal => {
                 const sealElement = document.createElement('div');
-                sealElement.className = `seal ${gameState.completedSeals.includes(seal.number) ? 'opened' : ''}`;
+                sealElement.className = `seal ${gameState.completedSeals.includes(seal.id) ? 'opened' : ''}`;
+                sealElement.setAttribute('data-challenge-type', seal.challengeType);
                 sealElement.onclick = () => openSeal(seal);
 
                 sealElement.innerHTML = `
-                    <div class="seal-number">${seal.number}</div>
+                    <div class="seal-number">${seal.id}</div>
                     <div class="seal-title">${seal.title}</div>
+                    <div class="seal-theme">${seal.theme}</div>
+                    <div class="challenge-type-indicator">${seal.challengeType}</div>
                 `;
 
                 sealsGrid.appendChild(sealElement);
@@ -1668,18 +1672,72 @@
                 return;
             }
             
-            if (gameState.completedSeals.includes(seal.number)) {
+            if (gameState.completedSeals.includes(seal.id)) {
                 showAlert('This seal is already opened!', 'error');
                 return;
             }
 
+            // Check if required seals are completed
+            if (seal.requiredSeals && seal.requiredSeals.length > 0) {
+                const missingSeals = seal.requiredSeals.filter(reqId => !gameState.completedSeals.includes(reqId));
+                if (missingSeals.length > 0) {
+                    showAlert(`Complete seals ${missingSeals.join(', ')} first!`, 'error');
+                    return;
+                }
+            }
+
             gameState.currentPuzzle = seal;
-            document.getElementById('puzzleTitle').textContent = `Seal ${seal.number}: ${seal.title}`;
-            document.getElementById('puzzleQuestion').textContent = seal.question;
-            document.getElementById('puzzleAnswer').value = '';
+            document.getElementById('puzzleTitle').textContent = `Seal ${seal.id}: ${seal.title}`;
+            
+            // Generate enhanced challenge content
+            if (window.PuzzleManager) {
+                const challengeContent = window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+                document.getElementById('puzzleQuestion').innerHTML = challengeContent;
+            } else {
+                document.getElementById('puzzleQuestion').innerHTML = `
+                    <p>Challenge loading...</p>
+                    <p>${seal.description}</p>
+                `;
+            }
+            
+            // Clear old answer input and hide it (challenges have their own inputs)
+            const oldAnswerInput = document.getElementById('puzzleAnswer');
+            if (oldAnswerInput) {
+                oldAnswerInput.style.display = 'none';
+            }
+            
             document.getElementById('puzzleModal').style.display = 'flex';
-            document.getElementById('puzzleAnswer').focus();
         }
+
+        // Enhanced seal completion function for new challenge system
+        function completeSeal(sealId) {
+            console.log('🔓 Completing seal:', sealId);
+            
+            if (!gameState.completedSeals.includes(sealId)) {
+                gameState.completedSeals.push(sealId);
+                console.log('✅ Seal completed, total seals:', gameState.completedSeals.length);
+                
+                // Update progress
+                updateProgress();
+                renderSeals();
+                
+                // Close the modal
+                document.getElementById('puzzleModal').style.display = 'none';
+                
+                // Check if all seals are completed
+                if (gameState.completedSeals.length === 7) {
+                    finishGame();
+                }
+                
+                // For multiplayer, update Firebase
+                if (gameState.roomCode && database) {
+                    updateMultiplayerProgress();
+                }
+            }
+        }
+
+        // Make completeSeal available globally for the enhanced challenge system
+        window.completeSeal = completeSeal;
 
         function submitAnswer() {
             // Check if game is still active
@@ -2495,6 +2553,10 @@
             }
         });
     </script>
+    
+    <!-- Enhanced Challenge System -->
+    <script src="js/game-data.js"></script>
+    <script src="js/puzzles.js"></script>
 </body>
 
 </html>
