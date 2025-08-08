@@ -13,6 +13,8 @@
     
     <!-- Enhanced Challenge System - Load BEFORE main game script -->
     <script src="js/game-data.js"></script>
+    <script src="js/dynamic-engine.js"></script>
+    <script src="js/immersion-engine.js"></script>
     <script src="js/puzzles.js"></script>
 
     <link rel="stylesheet" href="enhanced-styles.css">
@@ -1077,6 +1079,14 @@
             <!-- Universal Game Options -->
             <div class="game-options">
                 <div class="option-toggle">
+                    <span>🔊 Sound Effects:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="soundEnabled" onchange="toggleSound()" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="option-description">Play audio feedback for game actions</span>
+                </div>
+                <div class="option-toggle">
                     <span>💡 Enhanced Hints:</span>
                     <label class="toggle-switch">
                         <input type="checkbox" id="hintsEnabled" onchange="toggleHints()">
@@ -2079,7 +2089,7 @@
             });
         }
 
-        function openSeal(seal) {
+        async function openSeal(seal) {
             // Check if game is still active
             if (!gameState.isGameActive) {
                 showAlert('Game has ended. No more seals can be opened!', 'error');
@@ -2112,7 +2122,7 @@
             // Generate enhanced challenge content
             if (window.PuzzleManager && window.GameData) {
                 console.log('🎯 Loading enhanced challenge for seal:', seal.id, 'puzzle:', seal.puzzle);
-                const challengeContent = window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+                const challengeContent = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
                 document.getElementById('puzzleQuestion').innerHTML = challengeContent;
             } else {
                 console.error('❌ Enhanced system not available, falling back to description');
@@ -3089,6 +3099,22 @@
             localStorage.setItem('scrollGameOptions', JSON.stringify(gameOptions));
         }
 
+        // Toggle sound functionality
+        function toggleSound() {
+            if (window.ImmersionEngine) {
+                const isEnabled = window.ImmersionEngine.toggleSound();
+                document.getElementById('soundEnabled').checked = isEnabled;
+                
+                if (isEnabled) {
+                    showAlert('🔊 Sound effects enabled', 'success');
+                    // Play a test sound
+                    window.ImmersionEngine.playSound('sealActivation');
+                } else {
+                    showAlert('🔇 Sound effects disabled', 'info');
+                }
+            }
+        }
+
         // Toggle hints functionality
         function toggleHints() {
             gameOptions.hintsEnabled = document.getElementById('hintsEnabled').checked;
@@ -3159,6 +3185,11 @@
         // Initialize game options when game starts
         function initializeGameOptions() {
             loadGameOptions();
+            
+            // Initialize sound toggle
+            if (window.ImmersionEngine) {
+                document.getElementById('soundEnabled').checked = window.ImmersionEngine.soundEnabled;
+            }
             
             // Apply random mode setting
             if (gameOptions.randomMode) {
@@ -3494,26 +3525,50 @@
             }
         }
 
-        // Auto-initialize drag and drop when puzzle modal opens
-        function openSeal(sealId) {
-            // Existing seal opening code...
+        // Enhanced seal opening with immersive effects
+        async function openSeal(sealId) {
             const seal = window.GameData.seals.find(s => s.id === sealId);
             if (!seal) return;
             
+            // Find the seal element for visual effects
+            const sealElement = document.querySelector(`[onclick="openSeal(${sealId})"]`);
+            
+            // Trigger immersive seal activation
+            if (window.ImmersionEngine && sealElement) {
+                await window.ImmersionEngine.triggerSealActivation(sealElement, sealId);
+            }
+            
             gameState.currentPuzzle = seal;
             
-            document.getElementById('puzzleTitle').textContent = `Seal ${seal.id}: ${seal.title}`;
+            // Enhanced title with immersive elements
+            document.getElementById('puzzleTitle').innerHTML = `
+                <span class="seal-activation-title">
+                    <span class="seal-number-display">${seal.id}</span>
+                    ${seal.title}
+                </span>
+            `;
             
-            // Generate puzzle content
-            const puzzleContent = window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+            // Generate puzzle content (now with potential AI generation)
+            const puzzleContent = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
             document.getElementById('puzzleQuestion').innerHTML = puzzleContent;
             
-            // Show modal
-            document.getElementById('puzzleModal').style.display = 'block';
+            // Show modal with enhanced appearance
+            const modal = document.getElementById('puzzleModal');
+            modal.style.display = 'block';
+            
+            // Apply immersive modal effects
+            if (window.ImmersionEngine) {
+                window.ImmersionEngine.enhanceModalAppearance(modal, seal.puzzle);
+            }
             
             // Initialize drag and drop for new content
             setTimeout(() => {
                 initializeDragAndDrop();
+                
+                // Enhance drag and drop with visual effects
+                if (window.ImmersionEngine) {
+                    window.ImmersionEngine.enhanceDragAndDrop();
+                }
             }, 100);
         }
 

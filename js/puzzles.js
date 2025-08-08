@@ -9,7 +9,17 @@ class EnhancedPuzzleManager {
     }
 
     // Generate challenge content for a specific seal
-    generatePuzzleContent(sealId, puzzleType) {
+    async generatePuzzleContent(sealId, puzzleType) {
+        // Try dynamic generation first if AI engine is available
+        if (window.BibleGameAI && window.gameState?.complexity?.level) {
+            const dynamicContent = await this.generateDynamicContent(sealId, puzzleType);
+            if (dynamicContent) {
+                console.log(`🤖 AI-Generated content for ${puzzleType} - Seal ${sealId}`);
+                return this.renderDynamicContent(dynamicContent, puzzleType);
+            }
+        }
+
+        // Fallback to original system
         const variations = window.GameData.puzzleVariations[puzzleType];
         if (!variations || variations.length === 0) {
             return '<p>Challenge not available</p>';
@@ -726,12 +736,12 @@ class EnhancedPuzzleManager {
     }
 
     // Reset a challenge to initial state
-    resetChallenge(challengeType) {
+    async resetChallenge(challengeType) {
         const challengeContent = document.getElementById('puzzleContent');
         if (challengeContent) {
             const sealData = window.gameState.currentSeal;
             if (sealData) {
-                challengeContent.innerHTML = this.generatePuzzleContent(sealData.id, challengeType);
+                challengeContent.innerHTML = await this.generatePuzzleContent(sealData.id, challengeType);
             }
         }
     }
@@ -781,6 +791,391 @@ class EnhancedPuzzleManager {
         });
         
         console.log('✅ All puzzles regenerated for fresh game experience!');
+    }
+
+    // Dynamic content generation using AI engine
+    async generateDynamicContent(sealId, puzzleType) {
+        try {
+            const complexity = window.gameState?.complexity?.level || 'intermediate';
+            const gameSession = {
+                preferences: this.getPlayerPreferences(),
+                strengths: this.getPlayerStrengths(),
+                engagement: 'high'
+            };
+            
+            return await window.BibleGameAI.generateDynamicSeal(sealId, complexity, gameSession);
+        } catch (error) {
+            console.log('Dynamic generation failed, using fallback', error);
+            return null;
+        }
+    }
+
+    // Render dynamically generated content
+    renderDynamicContent(dynamicContent, puzzleType) {
+        // Store the dynamic content for validation
+        this.currentPuzzles[puzzleType] = dynamicContent;
+        
+        // Add immersive introduction
+        const immersiveIntro = dynamicContent.immersiveIntro || '';
+        
+        switch (puzzleType) {
+            case 'bibleKnowledge':
+                return this.renderDynamicBibleKnowledge(dynamicContent, immersiveIntro);
+            case 'chronologicalOrder':
+                return this.renderDynamicChronological(dynamicContent, immersiveIntro);
+            case 'scriptureTopics':
+                return this.renderDynamicScriptureTopics(dynamicContent, immersiveIntro);
+            case 'biblicalWisdom':
+                return this.renderDynamicWisdom(dynamicContent, immersiveIntro);
+            default:
+                return this.generateBibleKnowledgeContent(dynamicContent);
+        }
+    }
+
+    renderDynamicBibleKnowledge(content, intro) {
+        let questionsHtml = '';
+        
+        content.questions.forEach((question, index) => {
+            questionsHtml += `
+                <div class="knowledge-question">
+                    <div class="question-header">
+                        <span class="question-number">Question ${index + 1}:</span>
+                    </div>
+                    <div class="question-text">${question.question}</div>
+                    ${question.hints && question.hints.length > 0 ? `
+                        <div class="question-hints" style="font-size: 0.9em; color: #b8a082; margin: 5px 0;">
+                            ${question.hints.map(hint => `💡 ${hint}`).join('<br>')}
+                        </div>
+                    ` : ''}
+                    <div class="answer-input">
+                        <input type="text" 
+                               id="knowledge${index + 1}" 
+                               placeholder="Enter your answer" 
+                               class="knowledge-input"
+                               maxlength="50">
+                    </div>
+                </div>
+            `;
+        });
+
+        return `
+            <div class="bible-knowledge-challenge">
+                <div class="immersive-intro" style="
+                    background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255, 215, 0, 0.05));
+                    border: 1px solid #d4af37;
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    color: #d4af37;
+                    font-style: italic;
+                    text-align: center;
+                ">${intro}</div>
+                
+                <h3>📖 DYNAMIC SCRIPTURE KNOWLEDGE TRIAL</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ AI-GENERATED CHALLENGE</strong></p>
+                    <p>This unique challenge has been created specifically for your skill level.</p>
+                    <p><strong>Target Keyword:</strong> <span class="keyword-target">${content.keyword}</span></p>
+                </div>
+                
+                <div class="questions-container">
+                    ${questionsHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary" onclick="checkBibleKnowledge()">🔍 Verify Answers</button>
+                    <button class="btn secondary" onclick="resetChallenge('bibleKnowledge')">🔄 Reset</button>
+                    ${this.getComplexityHint('bibleKnowledge')}
+                </div>
+                
+                <div id="bibleKnowledgeResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
+    renderDynamicChronological(content, intro) {
+        // Shuffle events for display
+        const shuffledEvents = [...content.events].sort(() => Math.random() - 0.5);
+        
+        let eventsHtml = '';
+        shuffledEvents.forEach((event, index) => {
+            eventsHtml += `
+                <div class="drag-item" draggable="true" data-event-id="${event.id}">
+                    <div class="event-text">${event.text}</div>
+                    <div class="event-period" style="font-size: 0.8em; color: #b8a082; margin-top: 5px;">
+                        Period: ${event.period}
+                    </div>
+                </div>
+            `;
+        });
+
+        let timelineHtml = '';
+        for (let i = 0; i < content.events.length; i++) {
+            timelineHtml += `
+                <div class="drop-zone" data-position="${i}">
+                    Drop event ${i + 1} here
+                </div>
+            `;
+        }
+
+        return `
+            <div class="chronological-order-challenge">
+                <div class="immersive-intro" style="
+                    background: linear-gradient(135deg, rgba(147, 112, 219, 0.1), rgba(138, 43, 226, 0.05));
+                    border: 1px solid #9370db;
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    color: #9370db;
+                    font-style: italic;
+                    text-align: center;
+                ">${intro}</div>
+                
+                <h3>⏰ DYNAMIC CHRONOLOGICAL ORDER TRIAL</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ AI-GENERATED TIMELINE</strong></p>
+                    <p>This unique timeline has been crafted for your knowledge level.</p>
+                    <p><strong>Timeline:</strong> <span class="keyword-target">${content.timeline}</span></p>
+                </div>
+                
+                <div class="items-pool">
+                    <div class="pool-title">📜 Biblical Events (Drag to Timeline)</div>
+                    ${eventsHtml}
+                </div>
+                
+                <div class="chronology-timeline">
+                    <h4 style="color: #d4af37; text-align: center; margin-bottom: 15px;">⏳ Timeline (Earliest to Latest)</h4>
+                    ${timelineHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary" onclick="checkChronologicalOrder()">📅 Verify Timeline</button>
+                    <button class="btn secondary" onclick="resetChallenge('chronologicalOrder')">🔄 Reset</button>
+                    ${this.getComplexityHint('chronologicalOrder')}
+                </div>
+                
+                <div id="chronologicalOrderResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
+    getPlayerPreferences() {
+        // Analyze player's previous choices to determine preferences
+        const prefs = localStorage.getItem('playerPreferences');
+        return prefs ? JSON.parse(prefs) : {};
+    }
+
+    getPlayerStrengths() {
+        // Analyze completion patterns to identify strengths
+        const strengths = localStorage.getItem('playerStrengths');
+        return strengths ? JSON.parse(strengths) : [];
+    }
+
+    // Learning system tracking
+    recordSealSuccess(sealType, variation, sealNumber) {
+        try {
+            const sessionData = {
+                sealType,
+                sealNumber,
+                success: true,
+                timestamp: Date.now(),
+                difficulty: window.gameState?.complexity?.level || 'intermediate',
+                variation: variation.keyword || 'unknown',
+                timeTaken: this.getTimeTaken(sealNumber)
+            };
+            
+            // Update player preferences based on success
+            this.updatePlayerPreferences(sealType, true);
+            
+            // Update player strengths
+            this.updatePlayerStrengths(sealType, true);
+            
+            // Record in AI learning system
+            if (window.BibleGameAI) {
+                const learningData = {
+                    seal: sealNumber,
+                    type: sealType,
+                    success: true,
+                    engagement: 'high',
+                    timestamp: Date.now()
+                };
+                // Store for later batch processing
+                this.addToLearningQueue(learningData);
+            }
+            
+            console.log(`📊 Recorded success: Seal ${sealNumber} (${sealType})`);
+        } catch (error) {
+            console.log('Learning tracking error:', error);
+        }
+    }
+
+    recordSealAttempt(sealType, variation, sealNumber, success) {
+        try {
+            const sessionData = {
+                sealType,
+                sealNumber,
+                success,
+                timestamp: Date.now(),
+                difficulty: window.gameState?.complexity?.level || 'intermediate',
+                variation: variation.keyword || 'unknown',
+                attempt: true
+            };
+            
+            // Update preferences and strengths
+            this.updatePlayerPreferences(sealType, success);
+            this.updatePlayerStrengths(sealType, success);
+            
+            console.log(`📊 Recorded attempt: Seal ${sealNumber} (${sealType}) - Success: ${success}`);
+        } catch (error) {
+            console.log('Learning tracking error:', error);
+        }
+    }
+
+    updatePlayerPreferences(sealType, success) {
+        try {
+            let prefs = this.getPlayerPreferences();
+            if (!prefs[sealType]) {
+                prefs[sealType] = { attempts: 0, successes: 0, preference: 1 };
+            }
+            
+            prefs[sealType].attempts++;
+            if (success) {
+                prefs[sealType].successes++;
+                prefs[sealType].preference = Math.min(5, prefs[sealType].preference + 0.2);
+            } else {
+                prefs[sealType].preference = Math.max(0.2, prefs[sealType].preference - 0.1);
+            }
+            
+            localStorage.setItem('playerPreferences', JSON.stringify(prefs));
+        } catch (error) {
+            console.log('Preference update error:', error);
+        }
+    }
+
+    updatePlayerStrengths(sealType, success) {
+        try {
+            let strengths = this.getPlayerStrengths();
+            const strengthIndex = strengths.findIndex(s => s.type === sealType);
+            
+            if (strengthIndex >= 0) {
+                strengths[strengthIndex].level += success ? 1 : -0.5;
+                strengths[strengthIndex].level = Math.max(0, Math.min(10, strengths[strengthIndex].level));
+            } else {
+                strengths.push({
+                    type: sealType,
+                    level: success ? 1 : 0.5,
+                    firstSeen: Date.now()
+                });
+            }
+            
+            // Keep only top 20 strengths
+            strengths.sort((a, b) => b.level - a.level);
+            strengths = strengths.slice(0, 20);
+            
+            localStorage.setItem('playerStrengths', JSON.stringify(strengths));
+        } catch (error) {
+            console.log('Strengths update error:', error);
+        }
+    }
+
+    addToLearningQueue(data) {
+        try {
+            let queue = JSON.parse(localStorage.getItem('learningQueue') || '[]');
+            queue.push(data);
+            
+            // Keep queue manageable
+            if (queue.length > 100) {
+                queue = queue.slice(-50);
+            }
+            
+            localStorage.setItem('learningQueue', JSON.stringify(queue));
+            
+            // Process queue periodically
+            if (queue.length % 10 === 0) {
+                this.processLearningQueue();
+            }
+        } catch (error) {
+            console.log('Learning queue error:', error);
+        }
+    }
+
+    processLearningQueue() {
+        try {
+            const queue = JSON.parse(localStorage.getItem('learningQueue') || '[]');
+            if (queue.length === 0) return;
+            
+            // Analyze patterns
+            const patterns = this.analyzeLearningPatterns(queue);
+            
+            // Update AI system if available
+            if (window.BibleGameAI && patterns) {
+                window.BibleGameAI.recordGameSession({
+                    difficulty: window.gameState?.complexity?.level || 'intermediate',
+                    completionTime: Date.now() - (window.gameState?.startTime || Date.now()),
+                    sealsCompleted: window.gameState?.completedSeals?.length || 0,
+                    strengths: patterns.strengths,
+                    weaknesses: patterns.weaknesses,
+                    engagement: patterns.engagement,
+                    preferences: patterns.preferences
+                });
+            }
+            
+            // Clear processed queue
+            localStorage.setItem('learningQueue', '[]');
+            
+            console.log('📊 Processed learning queue with', queue.length, 'items');
+        } catch (error) {
+            console.log('Learning processing error:', error);
+        }
+    }
+
+    analyzeLearningPatterns(queue) {
+        try {
+            const sealTypes = {};
+            const strengths = [];
+            const weaknesses = [];
+            let totalEngagement = 0;
+            
+            queue.forEach(item => {
+                if (!sealTypes[item.type]) {
+                    sealTypes[item.type] = { successes: 0, attempts: 0 };
+                }
+                sealTypes[item.type].attempts++;
+                if (item.success) {
+                    sealTypes[item.type].successes++;
+                    totalEngagement += 2;
+                } else {
+                    totalEngagement += 1;
+                }
+            });
+            
+            // Determine strengths and weaknesses
+            Object.keys(sealTypes).forEach(type => {
+                const stats = sealTypes[type];
+                const successRate = stats.successes / stats.attempts;
+                
+                if (successRate >= 0.8) {
+                    strengths.push(type);
+                } else if (successRate <= 0.4) {
+                    weaknesses.push(type);
+                }
+            });
+            
+            return {
+                strengths,
+                weaknesses,
+                engagement: totalEngagement / queue.length > 1.5 ? 'high' : 'medium',
+                preferences: sealTypes
+            };
+        } catch (error) {
+            console.log('Pattern analysis error:', error);
+            return null;
+        }
+    }
+
+    getTimeTaken(sealNumber) {
+        // Calculate time taken for this seal (simplified)
+        return Date.now() - (this.sealStartTime || Date.now());
     }
 
     // Get complexity-based hint for puzzle types
@@ -967,15 +1362,31 @@ function checkBibleKnowledge() {
     
     const resultDiv = document.getElementById('bibleKnowledgeResult');
     if (allCorrect) {
+        // Record success for learning system
+        this.recordSealSuccess('bibleKnowledge', variation, 1);
+        
+        // Enhanced success message with immersion
+        const successMessage = window.ImmersionEngine ? 
+            window.BibleGameAI?.generateSuccessMessage(1, window.gameState?.complexity?.level || 'medium') :
+            `🎉 <strong>SCRIPTURE MASTERY ACHIEVED!</strong><br>Keyword unlocked: <strong>${variation.keyword}</strong>`;
+            
         resultDiv.innerHTML = `
             <div style="color: #228b22;">
-                🎉 <strong>SCRIPTURE MASTERY ACHIEVED!</strong><br>
-                Keyword unlocked: <strong>${variation.keyword}</strong><br>
+                ${successMessage}<br>
                 ${results.join('<br>')}
             </div>
         `;
+        
+        // Trigger celebration effects
+        if (window.ImmersionEngine) {
+            window.ImmersionEngine.triggerSuccessCelebration(1);
+        }
+        
         setTimeout(() => window.completeSeal(1), 1500);
     } else {
+        // Record attempt for learning
+        this.recordSealAttempt('bibleKnowledge', variation, 1, false);
+        
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
                 📚 <strong>Study Required</strong><br>

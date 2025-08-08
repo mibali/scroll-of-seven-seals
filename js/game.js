@@ -404,7 +404,7 @@ class GameController {
     }
 
     // Open a seal puzzle
-    openSeal(sealId) {
+    async openSeal(sealId) {
         const seal = window.GameData.seals.find(s => s.id === sealId);
         if (!seal || !this.canOpenSeal(seal)) return;
         
@@ -412,7 +412,7 @@ class GameController {
         
         document.getElementById('modalTitle').textContent = `Seal ${seal.id}: ${seal.title}`;
         document.getElementById('puzzleContent').innerHTML = 
-            window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+            await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
         document.getElementById('puzzleModal').style.display = 'block';
     }
 
