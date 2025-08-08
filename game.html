@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Scroll of Seven Seals - Final Multiplayer</title>
+    <title>The Scroll of Seven Seals - Final Multiplayer v1.2.1</title>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -781,6 +781,23 @@
             measurementId: "G-DPY2ZJ7CSD"
         };
 
+        // VERSION CHECK - Force browser cache refresh
+        console.log('🚀 GAME VERSION: v1.2.1 - Enhanced AI Winner Detection');
+        console.log('📅 Code loaded at:', new Date().toISOString());
+        
+        // EMERGENCY WINNER TESTING - Call from console if needed
+        window.forcePlayerWin = function() {
+            console.log('🆘 EMERGENCY: Forcing player victory manually');
+            if (gameState.mode === 'ai' && gameState.completedSeals.length >= 7) {
+                const elapsed = Date.now() - gameState.startTime;
+                const playerTeam = gameState.teams.find(team => !team.isAI) || { name: gameState.currentTeam, isAI: false };
+                playerTeam.score = 7;
+                playerTeam.completedSeals = [...gameState.completedSeals];
+                playerTeam.lastSealTime = Date.now();
+                handleAIGameEnd(playerTeam, elapsed);
+            }
+        };
+        
         // Game State
         let gameState = {
             mode: '',
