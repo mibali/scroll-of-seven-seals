@@ -3101,7 +3101,7 @@
 
         // Toggle sound functionality
         function toggleSound() {
-            if (window.ImmersionEngine) {
+            if (window.ImmersionEngine && window.ImmersionEngine.toggleSound) {
                 const isEnabled = window.ImmersionEngine.toggleSound();
                 document.getElementById('soundEnabled').checked = isEnabled;
                 
@@ -3112,6 +3112,9 @@
                 } else {
                     showAlert('🔇 Sound effects disabled', 'info');
                 }
+            } else {
+                showAlert('🔇 Sound system not available', 'error');
+                console.warn('⚠️ ImmersionEngine not available for sound toggle');
             }
         }
 
@@ -3572,8 +3575,32 @@
             }, 100);
         }
 
+        // Initialize game engines
+        function initializeGameEngines() {
+            try {
+                // Initialize AI Engine
+                if (typeof BibleGameAI !== 'undefined') {
+                    window.BibleGameAI = new BibleGameAI();
+                    console.log('✅ Bible Game AI initialized');
+                } else {
+                    console.warn('⚠️ BibleGameAI class not found');
+                }
+
+                // Initialize Immersion Engine
+                if (typeof ImmersionEngine !== 'undefined') {
+                    window.ImmersionEngine = new ImmersionEngine();
+                    console.log('✅ Immersion Engine initialized');
+                } else {
+                    console.warn('⚠️ ImmersionEngine class not found');
+                }
+            } catch (error) {
+                console.error('❌ Error initializing game engines:', error);
+            }
+        }
+
         // Initialize options when DOM loads
         document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeGameEngines, 50);
             setTimeout(initializeGameOptions, 100);
             setTimeout(initializeDragAndDrop, 200);
         });
