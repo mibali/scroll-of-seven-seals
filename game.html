@@ -219,6 +219,117 @@
             display: block;
         }
 
+        .complexity-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+        }
+
+        .complexity-content {
+            background: linear-gradient(135deg, #2c1810, #4a3425);
+            border: 3px solid #d4af37;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 700px;
+            width: 95%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .complexity-title {
+            color: #d4af37;
+            font-family: 'Uncial Antiqua', cursive;
+            font-size: 2.2em;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .complexity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .complexity-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #6b4d37;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .complexity-card:hover {
+            border-color: #d4af37;
+            background: rgba(212, 175, 55, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .complexity-card.selected {
+            border-color: #f4e876;
+            background: rgba(212, 175, 55, 0.2);
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .complexity-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .complexity-name {
+            color: #d4af37;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .complexity-description {
+            color: #b8a082;
+            font-size: 0.95em;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .complexity-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .complexity-features li {
+            color: #e0d0c0;
+            font-size: 0.85em;
+            margin-bottom: 5px;
+            padding-left: 15px;
+            position: relative;
+        }
+
+        .complexity-features li:before {
+            content: "✓";
+            color: #d4af37;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .complexity-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
         .room-code-display {
             background: rgba(0, 0, 0, 0.5);
             border: 2px solid #4a90e2;
@@ -719,10 +830,16 @@
                 <div class="mode-description">Compete against AI opponents</div>
             </div>
 
-            <div class="mode-card" onclick="selectMode('multiplayer')">
+            <div class="mode-card" onclick="selectMode('multiplayer-create')">
                 <span class="mode-icon">🌐</span>
-                <div class="mode-title">Real Multiplayer</div>
-                <div class="mode-description">Compete with friends online using Firebase</div>
+                <div class="mode-title">Create Multiplayer</div>
+                <div class="mode-description">Create a room for online competition with friends</div>
+            </div>
+
+            <div class="mode-card" onclick="selectMode('multiplayer-join')">
+                <span class="mode-icon">🔗</span>
+                <div class="mode-title">Join Multiplayer</div>
+                <div class="mode-description">Join an existing multiplayer room</div>
             </div>
         </div>
 
@@ -882,6 +999,91 @@
             <div style="text-align: center; margin-top: 20px;">
                 <button class="button secondary" onclick="resetGameState()">🔄 Reset Game</button>
                 <button class="button secondary" onclick="goBack()">← Back to Lobby</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Complexity Selection Modal -->
+    <div id="complexityModal" class="complexity-modal">
+        <div class="complexity-content">
+            <h2 class="complexity-title">⚔️ Choose Your Challenge Level ⚔️</h2>
+            <p style="text-align: center; color: #b8a082; margin-bottom: 30px; font-size: 1.1em;">
+                Select the complexity level that matches your biblical knowledge and puzzle-solving experience
+            </p>
+            
+            <div class="complexity-grid">
+                <!-- Beginner Level -->
+                <div class="complexity-card" onclick="selectComplexity('beginner')" data-complexity="beginner">
+                    <span class="complexity-icon">🌱</span>
+                    <div class="complexity-name">Beginner</div>
+                    <div class="complexity-description">
+                        Perfect for newcomers to biblical puzzles and those who prefer a gentle introduction to the mysteries.
+                    </div>
+                    <ul class="complexity-features">
+                        <li>Enhanced hints and guidance available</li>
+                        <li>More forgiving answer validation</li>
+                        <li>Extra time for challenging puzzles</li>
+                        <li>Simplified puzzle variations</li>
+                        <li>Progress tracking and encouragement</li>
+                    </ul>
+                </div>
+
+                <!-- Intermediate Level -->
+                <div class="complexity-card" onclick="selectComplexity('intermediate')" data-complexity="intermediate">
+                    <span class="complexity-icon">⚖️</span>
+                    <div class="complexity-name">Intermediate</div>
+                    <div class="complexity-description">
+                        Balanced challenge for those with moderate biblical knowledge and puzzle-solving experience.
+                    </div>
+                    <ul class="complexity-features">
+                        <li>Standard hints when needed</li>
+                        <li>Balanced answer requirements</li>
+                        <li>Normal time limits</li>
+                        <li>Mixed puzzle complexity</li>
+                        <li>Achievement tracking</li>
+                    </ul>
+                </div>
+
+                <!-- Advanced Level -->
+                <div class="complexity-card" onclick="selectComplexity('advanced')" data-complexity="advanced">
+                    <span class="complexity-icon">🔥</span>
+                    <div class="complexity-name">Advanced</div>
+                    <div class="complexity-description">
+                        Challenging experience for seasoned biblical scholars and puzzle enthusiasts seeking deeper mysteries.
+                    </div>
+                    <ul class="complexity-features">
+                        <li>Limited hints available</li>
+                        <li>Stricter answer validation</li>
+                        <li>Shorter time limits</li>
+                        <li>Complex puzzle variations</li>
+                        <li>Bonus challenges unlocked</li>
+                    </ul>
+                </div>
+
+                <!-- Expert Level -->
+                <div class="complexity-card" onclick="selectComplexity('expert')" data-complexity="expert">
+                    <span class="complexity-icon">👑</span>
+                    <div class="complexity-name">Expert</div>
+                    <div class="complexity-description">
+                        Ultimate challenge for biblical masters who dare to unlock the deepest secrets of the Seven Seals.
+                    </div>
+                    <ul class="complexity-features">
+                        <li>No hints or guidance</li>
+                        <li>Exact answer requirements</li>
+                        <li>Strict time constraints</li>
+                        <li>Maximum puzzle complexity</li>
+                        <li>Legendary achievements</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="complexity-buttons">
+                <button class="button" id="confirmComplexity" onclick="confirmComplexitySelection()" disabled>
+                    🚀 Begin Quest
+                </button>
+                <button class="button secondary" onclick="closeComplexityModal()">
+                    ← Back
+                </button>
             </div>
         </div>
     </div>
@@ -2716,6 +2918,42 @@
             detailedProgress: true
         };
 
+        // Complexity system
+        let gameComplexity = {
+            level: 'intermediate',
+            selectedMode: null,
+            settings: {
+                beginner: {
+                    hintsAvailable: true,
+                    answerTolerance: 'high',
+                    timeMultiplier: 1.5,
+                    puzzleComplexity: 'simple',
+                    encouragement: true
+                },
+                intermediate: {
+                    hintsAvailable: true,
+                    answerTolerance: 'medium',
+                    timeMultiplier: 1.0,
+                    puzzleComplexity: 'mixed',
+                    encouragement: false
+                },
+                advanced: {
+                    hintsAvailable: false,
+                    answerTolerance: 'low',
+                    timeMultiplier: 0.8,
+                    puzzleComplexity: 'complex',
+                    encouragement: false
+                },
+                expert: {
+                    hintsAvailable: false,
+                    answerTolerance: 'strict',
+                    timeMultiplier: 0.6,
+                    puzzleComplexity: 'maximum',
+                    encouragement: false
+                }
+            }
+        };
+
         // Load saved game options from localStorage
         function loadGameOptions() {
             try {
@@ -2823,6 +3061,188 @@
                 }
             }
         });
+
+        // Complexity Selection Functions
+        function showComplexityModal(gameMode) {
+            gameComplexity.selectedMode = gameMode;
+            document.getElementById('complexityModal').style.display = 'flex';
+            
+            // Load saved complexity level
+            const saved = localStorage.getItem('scrollComplexityLevel');
+            if (saved) {
+                gameComplexity.level = saved;
+                selectComplexity(saved, false);
+            }
+        }
+
+        function closeComplexityModal() {
+            document.getElementById('complexityModal').style.display = 'none';
+            gameComplexity.selectedMode = null;
+            
+            // Reset selection
+            document.querySelectorAll('.complexity-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.getElementById('confirmComplexity').disabled = true;
+        }
+
+        function selectComplexity(level, showFeedback = true) {
+            gameComplexity.level = level;
+            
+            // Update UI
+            document.querySelectorAll('.complexity-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            const selectedCard = document.querySelector(`[data-complexity="${level}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+            
+            document.getElementById('confirmComplexity').disabled = false;
+            
+            if (showFeedback) {
+                const complexityNames = {
+                    beginner: 'Beginner - Guided Journey',
+                    intermediate: 'Intermediate - Balanced Challenge', 
+                    advanced: 'Advanced - Scholar\'s Trial',
+                    expert: 'Expert - Master\'s Crucible'
+                };
+                
+                showAlert(`🎯 Selected: ${complexityNames[level]}`, 'info');
+            }
+            
+            // Save preference
+            localStorage.setItem('scrollComplexityLevel', level);
+        }
+
+        function confirmComplexitySelection() {
+            const mode = gameComplexity.selectedMode;
+            const level = gameComplexity.level;
+            
+            if (!mode || !level) return;
+            
+            // Apply complexity settings
+            applyComplexitySettings(level);
+            
+            closeComplexityModal();
+            
+            // Start the appropriate game mode
+            switch(mode) {
+                case 'single':
+                    startSinglePlayer();
+                    break;
+                case 'ai':
+                    startAIMode();
+                    break;
+                case 'multiplayer-create':
+                    showMultiplayerSetup();
+                    break;
+                case 'multiplayer-join':
+                    joinMultiplayerGame();
+                    break;
+                default:
+                    console.error('Unknown game mode:', mode);
+            }
+        }
+
+        function applyComplexitySettings(level) {
+            const settings = gameComplexity.settings[level];
+            
+            // Apply settings to game options
+            gameOptions.hintsEnabled = settings.hintsAvailable;
+            document.getElementById('hintsEnabled').checked = settings.hintsAvailable;
+            
+            // Store complexity-specific settings
+            gameState.complexity = {
+                level: level,
+                settings: settings
+            };
+            
+            console.log(`🎯 Applied ${level} complexity settings:`, settings);
+            showAlert(`⚔️ Challenge Level: ${level.toUpperCase()} - Settings Applied!`, 'success');
+        }
+
+        // Modify existing mode selection functions to show complexity modal first
+        function selectMode(mode) {
+            console.log('Mode selected:', mode);
+            
+            // Show complexity selection before starting any mode
+            showComplexityModal(mode);
+        }
+
+        // Original game start functions (now called after complexity selection)
+        function startSinglePlayer() {
+            console.log('🎮 Starting Single Player with complexity:', gameComplexity.level);
+            
+            // Hide mode selection and show setup if needed
+            document.getElementById('modeSelection').style.display = 'none';
+            
+            // Start game immediately for single player (no additional setup needed)
+            initializeSinglePlayerGame();
+        }
+
+        function startAIMode() {
+            console.log('🤖 Starting AI Mode with complexity:', gameComplexity.level);
+            
+            document.getElementById('modeSelection').style.display = 'none';
+            document.getElementById('aiSetup').style.display = 'block';
+        }
+
+        function showMultiplayerSetup() {
+            console.log('👥 Starting Multiplayer Create with complexity:', gameComplexity.level);
+            
+            document.getElementById('modeSelection').style.display = 'none';
+            document.getElementById('multiplayerSetup').style.display = 'block';
+            
+            // Show create room section
+            document.getElementById('createRoom').style.display = 'block';
+            document.getElementById('joinRoom').style.display = 'none';
+        }
+
+        function joinMultiplayerGame() {
+            console.log('🔗 Starting Multiplayer Join with complexity:', gameComplexity.level);
+            
+            document.getElementById('modeSelection').style.display = 'none';
+            document.getElementById('multiplayerSetup').style.display = 'block';
+            
+            // Show join room section
+            document.getElementById('createRoom').style.display = 'none';
+            document.getElementById('joinRoom').style.display = 'block';
+        }
+
+        // Initialize single player game
+        function initializeSinglePlayerGame() {
+            console.log('🎮 Initializing single player game...');
+            
+            // Set up basic game state
+            gameState.mode = 'single';
+            gameState.currentTeam = `Player Team`;
+            gameState.teams = [
+                {
+                    name: gameState.currentTeam,
+                    score: 0,
+                    completedSeals: [],
+                    isAI: false
+                }
+            ];
+            gameState.startTime = Date.now();
+            gameState.isGameActive = true;
+            
+            // Apply complexity settings to puzzle generation
+            if (gameOptions.randomMode) {
+                window.PuzzleManager.regeneratePuzzles();
+            }
+            
+            // Show game interface
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            showAlert(`🎮 Single Player Mode Started! Complexity: ${gameComplexity.level.toUpperCase()}`, 'success');
+        }
 
         // Initialize options when DOM loads
         document.addEventListener('DOMContentLoaded', () => {

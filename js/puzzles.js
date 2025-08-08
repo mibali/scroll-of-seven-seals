@@ -80,9 +80,10 @@ class EnhancedPuzzleManager {
                 </div>
                 
                 <div class="challenge-controls">
-                    <button class="btn primary" onclick="checkBibleKnowledge()">🔍 Verify Answers</button>
-                    <button class="btn secondary" onclick="resetChallenge('bibleKnowledge')">🔄 Reset</button>
-                </div>
+                <button class="btn primary" onclick="checkBibleKnowledge()">🔍 Verify Answers</button>
+                <button class="btn secondary" onclick="resetChallenge('bibleKnowledge')">🔄 Reset</button>
+                    ${this.getComplexityHint('bibleKnowledge')}
+                    </div>
                 
                 <div id="bibleKnowledgeResult" class="challenge-result"></div>
             </div>
@@ -575,6 +576,41 @@ class EnhancedPuzzleManager {
         
         console.log('✅ All puzzles regenerated for fresh game experience!');
     }
+
+    // Get complexity-based hint for puzzle types
+    getComplexityHint(puzzleType) {
+        const complexity = window.gameState?.complexity?.settings || { hintsAvailable: false };
+        
+        if (!complexity.hintsAvailable) {
+            return '';
+        }
+        
+        const hints = {
+            bibleKnowledge: 'Think about key figures, numbers, and places mentioned throughout Scripture.',
+            logicalReasoning: 'Look for patterns in biblical narratives and theological connections.',
+            teamCommunication: 'Consider the attributes and roles of the Trinity and biblical covenants.',
+            codeBreaking: 'Ancient ciphers often use numerical values and letter substitutions.',
+            metaphoricalScripture: 'Look beyond the literal meaning to find spiritual truths.',
+            prophethicLogic: 'Consider how God\'s promises connect through Christ.',
+            revelationCode: 'Numbers in Revelation often represent completion and perfection.'
+        };
+        
+        const hint = hints[puzzleType] || '';
+        
+        return hint ? `
+            <div class="complexity-hint" style="
+                background: rgba(212, 175, 55, 0.1); 
+                border: 1px solid #d4af37; 
+                border-radius: 5px; 
+                padding: 10px; 
+                margin-top: 10px;
+                color: #d4af37;
+                font-size: 0.9em;
+            ">
+                💡 <strong>Hint:</strong> ${hint}
+            </div>
+        ` : '';
+    }
 }
 
 // Initialize enhanced puzzle manager
@@ -664,9 +700,44 @@ function isAnswerCorrect(userAnswer, correctAnswer) {
     // Direct match
     if (user === correct) return true;
     
-    // Check synonyms
-    const synonyms = answerSynonyms[correct] || [];
-    return synonyms.some(synonym => user === synonym.toUpperCase());
+    // Get current complexity settings
+    const complexity = window.gameState?.complexity?.settings || { answerTolerance: 'medium' };
+    
+    // Apply complexity-based answer tolerance
+    switch (complexity.answerTolerance) {
+        case 'strict':
+            // Expert mode - exact matches only
+            return false;
+            
+        case 'low':
+            // Advanced mode - limited synonyms
+            const limitedSynonyms = (answerSynonyms[correct] || []).slice(0, 2);
+            return limitedSynonyms.some(synonym => user === synonym.toUpperCase());
+            
+        case 'medium':
+            // Intermediate mode - standard synonyms
+            const synonyms = answerSynonyms[correct] || [];
+            return synonyms.some(synonym => user === synonym.toUpperCase());
+            
+        case 'high':
+            // Beginner mode - very forgiving matching
+            const allSynonyms = answerSynonyms[correct] || [];
+            const isBasicMatch = allSynonyms.some(synonym => user === synonym.toUpperCase());
+            
+            // Also allow partial matches for beginners
+            const isPartialMatch = user.length >= 3 && (
+                correct.includes(user) || 
+                user.includes(correct.substring(0, Math.min(correct.length, 4))) ||
+                allSynonyms.some(syn => syn.includes(user) || user.includes(syn.substring(0, 3)))
+            );
+            
+            return isBasicMatch || isPartialMatch;
+            
+        default:
+            // Fallback to medium tolerance
+            const defaultSynonyms = answerSynonyms[correct] || [];
+            return defaultSynonyms.some(synonym => user === synonym.toUpperCase());
+    }
 }
 
 function checkBibleKnowledge() {
