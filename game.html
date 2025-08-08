@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Scroll of Seven Seals - FIXED WINNER v1.3.0</title>
+    <title>The Scroll of Seven Seals - FIXED WINNER v1.3.1</title>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -782,7 +782,7 @@
         };
 
         // VERSION CHECK - Force browser cache refresh
-        console.log('🚀 GAME VERSION: v1.3.0 - AGGRESSIVE WINNER FIX');
+        console.log('🚀 GAME VERSION: v1.3.1 - FIXED NULL ERROR + IMMEDIATE WINNER');
         console.log('📅 Code loaded at:', new Date().toISOString());
         
         // EMERGENCY WINNER TESTING - Call from console if needed
@@ -1709,7 +1709,7 @@
 
                 console.log('🎯 SEAL COMPLETED - Mode:', gameState.mode, 'Team:', gameState.currentTeam, 'Score:', gameState.completedSeals.length);
                 
-                // AGGRESSIVE IMMEDIATE WINNER CHECK - Check after EVERY seal completion
+                // AGGRESSIVE IMMEDIATE WINNER CHECK - FIRST PRIORITY BEFORE ANYTHING ELSE
                 if (gameState.mode === 'ai' && gameState.completedSeals.length === 7) {
                     console.log('🚨 IMMEDIATE AI MODE WIN DETECTED - FORCING WINNER MODAL NOW!');
                     
@@ -1754,12 +1754,13 @@
                     try {
                         showWinnerModalWithRankings(gameState.currentTeam, elapsed, finalRankings, true);
                         lockGameInputs();
+                        console.log('✅ Winner modal displayed successfully - GAME WON!');
                     } catch (error) {
                         console.error('Winner modal failed:', error);
                         alert(`🏆 CONGRATULATIONS! You won in ${Math.floor(elapsed/60000)}:${Math.floor((elapsed%60000)/1000).toString().padStart(2,'0')}!`);
                     }
                     
-                    return; // Exit early to prevent double processing
+                    return; // EXIT IMMEDIATELY - NO FURTHER CODE EXECUTION
                 }
 
                 // Update Firebase if in multiplayer (check for roomCode instead of mode)
@@ -1774,7 +1775,7 @@
                 updateProgress();
                 updateLeaderboard();
 
-                showAlert(`Seal ${gameState.currentPuzzle.number} opened!`, 'success');
+                showAlert(`Seal ${gameState.currentPuzzle ? gameState.currentPuzzle.number : 'Unknown'} opened!`, 'success');
 
                 // Enhanced check for 7-seal completion
                 console.log('🔍 CHECKING COMPLETION - Seals completed:', gameState.completedSeals.length, 'Total:', gameState.completedSeals);
