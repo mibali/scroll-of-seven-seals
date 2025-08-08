@@ -33,12 +33,12 @@ class EnhancedPuzzleManager {
                 return this.generateTeamCommunicationContent(variation);
             case 'codeBreaking':
                 return this.generateCodeBreakingContent(variation);
-            case 'metaphoricalScripture':
-                return this.generateMetaphoricalScriptureContent(variation);
-            case 'prophethicLogic':
-                return this.generateProphethicLogicContent(variation);
-            case 'revelationCode':
-                return this.generateRevelationCodeContent(variation);
+            case 'chronologicalOrder':
+                return this.generateChronologicalOrderContent(variation);
+            case 'scriptureTopics':
+                return this.generateScriptureTopicsContent(variation);
+            case 'biblicalWisdom':
+                return this.generateBiblicalWisdomContent(variation);
             default:
                 return '<p>Unknown challenge type</p>';
         }
@@ -515,6 +515,212 @@ class EnhancedPuzzleManager {
                 </div>
                 
                 <div id="revelationCodeResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
+    // CHALLENGE 5: Chronological Order - Biblical Timeline
+    generateChronologicalOrderContent(variation) {
+        // Shuffle events for display
+        const shuffledEvents = [...variation.events].sort(() => Math.random() - 0.5);
+        
+        let eventsHtml = '';
+        shuffledEvents.forEach((event, index) => {
+            eventsHtml += `
+                <div class="drag-item" draggable="true" data-event-id="${event.id}">
+                    <div class="event-text">${event.text}</div>
+                    <div class="event-period" style="font-size: 0.8em; color: #b8a082; margin-top: 5px;">
+                        Period: ${event.period}
+                    </div>
+                </div>
+            `;
+        });
+
+        let timelineHtml = '';
+        for (let i = 0; i < variation.events.length; i++) {
+            timelineHtml += `
+                <div class="drop-zone" data-position="${i}">
+                    Drop event ${i + 1} here
+                </div>
+            `;
+        }
+
+        return `
+            <div class="chronological-order-challenge">
+                <h3>⏰ CHRONOLOGICAL ORDER TRIAL</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ ARRANGE IN CORRECT ORDER</strong></p>
+                    <p>Drag and drop the biblical events into their correct chronological sequence.</p>
+                    <p><strong>Timeline:</strong> <span class="keyword-target">${variation.timeline}</span></p>
+                </div>
+                
+                <div class="items-pool">
+                    <div class="pool-title">📜 Biblical Events (Drag to Timeline)</div>
+                    ${eventsHtml}
+                </div>
+                
+                <div class="chronology-timeline">
+                    <h4 style="color: #d4af37; text-align: center; margin-bottom: 15px;">⏳ Timeline (Earliest to Latest)</h4>
+                    ${timelineHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary" onclick="checkChronologicalOrder()">📅 Verify Timeline</button>
+                    <button class="btn secondary" onclick="resetChallenge('chronologicalOrder')">🔄 Reset</button>
+                    ${this.getComplexityHint('chronologicalOrder')}
+                </div>
+                
+                <div id="chronologicalOrderResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
+    // CHALLENGE 6: Scripture Topics - Thematic Organization
+    generateScriptureTopicsContent(variation) {
+        // Combine all verses and shuffle them
+        let allVerses = [];
+        variation.topics.forEach(topic => {
+            topic.correctVerses.forEach(verse => {
+                allVerses.push({
+                    text: verse,
+                    topicName: topic.name,
+                    isCorrect: true
+                });
+            });
+        });
+        
+        // Add distractor verses
+        variation.distractorVerses.forEach(verse => {
+            allVerses.push({
+                text: verse,
+                topicName: 'distractor',
+                isCorrect: false
+            });
+        });
+        
+        // Shuffle all verses
+        allVerses.sort(() => Math.random() - 0.5);
+        
+        let versesHtml = '';
+        allVerses.forEach((verse, index) => {
+            versesHtml += `
+                <div class="drag-item" draggable="true" data-verse-topic="${verse.topicName}" data-verse-text="${verse.text}">
+                    ${verse.text}
+                </div>
+            `;
+        });
+
+        let topicsHtml = '';
+        variation.topics.forEach((topic, index) => {
+            topicsHtml += `
+                <div class="topic-section">
+                    <div class="topic-title">${topic.name}</div>
+                    <div class="topic-description" style="font-size: 0.9em; color: #b8a082; margin-bottom: 10px;">
+                        ${topic.description}
+                    </div>
+                    <div class="drop-zone topic-drop" data-topic="${topic.name}">
+                        Drop ${topic.name.toLowerCase()} verses here
+                    </div>
+                </div>
+            `;
+        });
+
+        return `
+            <div class="scripture-topics-challenge">
+                <h3>📚 SCRIPTURE ORGANIZATION TRIAL</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ ORGANIZE BY TOPIC</strong></p>
+                    <p>Drag Bible verses to their correct thematic categories.</p>
+                    <p><strong>Topic Theme:</strong> <span class="keyword-target">${variation.topicName}</span></p>
+                </div>
+                
+                <div class="items-pool">
+                    <div class="pool-title">📖 Bible Verses (Drag to Categories)</div>
+                    ${versesHtml}
+                </div>
+                
+                <div class="scripture-topics">
+                    ${topicsHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary" onclick="checkScriptureTopics()">🗂️ Verify Organization</button>
+                    <button class="btn secondary" onclick="resetChallenge('scriptureTopics')">🔄 Reset</button>
+                    ${this.getComplexityHint('scriptureTopics')}
+                </div>
+                
+                <div id="scriptureTopicsResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
+    // CHALLENGE 7: Biblical Wisdom - Comprehensive Knowledge
+    generateBiblicalWisdomContent(variation) {
+        let challengesHtml = '';
+        
+        variation.challenges.forEach((challenge, index) => {
+            if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
+                let optionsHtml = '';
+                challenge.options.forEach((option, optIndex) => {
+                    optionsHtml += `
+                        <label class="wisdom-option">
+                            <input type="radio" name="wisdom${index}" value="${option}">
+                            <span class="option-text">${option}</span>
+                        </label>
+                    `;
+                });
+                
+                challengesHtml += `
+                    <div class="wisdom-question">
+                        <div class="question-header">
+                            <span class="question-number">Question ${index + 1}:</span>
+                        </div>
+                        <div class="question-text">${challenge.question}</div>
+                        <div class="wisdom-options">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                challengesHtml += `
+                    <div class="wisdom-question">
+                        <div class="question-header">
+                            <span class="question-number">Question ${index + 1}:</span>
+                        </div>
+                        <div class="question-text">${challenge.question}</div>
+                        ${challenge.context ? `<div class="question-context" style="font-size: 0.9em; color: #b8a082; margin: 5px 0;">Reference: ${challenge.context || challenge.reference}</div>` : ''}
+                        <div class="answer-input">
+                            <input type="text" 
+                                   id="wisdom${index + 1}" 
+                                   placeholder="Enter your answer" 
+                                   class="wisdom-input"
+                                   maxlength="50">
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        return `
+            <div class="biblical-wisdom-challenge">
+                <h3>👑 BIBLICAL WISDOM TRIAL</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ DEMONSTRATE MASTERY</strong></p>
+                    <p>Apply your complete biblical knowledge and spiritual understanding.</p>
+                    <p><strong>Target Keyword:</strong> <span class="keyword-target">${variation.keyword}</span></p>
+                </div>
+                
+                <div class="wisdom-container">
+                    ${challengesHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary" onclick="checkBiblicalWisdom()">🎓 Submit Wisdom</button>
+                    <button class="btn secondary" onclick="resetChallenge('biblicalWisdom')">🔄 Reset</button>
+                    ${this.getComplexityHint('biblicalWisdom')}
+                </div>
+                
+                <div id="biblicalWisdomResult" class="challenge-result"></div>
             </div>
         `;
     }
@@ -1167,6 +1373,165 @@ function checkRevelationCode() {
     }
 }
 
+function checkChronologicalOrder() {
+    const variation = enhancedPuzzleManager.getPuzzleVariation('chronologicalOrder');
+    if (!variation) return;
+    
+    // Get current order from drop zones
+    const dropZones = document.querySelectorAll('.drop-zone[data-position]');
+    const userOrder = [];
+    
+    dropZones.forEach(zone => {
+        const draggedItem = zone.querySelector('.drag-item');
+        if (draggedItem) {
+            userOrder.push(draggedItem.getAttribute('data-event-id'));
+        } else {
+            userOrder.push(null); // Empty slot
+        }
+    });
+    
+    // Check if all positions are filled
+    if (userOrder.includes(null)) {
+        document.getElementById('chronologicalOrderResult').innerHTML = `
+            <div style="color: #dc3545;">
+                ⏰ <strong>Incomplete Timeline</strong><br>
+                Please place all events in the timeline before checking.
+            </div>
+        `;
+        return;
+    }
+    
+    // Check if order matches correct sequence
+    const correctOrder = variation.correctOrder;
+    const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
+    
+    const resultDiv = document.getElementById('chronologicalOrderResult');
+    if (isCorrect) {
+        resultDiv.innerHTML = `
+            <div style="color: #228b22;">
+                ⏰ <strong>TIMELINE MASTERED!</strong><br>
+                Keyword unlocked: <strong>${variation.keyword}</strong><br>
+                Perfect chronological sequence achieved!
+            </div>
+        `;
+        setTimeout(() => window.completeSeal(5), 1500);
+    } else {
+        resultDiv.innerHTML = `
+            <div style="color: #dc3545;">
+                📅 <strong>Timeline Error</strong><br>
+                The sequence is not correct. Study the historical context more carefully.
+            </div>
+        `;
+    }
+}
+
+function checkScriptureTopics() {
+    const variation = enhancedPuzzleManager.getPuzzleVariation('scriptureTopics');
+    if (!variation) return;
+    
+    // Check each topic section
+    let allCorrect = true;
+    const results = [];
+    
+    variation.topics.forEach((topic, index) => {
+        const topicDrop = document.querySelector(`[data-topic="${topic.name}"]`);
+        const droppedVerses = topicDrop.querySelectorAll('.drag-item');
+        
+        let topicCorrect = true;
+        let verseCount = 0;
+        
+        droppedVerses.forEach(verse => {
+            const verseTopicName = verse.getAttribute('data-verse-topic');
+            if (verseTopicName === topic.name) {
+                verseCount++;
+            } else {
+                topicCorrect = false;
+            }
+        });
+        
+        // Check if we have the right number of verses (should be 3 per topic)
+        if (verseCount !== topic.correctVerses.length || !topicCorrect) {
+            allCorrect = false;
+            results.push(`❌ ${topic.name}: Incorrect verses`);
+        } else {
+            results.push(`✅ ${topic.name}: Correctly organized`);
+        }
+    });
+    
+    const resultDiv = document.getElementById('scriptureTopicsResult');
+    if (allCorrect) {
+        resultDiv.innerHTML = `
+            <div style="color: #228b22;">
+                📚 <strong>SCRIPTURE ORGANIZATION MASTERED!</strong><br>
+                Keyword unlocked: <strong>${variation.keyword}</strong><br>
+                All verses correctly categorized!<br>
+                ${results.join('<br>')}
+            </div>
+        `;
+        setTimeout(() => window.completeSeal(6), 1500);
+    } else {
+        resultDiv.innerHTML = `
+            <div style="color: #dc3545;">
+                🗂️ <strong>Organization Error</strong><br>
+                Some verses are in the wrong categories. Review the topics carefully.<br>
+                ${results.join('<br>')}
+            </div>
+        `;
+    }
+}
+
+function checkBiblicalWisdom() {
+    const variation = enhancedPuzzleManager.getPuzzleVariation('biblicalWisdom');
+    if (!variation) return;
+    
+    let allCorrect = true;
+    const results = [];
+    
+    variation.challenges.forEach((challenge, index) => {
+        if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
+            const selectedOption = document.querySelector(`input[name="wisdom${index}"]:checked`);
+            if (selectedOption && selectedOption.value === challenge.correctAnswer) {
+                results.push(`✅ Question ${index + 1}: Wise choice`);
+            } else {
+                results.push(`❌ Question ${index + 1}: Needs reflection`);
+                allCorrect = false;
+            }
+        } else {
+            const userAnswer = document.getElementById(`wisdom${index + 1}`).value.trim();
+            const isCorrect = isAnswerCorrect(userAnswer, challenge.answer) || 
+                            (challenge.alternates && challenge.alternates.some(alt => isAnswerCorrect(userAnswer, alt)));
+            
+            if (isCorrect) {
+                results.push(`✅ Question ${index + 1}: Spiritual wisdom shown`);
+            } else {
+                results.push(`❌ Question ${index + 1}: Seek deeper understanding`);
+                allCorrect = false;
+            }
+        }
+    });
+    
+    const resultDiv = document.getElementById('biblicalWisdomResult');
+    if (allCorrect) {
+        resultDiv.innerHTML = `
+            <div style="color: #228b22;">
+                👑 <strong>BIBLICAL WISDOM ACHIEVED!</strong><br>
+                Keyword unlocked: <strong>${variation.keyword}</strong><br>
+                You have demonstrated true spiritual understanding!<br>
+                ${results.join('<br>')}
+            </div>
+        `;
+        setTimeout(() => window.completeSeal(7), 1500);
+    } else {
+        resultDiv.innerHTML = `
+            <div style="color: #dc3545;">
+                🎓 <strong>Wisdom Growing</strong><br>
+                Continue seeking understanding. True wisdom comes through study and application.<br>
+                ${results.join('<br>')}
+            </div>
+        `;
+    }
+}
+
 // Reset functions
 function resetChallenge(challengeType) {
     enhancedPuzzleManager.resetChallenge(challengeType);
@@ -1183,7 +1548,7 @@ window.checkBibleKnowledge = checkBibleKnowledge;
 window.checkLogicalReasoning = checkLogicalReasoning;
 window.checkTeamCommunication = checkTeamCommunication;
 window.checkCodeBreaking = checkCodeBreaking;
-window.checkMetaphoricalScripture = checkMetaphoricalScripture;
-window.checkProphethicLogic = checkProphethicLogic;
-window.checkRevelationCode = checkRevelationCode;
+window.checkChronologicalOrder = checkChronologicalOrder;
+window.checkScriptureTopics = checkScriptureTopics;
+window.checkBiblicalWisdom = checkBiblicalWisdom;
 window.resetChallenge = resetChallenge;

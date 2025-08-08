@@ -38,29 +38,29 @@ const seals = [
     },
     {
         id: 5,
-        title: "The Parable Interpretation Challenge",
-        theme: "Spiritual Insight",
-        description: "METAPHORICAL SCRIPTURE CHALLENGE: Interpret deep spiritual meanings hidden within parables and symbolic passages. Uncover the non-literal truths.",
-        puzzle: "metaphoricalScripture",
-        challengeType: "Interpreting Metaphorical Scripture",
+        title: "The Chronological Order Challenge",
+        theme: "Biblical Timeline",
+        description: "CHRONOLOGICAL ORDERING: Arrange biblical events in their correct historical sequence. Test your knowledge of biblical history and timeline.",
+        puzzle: "chronologicalOrder",
+        challengeType: "Timeline Ordering",
         requiredSeals: [4]
     },
     {
         id: 6,
-        title: "The Prophecy Logic Network",
-        theme: "Prophetic Reasoning",
-        description: "LOGICAL REASONING CHALLENGE: Connect prophetic timelines and logical sequences. Use deductive reasoning to solve complex biblical mysteries.",
-        puzzle: "prophethicLogic",
-        challengeType: "Logical Reasoning",
+        title: "The Scripture Topic Network",
+        theme: "Thematic Organization",
+        description: "SCRIPTURE ORGANIZATION: Sort biblical verses by their topics and themes. Match scriptures to their appropriate categories.",
+        puzzle: "scriptureTopics",
+        challengeType: "Topic Organization",
         requiredSeals: [5]
     },
     {
         id: 7,
-        title: "The Revelation Code Matrix",
-        theme: "End Times Mystery",
-        description: "CODE-BREAKING CHALLENGE: Decrypt the ultimate biblical mystery using advanced symbolic patterns and numerical codes from Revelation.",
-        puzzle: "revelationCode",
-        challengeType: "Code-Breaking",
+        title: "The Biblical Wisdom Challenge",
+        theme: "Final Knowledge",
+        description: "WISDOM ASSESSMENT: Apply your complete biblical knowledge to solve the ultimate challenge. Demonstrate mastery of all seven seals.",
+        puzzle: "biblicalWisdom",
+        challengeType: "Comprehensive Knowledge",
         requiredSeals: [6]
     }
 ];
@@ -241,140 +241,177 @@ const puzzleVariations = {
         }
     ],
 
-    // SEAL 5: Metaphorical Scripture Challenge - Spiritual Interpretation
-    metaphoricalScripture: [
+    // SEAL 5: Chronological Order Challenge - Biblical Timeline
+    chronologicalOrder: [
         {
-            keyword: "TRUTH",
-            interpretations: [
+            keyword: "ORDER",
+            timeline: "Old Testament Timeline",
+            events: [
+                {id: "creation", text: "God creates the world and Adam & Eve", period: "Beginning"},
+                {id: "fall", text: "The Fall of Man in the Garden of Eden", period: "Beginning"},
+                {id: "flood", text: "Noah's Flood destroys the earth", period: "Early History"},
+                {id: "abraham", text: "God calls Abraham to leave his homeland", period: "Patriarchs"},
+                {id: "egypt", text: "Joseph sold into slavery, family moves to Egypt", period: "Patriarchs"},
+                {id: "exodus", text: "Moses leads Israelites out of Egypt", period: "Exodus"},
+                {id: "sinai", text: "God gives the Ten Commandments at Mount Sinai", period: "Exodus"},
+                {id: "promised", text: "Joshua leads conquest of the Promised Land", period: "Conquest"}
+            ],
+            correctOrder: ["creation", "fall", "flood", "abraham", "egypt", "exodus", "sinai", "promised"]
+        },
+        {
+            keyword: "HISTORY",
+            timeline: "Kings and Prophets Timeline",
+            events: [
+                {id: "saul", text: "Saul becomes the first king of Israel", period: "Early Kingdom"},
+                {id: "david", text: "David defeats Goliath and becomes king", period: "United Kingdom"},
+                {id: "solomon", text: "Solomon builds the Temple in Jerusalem", period: "United Kingdom"},
+                {id: "divided", text: "Kingdom divides into Israel and Judah", period: "Divided Kingdom"},
+                {id: "assyria", text: "Assyria conquers the Northern Kingdom (Israel)", period: "Exile"},
+                {id: "babylon", text: "Babylon conquers Judah and destroys Temple", period: "Exile"},
+                {id: "return", text: "Jews return from Babylonian exile", period: "Return"},
+                {id: "temple2", text: "Second Temple is rebuilt in Jerusalem", period: "Return"}
+            ],
+            correctOrder: ["saul", "david", "solomon", "divided", "assyria", "babylon", "return", "temple2"]
+        }
+    ],
+
+    // SEAL 6: Scripture Topic Organization
+    scriptureTopics: [
+        {
+            keyword: "ORGANIZATION",
+            topicName: "Health and Healing",
+            topics: [
                 {
-                    passage: "I am the vine, you are the branches",
-                    surface: "Jesus uses agricultural metaphor",
-                    deeper: "Spiritual connection and dependence on Christ for life",
-                    question: "What does the 'fruit' represent in this metaphor?",
-                    answer: "GOOD WORKS",
-                    explanation: "The fruit represents the good works that flow from our connection to Christ"
+                    name: "Physical Healing",
+                    description: "Scriptures about bodily health and healing",
+                    correctVerses: [
+                        "By his wounds we are healed - Isaiah 53:5",
+                        "I am the Lord who heals you - Exodus 15:26",
+                        "He sent his word and healed them - Psalm 107:20"
+                    ]
                 },
                 {
-                    passage: "The kingdom of heaven is like a mustard seed",
-                    surface: "Small seed grows into large plant",
-                    deeper: "Small beginnings can have great spiritual impact",
-                    question: "What does the 'growth' symbolize?",
-                    answer: "FAITH EXPANSION",
-                    explanation: "The growth represents how faith spreads and influences others"
+                    name: "Spiritual Health",
+                    description: "Verses about spiritual wellness and growth",
+                    correctVerses: [
+                        "He restores my soul - Psalm 23:3",
+                        "Create in me a clean heart, O God - Psalm 51:10",
+                        "Beloved, I pray that you may prosper and be in health - 3 John 1:2"
+                    ]
                 },
                 {
-                    passage: "Be wise as serpents, innocent as doves",
-                    surface: "Conflicting animal characteristics",
-                    deeper: "Balance wisdom with purity in spiritual life",
-                    question: "What is the spiritual balance being taught?",
-                    answer: "DISCERNMENT WITH PURITY",
-                    explanation: "Christians should be discerning yet maintain moral innocence"
+                    name: "Mental Peace",
+                    description: "Scriptures about peace of mind and anxiety",
+                    correctVerses: [
+                        "Do not be anxious about anything - Philippians 4:6",
+                        "Peace I leave with you - John 14:27",
+                        "You will keep him in perfect peace - Isaiah 26:3"
+                    ]
                 }
+            ],
+            distractorVerses: [
+                "In the beginning was the Word - John 1:1",
+                "For God so loved the world - John 3:16",
+                "Love your neighbor as yourself - Matthew 22:39",
+                "Trust in the Lord with all your heart - Proverbs 3:5"
             ]
         },
         {
-            keyword: "LIGHT",
-            interpretations: [
+            keyword: "CATEGORIES",
+            topicName: "Salvation and Faith",
+            topics: [
                 {
-                    passage: "You are the light of the world",
-                    surface: "Christians compared to light",
-                    deeper: "Believers illuminate spiritual darkness for others",
-                    question: "What does 'shining your light' mean spiritually?",
-                    answer: "WITNESSING",
-                    explanation: "Letting others see Christ through our actions and words"
+                    name: "Salvation by Grace",
+                    description: "Verses about grace and salvation",
+                    correctVerses: [
+                        "For by grace you have been saved - Ephesians 2:8",
+                        "The gift of God is eternal life - Romans 6:23",
+                        "Whoever believes in him shall not perish - John 3:16"
+                    ]
                 },
                 {
-                    passage: "I am the bread of life",
-                    surface: "Jesus compared to food",
-                    deeper: "Jesus provides spiritual sustenance for eternal life",
-                    question: "What does 'eating this bread' represent?",
-                    answer: "BELIEVING",
-                    explanation: "Spiritual consumption means accepting and believing in Jesus"
+                    name: "Faith and Belief",
+                    description: "Scriptures about faith and believing",
+                    correctVerses: [
+                        "Faith comes by hearing - Romans 10:17",
+                        "Now faith is the substance of things hoped for - Hebrews 11:1",
+                        "Without faith it is impossible to please God - Hebrews 11:6"
+                    ]
+                },
+                {
+                    name: "Forgiveness",
+                    description: "Verses about God's forgiveness",
+                    correctVerses: [
+                        "If we confess our sins, he is faithful - 1 John 1:9",
+                        "As far as the east is from the west - Psalm 103:12",
+                        "Father, forgive them - Luke 23:34"
+                    ]
                 }
+            ],
+            distractorVerses: [
+                "Be strong and courageous - Joshua 1:9",
+                "Seek first the kingdom of God - Matthew 6:33",
+                "Honor your father and mother - Ephesians 6:2",
+                "Iron sharpens iron - Proverbs 27:17"
             ]
         }
     ],
 
-    // SEAL 6: Advanced Logical Reasoning - Prophetic Logic
-    prophethicLogic: [
+    // SEAL 7: Biblical Wisdom Challenge - Comprehensive Knowledge
+    biblicalWisdom: [
         {
-            keyword: "PROMISE",
-            logic_chains: [
+            keyword: "MASTERY",
+            challenges: [
                 {
-                    premise1: "All of God's promises are Yes and Amen in Christ",
-                    premise2: "Abraham was given a promise about his descendants",
-                    premise3: "Christ is Abraham's ultimate descendant",
-                    conclusion_question: "Therefore, what is fulfilled in Christ?",
-                    answer: "ALL PROMISES",
-                    explanation: "Christ fulfills all of God's promises to Abraham and beyond"
-                },
-                {
-                    timeline: "Promise → Prophecy → Fulfillment",
-                    events: [
-                        {stage: "Promise", content: "Messiah promised to Adam and Eve"},
-                        {stage: "Prophecy", content: "Details given through prophets"},
-                        {stage: "Fulfillment", content: "Jesus fulfills all prophecies"}
+                    type: "multiple_choice",
+                    question: "Which of these demonstrates the greatest biblical wisdom?",
+                    options: [
+                        "Knowing all the genealogies by heart",
+                        "Understanding God's love and living it out",
+                        "Memorizing entire books of the Bible",
+                        "Winning biblical knowledge competitions"
                     ],
-                    question: "What logical principle governs biblical prophecy?",
-                    answer: "DIVINE FAITHFULNESS",
-                    explanation: "God's faithfulness ensures all prophecies are fulfilled"
+                    correctAnswer: "Understanding God's love and living it out",
+                    explanation: "True biblical wisdom is not just knowledge, but understanding and applying God's love"
+                },
+                {
+                    type: "completion",
+                    question: "Complete this biblical principle: 'Faith without _____ is dead'",
+                    answer: "WORKS",
+                    context: "James 2:26",
+                    explanation: "James teaches that genuine faith naturally produces good works"
+                },
+                {
+                    type: "application",
+                    question: "What is the greatest commandment according to Jesus?",
+                    answer: "LOVE GOD",
+                    alternates: ["LOVE THE LORD", "LOVE GOD WITH ALL YOUR HEART"],
+                    reference: "Matthew 22:37-39",
+                    explanation: "Love God with all your heart, soul, and mind - and love your neighbor as yourself"
                 }
             ]
         },
         {
-            keyword: "ETERNAL",
-            logic_chains: [
+            keyword: "WISDOM",
+            challenges: [
                 {
-                    syllogism: "If God is eternal, and Jesus is God, then Jesus is eternal",
-                    question: "What does this mean for salvation?",
-                    answer: "ETERNAL SECURITY",
-                    explanation: "Salvation secured by an eternal Savior is itself eternal"
-                }
-            ]
-        }
-    ],
-
-    // SEAL 7: Advanced Code-Breaking - Revelation Mysteries
-    revelationCode: [
-        {
-            keyword: "VICTORY",
-            ultimate_codes: [
-                {
-                    type: "symbolic_matrix",
-                    cipher: "Seven-fold Pattern Cipher",
-                    elements: ["7 Churches", "7 Seals", "7 Trumpets", "7 Bowls", "7 Spirits", "7 Stars", "7 Lampstands"],
-                    pattern: "7x7=49",
-                    question: "What does the completion of seven sevens represent?",
-                    answer: "JUBILEE",
-                    explanation: "Seven represents completion; seven sevens represents God's perfect completion"
+                    type: "synthesis",
+                    question: "The Seven Seals teach us that biblical knowledge leads to what ultimate goal?",
+                    options: [
+                        "Academic achievement",
+                        "Spiritual wisdom and relationship with God",
+                        "Winning Bible competitions",
+                        "Impressing others with knowledge"
+                    ],
+                    correctAnswer: "Spiritual wisdom and relationship with God",
+                    explanation: "Knowledge serves the purpose of drawing us closer to God and understanding His love"
                 },
                 {
-                    type: "numerical_prophecy",
-                    cipher: "Revelation Number Code",
-                    sequence: "144,000 (sealed) ÷ 12 (tribes) ÷ 12 (foundations) = ?",
-                    solution: "1000",
-                    meaning: "Complete perfection in God's people",
-                    verification: "1000 represents divine completeness"
-                },
-                {
-                    type: "symbolic_interpretation",
-                    cipher: "Beast Number Reverse",
-                    message: "If 666 represents imperfection, what represents perfection?",
-                    answer: "777",
-                    explanation: "777 represents divine perfection as the opposite of 666"
-                }
-            ]
-        },
-        {
-            keyword: "OMEGA",
-            ultimate_codes: [
-                {
-                    type: "alpha_omega",
-                    cipher: "Beginning and End Code",
-                    message: "I am the Alpha and the Omega",
-                    question: "What does this title reveal about Christ's nature?",
-                    answer: "ETERNAL EXISTENCE",
-                    explanation: "Christ exists from beginning to end of all things"
+                    type: "reflection",
+                    question: "What does it mean to 'unlock the seals' in your spiritual life?",
+                    answer: "SPIRITUAL GROWTH",
+                    alternates: ["GROWTH", "UNDERSTANDING", "MATURITY", "WISDOM"],
+                    explanation: "Unlocking seals represents growing in spiritual understanding and maturity"
                 }
             ]
         }
