@@ -1081,6 +1081,12 @@
                 if (roomData) {
                     updateLobby(roomData);
 
+                    // CRITICAL: Update leaderboard with live Firebase data during gameplay
+                    if (gameState.isGameActive && roomData.teams) {
+                        console.log('📊 ROOM LISTENER: Updating leaderboard with live data');
+                        updateLeaderboardFromFirebase(roomData.teams);
+                    }
+
                     // Check if game started
                     if (roomData.gameStarted && !gameState.isGameActive) {
                         startRoomGameplay();
@@ -1393,6 +1399,47 @@
             });
         }
 
+        // CRITICAL: Update leaderboard with LIVE Firebase data for real-time sync
+        function updateLeaderboardFromFirebase(firebaseTeams) {
+            console.log('📊 FIREBASE LEADERBOARD: Updating with live data', firebaseTeams);
+            
+            const leaderboardList = document.getElementById('leaderboardList');
+            if (!leaderboardList) {
+                console.log('📊 FIREBASE LEADERBOARD: Leaderboard element not found');
+                return;
+            }
+            
+            leaderboardList.innerHTML = '';
+
+            // Convert Firebase teams object to array and sort by score
+            const teamsArray = Object.entries(firebaseTeams).map(([teamId, teamData]) => ({
+                id: teamId,
+                name: teamData.name || teamId,
+                score: teamData.score || (teamData.completedSeals ? teamData.completedSeals.length : 0),
+                completedSeals: teamData.completedSeals || [],
+                isHost: teamData.isHost || false
+            }));
+
+            // Sort by score (descending)
+            const sortedTeams = teamsArray.sort((a, b) => b.score - a.score);
+            
+            console.log('📊 FIREBASE LEADERBOARD: Sorted teams:', sortedTeams);
+
+            sortedTeams.forEach((team, index) => {
+                const item = document.createElement('div');
+                item.className = 'leaderboard-item';
+                const isCurrentTeam = team.name === gameState.currentTeam;
+                item.innerHTML = `
+                    <span class="leaderboard-rank">#${index + 1}</span>
+                    <span class="leaderboard-name">${team.name}${isCurrentTeam ? ' (YOU)' : ''}</span>
+                    <span class="leaderboard-score">${team.score}/7</span>
+                `;
+                leaderboardList.appendChild(item);
+            });
+            
+            console.log('📊 FIREBASE LEADERBOARD: Leaderboard updated successfully');
+        }
+
         function startTimer() {
             const timerElement = document.getElementById('timer');
 
@@ -1462,13 +1509,21 @@
                 console.log('📊 Current room data:', roomData);
 
                 if (roomData && roomData.teams) {
+                    // Check for teams that completed 7 seals (not just marked as completed)
                     const teams = Object.values(roomData.teams);
-                    const completedTeams = teams.filter(team => team.completed);
+                    const teamsWithSevenSeals = teams.filter(team => {
+                        const sealsCount = team.completedSeals ? team.completedSeals.length : (team.score || 0);
+                        return sealsCount >= 7 || team.completed;
+                    });
                     
-                    console.log('👥 All teams:', teams.map(t => ({ name: t.name, completed: t.completed })));
-                    console.log('🏁 Completed teams count:', completedTeams.length);
+                    console.log('👥 All teams scores:', teams.map(t => ({ 
+                        name: t.name, 
+                        seals: t.completedSeals ? t.completedSeals.length : (t.score || 0),
+                        completed: t.completed 
+                    })));
+                    console.log('🏁 Teams with 7 seals:', teamsWithSevenSeals.length);
 
-                    if (completedTeams.length === 1) {
+                    if (teamsWithSevenSeals.length === 1) {
                         // This is the winner! End the game for everyone
                         console.log('🏆 First team to complete - declaring winner!');
                         
@@ -1486,11 +1541,13 @@
                         // Show winner modal to all players
                         console.log('🎉 Showing winner modal...');
                         showWinnerModal(gameState.currentTeam, completionTime, true);
-                    } else {
-                        // Someone else already won
+                    } else if (teamsWithSevenSeals.length > 1) {
+                        // Someone else already won - find the first one
                         console.log('🥈 Another team already won');
-                        const winner = completedTeams[0];
-                        showWinnerModal(winner.name || 'Another team', winner.completionTime || 0, false);
+                        const winner = teamsWithSevenSeals[0];
+                        showWinnerModal(winner.name || 'Another team', winner.completionTime || completionTime, false);
+                    } else {
+                        console.log('🔄 No teams with 7 seals yet');
                     }
                 } else {
                     console.log('❌ No room data or teams found');
