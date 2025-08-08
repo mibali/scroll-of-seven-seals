@@ -5,6 +5,7 @@ class EnhancedPuzzleManager {
     constructor() {
         this.currentPuzzles = {};
         this.teamInputs = {}; // Track team member inputs for communication challenges
+        this.gameSessionId = null; // Track current game session for randomization
     }
 
     // Generate challenge content for a specific seal
@@ -14,10 +15,11 @@ class EnhancedPuzzleManager {
             return '<p>Challenge not available</p>';
         }
 
-        // Select a random variation if not already selected
-        if (!this.currentPuzzles[puzzleType]) {
+        // Select a random variation if not already selected for this game session
+        if (!this.currentPuzzles[puzzleType] || this.gameSessionId !== this.getCurrentGameSession()) {
             const randomIndex = Math.floor(Math.random() * variations.length);
             this.currentPuzzles[puzzleType] = variations[randomIndex];
+            console.log(`🎲 Randomized ${puzzleType} - selected variation ${randomIndex + 1}/${variations.length}`);
         }
 
         const variation = this.currentPuzzles[puzzleType];
@@ -537,17 +539,136 @@ class EnhancedPuzzleManager {
         this.currentPuzzles = { ...variations };
     }
 
-    // Clear all puzzle selections
+    // Clear all puzzle selections and start new game session
     clearPuzzles() {
         this.currentPuzzles = {};
         this.teamInputs = {};
+        this.gameSessionId = Date.now(); // New game session for randomization
+        console.log('🎲 New game session started - puzzles will be randomized');
+    }
+
+    // Get current game session identifier
+    getCurrentGameSession() {
+        if (!this.gameSessionId) {
+            this.gameSessionId = Date.now();
+        }
+        return this.gameSessionId;
+    }
+
+    // Force regenerate all puzzles for new game
+    regeneratePuzzles() {
+        console.log('🎲 Regenerating all puzzles for fresh game experience...');
+        this.gameSessionId = Date.now();
+        this.currentPuzzles = {};
+        this.teamInputs = {};
+        
+        // Pre-generate all puzzle variations to ensure fresh content
+        const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
+        puzzleTypes.forEach(type => {
+            const variations = window.GameData.puzzleVariations[type];
+            if (variations && variations.length > 0) {
+                const randomIndex = Math.floor(Math.random() * variations.length);
+                this.currentPuzzles[type] = variations[randomIndex];
+                console.log(`🎲 Pre-generated ${type} - variation ${randomIndex + 1}/${variations.length}`);
+            }
+        });
+        
+        console.log('✅ All puzzles regenerated for fresh game experience!');
     }
 }
 
 // Initialize enhanced puzzle manager
 const enhancedPuzzleManager = new EnhancedPuzzleManager();
 
-// Enhanced validation functions - NO HINTS ALLOWED
+// Enhanced validation functions with flexible answer matching
+// Comprehensive synonym and equivalent answer system
+const answerSynonyms = {
+    // Biblical numbers
+    '40': ['FORTY', '40', 'FOURTY'],
+    '3': ['THREE', '3', 'III'],
+    '10': ['TEN', '10', 'X'],
+    '12': ['TWELVE', '12', 'XII'],
+    '5': ['FIVE', '5', 'V'],
+    '50': ['FIFTY', '50', 'L'],
+    
+    // Biblical names and places
+    'HANNAH': ['HANNAH', 'HANNA'],
+    'SINAI': ['SINAI', 'MOUNT SINAI', 'MT SINAI', 'HOREB', 'MT HOREB'],
+    'SARAH': ['SARAH', 'SARA', 'SARAI'],
+    'JOHN': ['JOHN', 'GOSPEL OF JOHN', 'JOHN\'S GOSPEL'],
+    'AARON': ['AARON', 'ARON'],
+    'ANNA': ['ANNA', 'ANNE'],
+    'SOLOMON': ['SOLOMON', 'KING SOLOMON'],
+    'BETHLEHEM': ['BETHLEHEM', 'BETHELEM', 'CITY OF DAVID'],
+    'STEPHEN': ['STEPHEN', 'STEVEN', 'STEFANOS'],
+    
+    // Abstract concepts - Bible Knowledge
+    'SALVATION': ['SALVATION', 'SAVED', 'REDEMPTION', 'DELIVERANCE', 'RESCUE'],
+    'REDEMPTION': ['REDEMPTION', 'SALVATION', 'DELIVERANCE', 'RESCUE', 'SAVING'],
+    
+    // Logical Reasoning concepts
+    'COVENANT': ['COVENANT', 'AGREEMENT', 'PROMISE', 'PACT', 'CONTRACT'],
+    'WISDOM': ['WISDOM', 'KNOWLEDGE', 'UNDERSTANDING', 'INSIGHT', 'DISCERNMENT'],
+    'KING': ['KING', 'RULER', 'LEADER', 'MONARCH', 'SOVEREIGN'],
+    'JAMES': ['JAMES', 'JACOB', 'JAMES THE GREATER'],
+    'DIVISION': ['DIVISION', 'SPLIT', 'SEPARATION', 'DIVIDED KINGDOM'],
+    'PERSEVERANCE': ['PERSEVERANCE', 'PERSISTENCE', 'ENDURANCE', 'STEADFASTNESS', 'FAITHFULNESS'],
+    
+    // Team Communication concepts
+    'UNITY': ['UNITY', 'ONENESS', 'TOGETHER', 'UNIFIED', 'HARMONY'],
+    'FELLOWSHIP': ['FELLOWSHIP', 'COMMUNITY', 'BROTHERHOOD', 'COMMUNION', 'PARTNERSHIP'],
+    'CREATOR': ['CREATOR', 'MAKER', 'FATHER', 'GOD', 'ALMIGHTY'],
+    'REDEEMER': ['REDEEMER', 'SAVIOR', 'SAVIOUR', 'DELIVERER', 'RESCUER'],
+    'COMFORTER': ['COMFORTER', 'HELPER', 'COUNSELOR', 'ADVOCATE', 'GUIDE', 'PARACLETE'],
+    'PETER': ['PETER', 'SIMON PETER', 'SIMON', 'CEPHAS'],
+    'PAUL': ['PAUL', 'SAUL', 'APOSTLE PAUL', 'SAUL OF TARSUS'],
+    
+    // Code Breaking concepts
+    'MYSTERY': ['MYSTERY', 'SECRET', 'HIDDEN TRUTH', 'ENIGMA'],
+    'REVELATION': ['REVELATION', 'APOCALYPSE', 'UNVEILING', 'DISCLOSURE'],
+    'HELLO': ['HELLO', 'HI', 'GREETINGS'],
+    'GLORY': ['GLORY', 'HONOR', 'PRAISE', 'MAJESTY'],
+    '26': ['26', 'TWENTY-SIX', 'TWENTY SIX'],
+    '47': ['47', 'FORTY-SEVEN', 'FORTY SEVEN'],
+    
+    // Metaphorical Scripture concepts
+    'TRUTH': ['TRUTH', 'REALITY', 'FACT', 'VERITY'],
+    'LIGHT': ['LIGHT', 'ILLUMINATION', 'BRIGHTNESS', 'LAMP'],
+    'GOOD WORKS': ['GOOD WORKS', 'WORKS', 'DEEDS', 'FRUIT', 'SERVICE', 'MINISTRY', 'LOVE', 'ACTIONS'],
+    'FAITH EXPANSION': ['FAITH EXPANSION', 'FAITH', 'GROWTH', 'EXPANSION', 'SPREAD', 'INFLUENCE', 'KINGDOM GROWTH', 'IMPACT'],
+    'DISCERNMENT WITH PURITY': ['DISCERNMENT WITH PURITY', 'DISCERNMENT', 'WISDOM', 'BALANCE', 'PURITY', 'INNOCENT', 'WISE', 'SHREWD', 'CAREFUL', 'PRUDENT'],
+    'WITNESSING': ['WITNESSING', 'WITNESS', 'TESTIMONY', 'SHARING', 'EVANGELISM', 'EXAMPLE', 'LIVING', 'SHOWING'],
+    'BELIEVING': ['BELIEVING', 'BELIEF', 'FAITH', 'ACCEPTING', 'RECEIVING', 'TRUSTING', 'FOLLOWING'],
+    
+    // Prophetic Logic concepts
+    'PROMISE': ['PROMISE', 'COVENANT', 'PLEDGE', 'VOW', 'ASSURANCE'],
+    'ETERNAL': ['ETERNAL', 'EVERLASTING', 'FOREVER', 'INFINITE', 'TIMELESS'],
+    'ALL PROMISES': ['ALL PROMISES', 'PROMISES', 'EVERYTHING', 'FULFILLED', 'COMPLETE', 'YES AND AMEN'],
+    'DIVINE FAITHFULNESS': ['DIVINE FAITHFULNESS', 'FAITHFULNESS', 'FAITHFUL', 'RELIABLE', 'TRUSTWORTHY', 'DEPENDABLE', 'UNCHANGING', 'SURE'],
+    'ETERNAL SECURITY': ['ETERNAL SECURITY', 'ETERNAL SALVATION', 'SECURITY', 'ETERNAL', 'PERMANENT', 'FOREVER', 'CANNOT BE LOST', 'SECURE', 'LASTING', 'UNCHANGING', 'GUARANTEED'],
+    
+    // Revelation Code concepts
+    'VICTORY': ['VICTORY', 'TRIUMPH', 'CONQUEST', 'WIN', 'OVERCOME'],
+    'OMEGA': ['OMEGA', 'END', 'LAST', 'FINAL'],
+    'JUBILEE': ['JUBILEE', 'CELEBRATION', 'FREEDOM', 'COMPLETION', 'PERFECTION'],
+    '1000': ['1000', 'THOUSAND', 'ONE THOUSAND'],
+    '777': ['777', 'SEVEN SEVEN SEVEN', 'PERFECTION'],
+    'ETERNAL EXISTENCE': ['ETERNAL EXISTENCE', 'ETERNAL', 'EXISTENCE', 'EVERLASTING', 'TIMELESS', 'WITHOUT BEGINNING OR END']
+};
+
+// Helper function to check if answer matches including synonyms
+function isAnswerCorrect(userAnswer, correctAnswer) {
+    const user = userAnswer.trim().toUpperCase();
+    const correct = correctAnswer.toUpperCase();
+    
+    // Direct match
+    if (user === correct) return true;
+    
+    // Check synonyms
+    const synonyms = answerSynonyms[correct] || [];
+    return synonyms.some(synonym => user === synonym.toUpperCase());
+}
+
 function checkBibleKnowledge() {
     const variation = enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
     if (!variation) return;
@@ -556,10 +677,10 @@ function checkBibleKnowledge() {
     const results = [];
     
     variation.questions.forEach((question, index) => {
-        const userAnswer = document.getElementById(`knowledge${index + 1}`).value.trim().toUpperCase();
-        const correctAnswer = question.correctAnswer.toUpperCase();
+        const userAnswer = document.getElementById(`knowledge${index + 1}`).value.trim();
+        const correctAnswer = question.correctAnswer;
         
-        if (userAnswer === correctAnswer) {
+        if (isAnswerCorrect(userAnswer, correctAnswer)) {
             results.push(`✅ Q${index + 1}: Correct`);
         } else {
             results.push(`❌ Q${index + 1}: Incorrect`);
@@ -596,10 +717,10 @@ function checkLogicalReasoning() {
     const results = [];
     
     variation.puzzles.forEach((puzzle, index) => {
-        const userAnswer = document.getElementById(`logical${index + 1}`).value.trim().toUpperCase();
-        const correctAnswer = puzzle.correctAnswer.toUpperCase();
+        const userAnswer = document.getElementById(`logical${index + 1}`).value.trim();
+        const correctAnswer = puzzle.correctAnswer;
         
-        if (userAnswer === correctAnswer) {
+        if (isAnswerCorrect(userAnswer, correctAnswer)) {
             results.push(`✅ Logic ${index + 1}: Sound reasoning`);
         } else {
             results.push(`❌ Logic ${index + 1}: Flawed reasoning`);
@@ -740,10 +861,10 @@ function checkCodeBreaking() {
     const results = [];
     
     variation.codes.forEach((code, index) => {
-        const userAnswer = document.getElementById(`code${index + 1}`).value.trim().toUpperCase();
-        const correctAnswer = code.solution.toUpperCase();
+        const userAnswer = document.getElementById(`code${index + 1}`).value.trim();
+        const correctAnswer = code.solution;
         
-        if (userAnswer === correctAnswer) {
+        if (isAnswerCorrect(userAnswer, correctAnswer)) {
             results.push(`✅ Code ${index + 1}: Decrypted`);
         } else {
             results.push(`❌ Code ${index + 1}: Still encrypted`);
@@ -860,11 +981,45 @@ function checkProphethicLogic() {
     let allCorrect = true;
     const results = [];
     
-    variation.logic_chains.forEach((chain, index) => {
-        const userAnswer = document.getElementById(`prophetic${index + 1}`).value.trim().toUpperCase();
-        const correctAnswer = chain.answer.toUpperCase();
+    // Helper function to check if logical reasoning is acceptable
+    function isAcceptableLogic(userAnswer, expectedAnswer, context) {
+        const user = userAnswer.toUpperCase();
+        const expected = expectedAnswer.toUpperCase();
         
-        if (userAnswer === correctAnswer) {
+        // Direct match
+        if (user === expected) return true;
+        
+        // Context-specific flexible matching
+        if (context.includes('salvation') && context.includes('eternal')) {
+            // Eternal salvation security concepts
+            return user.includes('ETERNAL SECURITY') || user.includes('ETERNAL SALVATION') || 
+                   user.includes('SECURITY') || user.includes('ETERNAL') || user.includes('PERMANENT') ||
+                   user.includes('FOREVER') || user.includes('CANNOT BE LOST') || user.includes('SECURE') ||
+                   user.includes('LASTING') || user.includes('UNCHANGING') || user.includes('GUARANTEED');
+        } else if (context.includes('promises') && context.includes('Christ')) {
+            // All promises fulfilled in Christ
+            return user.includes('ALL PROMISES') || user.includes('PROMISES') || user.includes('EVERYTHING') ||
+                   user.includes('FULFILLED') || user.includes('COMPLETE') || user.includes('YES AND AMEN');
+        } else if (context.includes('prophecy') && context.includes('faithfulness')) {
+            // Divine faithfulness in prophecy
+            return user.includes('DIVINE FAITHFULNESS') || user.includes('FAITHFULNESS') || user.includes('FAITHFUL') ||
+                   user.includes('RELIABLE') || user.includes('TRUSTWORTHY') || user.includes('DEPENDABLE') ||
+                   user.includes('UNCHANGING') || user.includes('SURE');
+        }
+        
+        return false;
+    }
+    
+    variation.logic_chains.forEach((chain, index) => {
+        const userAnswer = document.getElementById(`prophetic${index + 1}`).value.trim();
+        
+        // Create context from the chain content
+        let context = '';
+        if (chain.syllogism) context = chain.syllogism + ' ' + chain.question;
+        else if (chain.conclusion_question) context = chain.conclusion_question;
+        else if (chain.question) context = chain.question;
+        
+        if (isAcceptableLogic(userAnswer, chain.answer, context)) {
             results.push(`✅ Logic Chain ${index + 1}: Valid reasoning`);
         } else {
             results.push(`❌ Logic Chain ${index + 1}: Invalid reasoning`);
@@ -902,10 +1057,16 @@ function checkRevelationCode() {
     const results = [];
     
     variation.ultimate_codes.forEach((code, index) => {
-        const userAnswer = document.getElementById(`revelation${index + 1}`).value.trim().toUpperCase();
-        const correctAnswer = code.answer.toUpperCase();
+        const inputElement = document.getElementById(`revelation${index + 1}`);
+        if (!inputElement) {
+            console.error(`Element revelation${index + 1} not found`);
+            return;
+        }
         
-        if (userAnswer === correctAnswer) {
+        const userAnswer = inputElement.value.trim();
+        const correctAnswer = (code.answer || code.solution || '').toString();
+        
+        if (isAnswerCorrect(userAnswer, correctAnswer)) {
             results.push(`✅ Mystery ${index + 1}: Unlocked`);
         } else {
             results.push(`❌ Mystery ${index + 1}: Sealed`);
@@ -940,8 +1101,11 @@ function resetChallenge(challengeType) {
     enhancedPuzzleManager.resetChallenge(challengeType);
 }
 
-// Export enhanced manager
+// Export enhanced manager with all methods
 window.PuzzleManager = enhancedPuzzleManager;
+
+// Make regeneration function globally available for easy access
+window.regeneratePuzzles = () => enhancedPuzzleManager.regeneratePuzzles();
 
 // Make validation functions globally available
 window.checkBibleKnowledge = checkBibleKnowledge;

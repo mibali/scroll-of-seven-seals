@@ -340,12 +340,18 @@ class GameController {
 
     // Generate puzzle variations
     generatePuzzleVariations() {
-        const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
-        puzzleTypes.forEach(type => {
-            const variations = window.GameData.puzzleVariations[type];
-            const randomIndex = Math.floor(Math.random() * variations.length);
-            window.PuzzleManager.currentPuzzles[type] = variations[randomIndex];
-        });
+        // Use the enhanced puzzle manager's regeneration function
+        if (window.PuzzleManager && window.PuzzleManager.regeneratePuzzles) {
+            window.PuzzleManager.regeneratePuzzles();
+        } else {
+            // Fallback to manual generation
+            const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
+            puzzleTypes.forEach(type => {
+                const variations = window.GameData.puzzleVariations[type];
+                const randomIndex = Math.floor(Math.random() * variations.length);
+                window.PuzzleManager.currentPuzzles[type] = variations[randomIndex];
+            });
+        }
     }
 
     // Show main game screen

@@ -332,6 +332,77 @@
             gap: 20px;
         }
 
+        .game-options {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #6b4d37;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .option-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #b8a082;
+            font-size: 0.9em;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #6b4d37;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #f4f1e8;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #d4af37;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+
+        .option-description {
+            font-size: 0.8em;
+            color: #8b7355;
+            margin-left: 5px;
+        }
+
         .timer {
             font-size: 1.5em;
             color: #d4af37;
@@ -770,6 +841,34 @@
                     <div class="progress-bar">
                         <div class="progress-fill" id="progressFill"></div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Universal Game Options -->
+            <div class="game-options">
+                <div class="option-toggle">
+                    <span>💡 Enhanced Hints:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="hintsEnabled" onchange="toggleHints()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="option-description">Show additional guidance for challenging puzzles</span>
+                </div>
+                <div class="option-toggle">
+                    <span>🔀 Random Mode:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="randomMode" checked onchange="toggleRandomMode()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="option-description">Generate fresh puzzles each game</span>
+                </div>
+                <div class="option-toggle">
+                    <span>📊 Show Progress:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="detailedProgress" checked onchange="toggleDetailedProgress()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="option-description">Display detailed completion statistics</span>
                 </div>
             </div>
 
@@ -2045,9 +2144,68 @@
                 // Multiplayer mode - winner detection handled in Firebase update
                 console.log('🏆 Multiplayer mode - winner detection handled in Firebase update');
             } else {
-                // Single player mode
-                console.log('🎮 Single player mode - showing completion message');
-                showAlert(`🎉 Congratulations! All seals opened in ${minutes}:${seconds.toString().padStart(2, '0')}!`, 'success');
+                // Single player mode - show proper completion screen
+                console.log('🎮 Single player mode - showing completion screen');
+                gameState.isGameActive = false;
+                
+                // Show completion modal with proper victory screen
+                const completionModal = `
+                    <div id="completionModal" style="
+                        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+                        background: rgba(0,0,0,0.9); display: flex; justify-content: center; 
+                        align-items: center; z-index: 10000;">
+                        <div style="
+                            background: linear-gradient(145deg, #2c1810, #3a1f12);
+                            border: 3px solid #ffd700; border-radius: 15px; padding: 40px;
+                            text-align: center; max-width: 600px; width: 95%;
+                            box-shadow: 0 8px 30px rgba(255, 215, 0, 0.3);">
+                            <h2 style="color: #ffd700; font-size: 2.5em; margin-bottom: 20px; 
+                                       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);">🏆 VICTORY! 🏆</h2>
+                            <div style="margin: 20px 0;">
+                                <div style="font-size: 1.4em; color: #c9a96e; margin-bottom: 15px; font-weight: bold;">
+                                    🎉 Congratulations! All Seven Seals Unlocked! 🎉
+                                </div>
+                                <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid #c9a96e; 
+                                            border-radius: 8px; padding: 15px; margin: 15px 0;">
+                                    <p style="margin: 8px 0; color: #e8dcc0;"><strong style="color: #ffd700;">Team:</strong> ${gameState.currentTeam}</p>
+                                    <p style="margin: 8px 0; color: #e8dcc0;"><strong style="color: #ffd700;">Completion Time:</strong> ${minutes}:${seconds.toString().padStart(2, '0')}</p>
+                                    <p style="margin: 8px 0; color: #e8dcc0;"><strong style="color: #ffd700;">Seals Completed:</strong> 7/7</p>
+                                </div>
+                                <div style="font-size: 1.1em; color: #b8a082; line-height: 1.5; margin: 20px 0;">
+                                    You have successfully unlocked all the mysteries of the Seven Seals!<br>
+                                    The ancient wisdom is now yours to keep.
+                                </div>
+                            </div>
+                            <div style="margin-top: 30px;">
+                                <button onclick="closeCompletionModal(); goBack();" style="
+                                    background: #d4af37; color: #2c1810; border: none; padding: 12px 24px;
+                                    border-radius: 5px; font-size: 1.1em; cursor: pointer; font-weight: bold; margin: 0 10px;">
+                                    🎮 Play Again
+                                </button>
+                                <button onclick="closeCompletionModal();" style="
+                                    background: #6b4d37; color: #f4f1e8; border: none; padding: 12px 24px;
+                                    border-radius: 5px; font-size: 1.1em; cursor: pointer; font-weight: bold; margin: 0 10px;">
+                                    ⚡ Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.insertAdjacentHTML('beforeend', completionModal);
+                
+                // Auto-close after 60 seconds
+                setTimeout(() => {
+                    closeCompletionModal();
+                }, 60000);
+            }
+        }
+
+        // Close completion modal
+        function closeCompletionModal() {
+            const modal = document.getElementById('completionModal');
+            if (modal) {
+                modal.remove();
             }
         }
 
@@ -2451,7 +2609,9 @@
 
         function resetGameState() {
             // Generate new random questions for replayability
-            // Use enhanced seals - no regeneration needed
+            if (gameOptions.randomMode) {
+                window.PuzzleManager.regeneratePuzzles();
+            }
             
             gameState.completedSeals = [];
             gameState.isGameActive = false;
@@ -2468,7 +2628,7 @@
             updateLeaderboard();
 
             document.getElementById('timer').textContent = '00:00';
-            showAlert('New questions generated! Game reset!', 'success');
+            showAlert('Game reset! Fresh challenges await!', 'success');
         }
 
         function goBack() {
@@ -2549,6 +2709,112 @@
             }, 3000);
         }
 
+        // Universal Game Options - Available in all modes
+        let gameOptions = {
+            hintsEnabled: false,
+            randomMode: true,
+            detailedProgress: true
+        };
+
+        // Load saved game options from localStorage
+        function loadGameOptions() {
+            try {
+                const saved = localStorage.getItem('scrollGameOptions');
+                if (saved) {
+                    gameOptions = { ...gameOptions, ...JSON.parse(saved) };
+                }
+            } catch (error) {
+                console.log('Using default game options');
+            }
+            
+            // Update UI toggles
+            document.getElementById('hintsEnabled').checked = gameOptions.hintsEnabled;
+            document.getElementById('randomMode').checked = gameOptions.randomMode;
+            document.getElementById('detailedProgress').checked = gameOptions.detailedProgress;
+        }
+
+        // Save game options to localStorage
+        function saveGameOptions() {
+            localStorage.setItem('scrollGameOptions', JSON.stringify(gameOptions));
+        }
+
+        // Toggle hints functionality
+        function toggleHints() {
+            gameOptions.hintsEnabled = document.getElementById('hintsEnabled').checked;
+            saveGameOptions();
+            
+            if (gameOptions.hintsEnabled) {
+                showAlert('💡 Enhanced hints enabled - additional guidance will be shown', 'success');
+            } else {
+                showAlert('💡 Enhanced hints disabled - pure challenge mode', 'info');
+            }
+            
+            // Update any existing puzzle displays
+            updatePuzzleHintsDisplay();
+        }
+
+        // Toggle random mode
+        function toggleRandomMode() {
+            gameOptions.randomMode = document.getElementById('randomMode').checked;
+            saveGameOptions();
+            
+            if (gameOptions.randomMode) {
+                showAlert('🔀 Random mode enabled - fresh puzzles each game!', 'success');
+                // Regenerate puzzles for current game if already started
+                if (gameState.isGameActive) {
+                    window.PuzzleManager.regeneratePuzzles();
+                }
+            } else {
+                showAlert('🔀 Random mode disabled - consistent puzzles', 'info');
+            }
+        }
+
+        // Toggle detailed progress
+        function toggleDetailedProgress() {
+            gameOptions.detailedProgress = document.getElementById('detailedProgress').checked;
+            saveGameOptions();
+            
+            if (gameOptions.detailedProgress) {
+                showAlert('📊 Detailed progress enabled', 'success');
+            } else {
+                showAlert('📊 Detailed progress disabled', 'info');
+            }
+            
+            updateProgressDisplay();
+        }
+
+        // Update puzzle hints display based on settings
+        function updatePuzzleHintsDisplay() {
+            const hintElements = document.querySelectorAll('.cipher-hint, .puzzle-hint, .challenge-hint');
+            hintElements.forEach(hint => {
+                hint.style.display = gameOptions.hintsEnabled ? 'block' : 'none';
+            });
+        }
+
+        // Update progress display based on settings
+        function updateProgressDisplay() {
+            const progressText = document.getElementById('progressText');
+            if (progressText && gameOptions.detailedProgress) {
+                const completed = gameState.completedSeals.length;
+                const elapsed = gameState.startTime ? Date.now() - gameState.startTime : 0;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                progressText.textContent = `${completed}/7 Seals (${minutes}:${seconds.toString().padStart(2, '0')})`;
+            } else if (progressText) {
+                progressText.textContent = `${gameState.completedSeals.length}/7 Seals`;
+            }
+        }
+
+        // Initialize game options when game starts
+        function initializeGameOptions() {
+            loadGameOptions();
+            
+            // Apply random mode setting
+            if (gameOptions.randomMode) {
+                window.PuzzleManager.regeneratePuzzles();
+            }
+        }
+
         // Handle Enter key in inputs
         document.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -2556,6 +2822,11 @@
                     submitAnswer();
                 }
             }
+        });
+
+        // Initialize options when DOM loads
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(initializeGameOptions, 100);
         });
     </script>
 </body>

@@ -345,7 +345,7 @@ const puzzleVariations = {
                     elements: ["7 Churches", "7 Seals", "7 Trumpets", "7 Bowls", "7 Spirits", "7 Stars", "7 Lampstands"],
                     pattern: "7x7=49",
                     question: "What does the completion of seven sevens represent?",
-                    answer: "PERFECT COMPLETION",
+                    answer: "JUBILEE",
                     explanation: "Seven represents completion; seven sevens represents God's perfect completion"
                 },
                 {
