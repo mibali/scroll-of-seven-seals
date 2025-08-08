@@ -1082,6 +1082,51 @@ body {
     margin-top: 20px;
 }
 
+/* Winner Modal */
+.winner-modal {
+    max-width: 600px;
+    text-align: center;
+    border: 3px solid #ffd700;
+    background: linear-gradient(145deg, #2c1810, #3a1f12);
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.3);
+}
+
+.winner-modal h2 {
+    color: #ffd700;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.winner-content {
+    margin: 30px 0;
+}
+
+.winner-message {
+    font-size: 1.4em;
+    color: #c9a96e;
+    margin-bottom: 25px;
+    font-weight: bold;
+}
+
+.winner-details {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #c9a96e;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.winner-details p {
+    margin: 10px 0;
+    font-size: 1.1em;
+    color: #e8dcc0;
+}
+
+.winner-details strong {
+    color: #ffd700;
+}
+
 /* No data state */
 .no-data {
     text-align: center;

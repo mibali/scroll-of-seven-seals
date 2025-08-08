@@ -330,6 +330,9 @@ class GameController {
             
             // Initialize leaderboard
             window.LeaderboardManager.initializeGameLeaderboard(this.gameState.gameId);
+
+            // Start listening for game updates (winner announcements, game state changes)
+            this.startGameStateListener();
             
             showNotification('The quest has begun! May the fastest team win!', 'success');
 
@@ -725,6 +728,101 @@ class GameController {
         }
         window.LeaderboardManager.cleanup();
         window.MultiplayerManager.cleanup();
+    }
+
+    // Start listening for game state changes during gameplay  
+    startGameStateListener() {
+        if (this.gameState.gameId) {
+            window.MultiplayerManager.startGameListener(this.gameState.gameId, (gameData) => {
+                this.handleGameStateUpdate(gameData);
+            });
+        }
+    }
+
+    // Handle game state updates
+    handleGameStateUpdate(gameData) {
+        // Check for winner announcement
+        if (gameData.announcement && gameData.announcement.type === 'winner') {
+            this.showWinnerModal(gameData.announcement, gameData.winner);
+        }
+
+        // Check if game is finished
+        if (gameData.status === 'finished' && this.gameState.isGameActive) {
+            this.handleGameEnd(gameData);
+        }
+
+        // Check if team is locked (game ended)
+        const currentTeam = gameData.teams[window.MultiplayerManager.currentTeam?.id];
+        if (currentTeam && currentTeam.locked && this.gameState.isGameActive) {
+            this.lockGameInputs();
+        }
+    }
+
+    // Show winner modal to all players
+    showWinnerModal(announcement, winner) {
+        const existingModal = document.getElementById('winnerModal');
+        if (existingModal) existingModal.remove();
+
+        const isCurrentTeamWinner = winner && window.MultiplayerManager.currentTeam?.id === winner.teamId;
+        const modalTitle = isCurrentTeamWinner ? 'Congratulations! 🎉' : 'Game Over';
+        const modalMessage = isCurrentTeamWinner ? 
+            `Your team has won the game!` : 
+            `${winner.teamName} has won the game!`;
+
+        const modalHtml = `
+            <div id="winnerModal" class="modal-overlay">
+                <div class="modal-content winner-modal">
+                    <h2>${modalTitle}</h2>
+                    <div class="winner-content">
+                        <div class="winner-message">${modalMessage}</div>
+                        <div class="winner-details">
+                            <p><strong>Winning Team:</strong> ${winner.teamName}</p>
+                            <p><strong>Completion Time:</strong> ${this.formatTime(winner.completionTime)}</p>
+                            <p><strong>Final Score:</strong> ${winner.score}</p>
+                        </div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn" onclick="gameController.returnToMenu()">Return to Menu</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        setTimeout(() => {
+            const modal = document.getElementById('winnerModal');
+            if (modal) modal.remove();
+        }, 30000);
+    }
+
+    // Lock game inputs when game ends
+    lockGameInputs() {
+        this.gameState.isGameActive = false;
+        const seals = document.querySelectorAll('.seal');
+        seals.forEach(seal => {
+            seal.onclick = null;
+            seal.style.pointerEvents = 'none';
+            seal.style.opacity = '0.7';
+        });
+        showNotification('Game has ended. Inputs have been locked.', 'info');
+    }
+
+    // Handle game end
+    handleGameEnd(gameData) {
+        this.gameState.isGameActive = false;
+        if (gameData.winner) {
+            showNotification(`Game finished! Winner: ${gameData.winner.teamName}`, 'success');
+        }
+    }
+
+    // Return to main menu
+    returnToMenu() {
+        const modal = document.getElementById('winnerModal');
+        if (modal) modal.remove();
+        window.MultiplayerManager.leaveGame();
+        this.resetGameState();
+        this.showScreen('mainMenu');
+        this.updatePageState('mainMenu');
     }
 }
 
