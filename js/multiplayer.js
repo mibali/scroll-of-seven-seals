@@ -235,7 +235,9 @@ class MultiplayerManager {
                 await this.addToGlobalLeaderboard(teamData, completionTime);
 
                 // Check if this is the first team to complete (winner detection)
-                await this.checkForGameWinner(gameId, teamId, teamData);
+                const updatedTeamData = { ...teamData, score: this.calculateScore(teamData.progress, completionTime) };
+                updatedTeamData.progress.completionTime = completionTime;
+                await this.checkForGameWinner(gameId, teamId, updatedTeamData);
 
                 showNotification(`🎉 ${teamData.name} completed the quest!`, 'success');
             }
