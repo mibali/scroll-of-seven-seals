@@ -635,14 +635,55 @@ function checkTeamCommunication() {
     let allCorrect = true;
     const results = [];
     
+    // Helper function to check if answer is theologically acceptable
+    function isAcceptableAnswer(userAnswer, expectedAnswer, context) {
+        const user = userAnswer.toUpperCase();
+        const expected = expectedAnswer.toUpperCase();
+        
+        // Direct match
+        if (user === expected) return true;
+        
+        // Context-specific flexible matching for Trinity attributes
+        if (context === 'father_attribute') {
+            return user.includes('CREATOR') || user.includes('LOVE') || user.includes('FATHER') || 
+                   user.includes('ALMIGHTY') || user.includes('ETERNAL') || user === 'LOVE';
+        } else if (context === 'son_mission') {
+            return user.includes('REDEEMER') || user.includes('SAVIOR') || user.includes('SAVE') || 
+                   user.includes('REDEEM') || user.includes('SACRIFICE') || user.includes('LOST');
+        } else if (context === 'spirit_work') {
+            return user.includes('COMFORTER') || user.includes('HELPER') || user.includes('COUNSELOR') || 
+                   user.includes('GUIDE') || user.includes('ADVOCATE');
+        }
+        
+        // Context-specific matching for covenant chain
+        if (context === 'creation_covenant') {
+            return user.includes('CREATION') || user.includes('CREATE') || user.includes('BEGINNING');
+        } else if (context === 'noah_covenant') {
+            return user.includes('PRESERVATION') || user.includes('PRESERVE') || user.includes('RAINBOW') || 
+                   user.includes('NEVER DESTROY') || user.includes('PROTECT');
+        } else if (context === 'abraham_covenant') {
+            return user.includes('PROMISE') || user.includes('BLESSING') || user.includes('NATIONS') || 
+                   user.includes('DESCENDANTS') || user.includes('BLESS');
+        } else if (context === 'christ_covenant') {
+            return user.includes('SALVATION') || user.includes('SAVE') || user.includes('ETERNAL LIFE') || 
+                   user.includes('REDEMPTION') || user.includes('GRACE');
+        }
+        
+        return false;
+    }
+    
     // Check collaborative challenges
     variation.challenges.forEach((challenge, challengeIndex) => {
         if (challenge.type === 'collaborative') {
             challenge.parts.forEach((part, partIndex) => {
-                const userAnswer = document.getElementById(`team${challengeIndex}_part${partIndex}`).value.trim().toUpperCase();
-                const correctAnswer = part.answer.toUpperCase();
+                const userAnswer = document.getElementById(`team${challengeIndex}_part${partIndex}`).value.trim();
                 
-                if (userAnswer === correctAnswer) {
+                let context = '';
+                if (part.task.includes("Father's primary attribute")) context = 'father_attribute';
+                else if (part.task.includes("Son's earthly mission")) context = 'son_mission';
+                else if (part.task.includes("Spirit's current work")) context = 'spirit_work';
+                
+                if (isAcceptableAnswer(userAnswer, part.answer, context)) {
                     results.push(`✅ ${part.role}: United`);
                 } else {
                     results.push(`❌ ${part.role}: Not synchronized`);
@@ -651,10 +692,15 @@ function checkTeamCommunication() {
             });
         } else if (challenge.type === 'chain') {
             challenge.sequence.forEach((step, stepIndex) => {
-                const userAnswer = document.getElementById(`chain${challengeIndex}_step${stepIndex}`).value.trim().toUpperCase();
-                const correctAnswer = step.answer.toUpperCase();
+                const userAnswer = document.getElementById(`chain${challengeIndex}_step${stepIndex}`).value.trim();
                 
-                if (userAnswer === correctAnswer) {
+                let context = '';
+                if (step.clue.includes('Started with Adam')) context = 'creation_covenant';
+                else if (step.clue.includes('Continued with Noah')) context = 'noah_covenant';
+                else if (step.clue.includes('Established with Abraham')) context = 'abraham_covenant';
+                else if (step.clue.includes('Fulfilled through Christ')) context = 'christ_covenant';
+                
+                if (isAcceptableAnswer(userAnswer, step.answer, context)) {
                     results.push(`✅ Chain ${step.order}: Connected`);
                 } else {
                     results.push(`❌ Chain ${step.order}: Broken link`);
