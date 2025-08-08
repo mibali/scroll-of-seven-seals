@@ -1306,8 +1306,10 @@
                     currentTeam.completedSeals = [...gameState.completedSeals];
                 }
 
-                // Update Firebase if in multiplayer
-                if (gameState.mode === 'multiplayer' && gameState.roomCode) {
+                // Update Firebase if in multiplayer (check for roomCode instead of mode)
+                if (gameState.roomCode && gameState.currentTeam) {
+                    console.log('🔥 UPDATING FIREBASE - Seal completed:', gameState.currentPuzzle.number);
+                    console.log('🔥 Total seals completed:', gameState.completedSeals.length);
                     updateTeamProgressInFirebase();
                 }
 
@@ -1330,7 +1332,7 @@
             }
         }
 
-        function updateTeamProgressInFirebase() {
+        async function updateTeamProgressInFirebase() {
             if (!gameState.roomCode || !gameState.currentTeam) return;
 
             const teamData = {
@@ -1339,10 +1341,22 @@
                 lastUpdate: firebase.database.ServerValue.TIMESTAMP
             };
 
-            database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData)
-                .catch((error) => {
-                    console.error('Failed to update team progress:', error);
-                });
+            console.log('💾 FIREBASE UPDATE: Updating team progress...', teamData);
+            console.log('📍 FIREBASE UPDATE: Path:', `rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`);
+
+            try {
+                await database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData);
+                console.log('✅ FIREBASE UPDATE: Team progress updated successfully');
+                
+                // CRITICAL: Check for winner after EACH seal completion, not just at the end
+                if (gameState.completedSeals.length === 7 && gameState.isGameActive) {
+                    console.log('🏆 FIREBASE UPDATE: Team completed 7 seals - checking for winner!');
+                    const elapsed = Date.now() - gameState.startTime;
+                    await checkForGameWinner(elapsed);
+                }
+            } catch (error) {
+                console.error('❌ FIREBASE UPDATE: Failed to update team progress:', error);
+            }
         }
 
         function closePuzzle() {
@@ -1402,14 +1416,13 @@
             const minutes = Math.floor(elapsed / 60000);
             const seconds = Math.floor((elapsed % 60000) / 1000);
 
-            // Check if this is multiplayer and handle winner detection
-            if (gameState.roomCode && gameState.currentTeam) {
-                console.log('🏆 Calling checkForGameWinner for multiplayer');
-                checkForGameWinner(elapsed);
-            } else {
+            // Winner detection is now handled in updateTeamProgressInFirebase()
+            // This function just handles single player completion
+            if (!gameState.roomCode || !gameState.currentTeam) {
                 console.log('🎮 Single player mode - showing completion message');
-                // Single player completion
                 showAlert(`🎉 Congratulations! All seals opened in ${minutes}:${seconds.toString().padStart(2, '0')}!`, 'success');
+            } else {
+                console.log('🏆 Multiplayer mode - winner detection handled in Firebase update');
             }
         }
 
