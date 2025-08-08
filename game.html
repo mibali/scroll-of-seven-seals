@@ -469,9 +469,36 @@
             border: 3px solid #d4af37;
             border-radius: 20px;
             padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            text-align: center;
+            max-width: 800px;
+            max-height: 90vh;
+            width: 95%;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-button {
+            background: rgba(220, 53, 69, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .close-button:hover {
+            background: rgba(220, 53, 69, 1);
+            transform: scale(1.1);
         }
 
         .puzzle-title {
@@ -760,15 +787,23 @@
         </div>
     </div>
 
-    <!-- Puzzle Modal -->
+    <!-- Enhanced Challenge Modal -->
     <div id="puzzleModal" class="puzzle-modal">
         <div class="puzzle-content">
-            <div class="puzzle-title" id="puzzleTitle"></div>
-            <div class="puzzle-question" id="puzzleQuestion"></div>
-            <input type="text" id="puzzleAnswer" class="puzzle-input" placeholder="Enter your answer">
-            <div class="puzzle-buttons">
-                <button class="button" onclick="submitAnswer()">Submit</button>
-                <button class="button secondary" onclick="closePuzzle()">Cancel</button>
+            <div class="modal-header">
+                <div class="puzzle-title" id="puzzleTitle"></div>
+                <button class="close-button" onclick="closePuzzle()">✕</button>
+            </div>
+            <div class="puzzle-question" id="puzzleQuestion">
+                <!-- Enhanced challenge content loads here -->
+            </div>
+            <!-- Legacy input - hidden by default for enhanced challenges -->
+            <div id="legacyInputs" style="display: none;">
+                <input type="text" id="puzzleAnswer" class="puzzle-input" placeholder="Enter your answer">
+                <div class="puzzle-buttons">
+                    <button class="button" onclick="submitAnswer()">Submit</button>
+                    <button class="button secondary" onclick="closePuzzle()">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1601,79 +1636,7 @@
             return rankings;
         }
 
-        // Expanded Bible Question Pool for Random Generation
-        const bibleQuestionPool = [
-            // Original Revelation questions
-            { title: "The White Horse", question: "Who rode the white horse in Revelation 6:2?", answer: ["jesus", "christ", "lamb", "conqueror"], hint: "The one who conquers and will conquer", reference: "Revelation 6:2" },
-            { title: "The Red Horse", question: "What was the rider of the red horse given power to take from the earth?", answer: ["peace"], hint: "The opposite of war", reference: "Revelation 6:4" },
-            { title: "The Black Horse", question: "What did the rider of the black horse hold in his hand?", answer: ["scales", "balance", "balances"], hint: "Used for measuring and weighing", reference: "Revelation 6:5" },
-            { title: "The Pale Horse", question: "What was the name of the rider on the pale horse?", answer: ["death"], hint: "The end of life", reference: "Revelation 6:8" },
-            { title: "The Souls Under the Altar", question: "What were the souls under the altar given to wear?", answer: ["white robes", "robes", "white robe"], hint: "Garments of purity and righteousness", reference: "Revelation 6:11" },
-            { title: "The Great Earthquake", question: "What did the sun become like when the sixth seal was opened?", answer: ["black", "sackcloth", "dark"], hint: "Color of mourning cloth", reference: "Revelation 6:12" },
-            { title: "Silence in Heaven", question: "How long was there silence in heaven when the seventh seal was opened?", answer: ["half an hour", "30 minutes", "half hour"], hint: "A brief period of time", reference: "Revelation 8:1" },
-            
-            // Genesis
-            { title: "Creation Day 1", question: "What did God create on the first day?", answer: ["light"], hint: "And God said, 'Let there be...'", reference: "Genesis 1:3" },
-            { title: "First Man", question: "Who was the first man created by God?", answer: ["adam"], hint: "Made from the dust of the earth", reference: "Genesis 2:7" },
-            { title: "First Woman", question: "What was the name of the first woman?", answer: ["eve"], hint: "Mother of all living", reference: "Genesis 3:20" },
-            { title: "The Flood", question: "How many days and nights did it rain during the flood?", answer: ["40", "forty"], hint: "The same number Moses was on the mountain", reference: "Genesis 7:4" },
-            { title: "Abraham's Promise", question: "What did God promise Abraham would be as numerous as the stars?", answer: ["descendants", "offspring", "children"], hint: "His future family line", reference: "Genesis 15:5" },
-            { title: "Jacob's Dream", question: "What did Jacob see in his dream at Bethel?", answer: ["ladder", "stairway"], hint: "Angels ascending and descending", reference: "Genesis 28:12" },
-            { title: "Joseph's Brothers", question: "How many sons did Jacob have?", answer: ["12", "twelve"], hint: "They became the tribes of Israel", reference: "Genesis 35:22" },
-            
-            // Exodus
-            { title: "Moses' Calling", question: "Who led the Israelites out of Egypt?", answer: ["moses"], hint: "He was found in a basket as a baby", reference: "Exodus 2:10" },
-            { title: "Ten Plagues", question: "How many plagues did God send on Egypt?", answer: ["10", "ten"], hint: "The last one was the worst", reference: "Exodus 7-12" },
-            { title: "Red Sea", question: "What sea did the Israelites cross?", answer: ["red sea"], hint: "The waters parted", reference: "Exodus 14:21" },
-            { title: "Mount Sinai", question: "On which mountain did Moses receive the Ten Commandments?", answer: ["sinai", "mount sinai"], hint: "Also called Horeb", reference: "Exodus 19:20" },
-            { title: "Golden Calf", question: "What did the Israelites worship while Moses was on the mountain?", answer: ["golden calf"], hint: "An idol made from their jewelry", reference: "Exodus 32:4" },
-            { title: "Wilderness Food", question: "What food did God provide in the wilderness?", answer: ["manna"], hint: "Bread from heaven", reference: "Exodus 16:4" },
-            
-            // New Testament - Gospels
-            { title: "Jesus' Birth", question: "In which city was Jesus born?", answer: ["bethlehem"], hint: "City of David", reference: "Matthew 2:1" },
-            { title: "Jesus' Baptism", question: "Who baptized Jesus?", answer: ["john", "john the baptist"], hint: "The voice crying in the wilderness", reference: "Matthew 3:13" },
-            { title: "The Twelve", question: "How many disciples did Jesus choose?", answer: ["12", "twelve"], hint: "The same number as the tribes of Israel", reference: "Matthew 10:1" },
-            { title: "The Betrayal", question: "Who betrayed Jesus?", answer: ["judas", "judas iscariot"], hint: "He did it for 30 pieces of silver", reference: "Matthew 26:14" },
-            { title: "The Denial", question: "Who denied Jesus three times?", answer: ["peter", "simon peter"], hint: "The rock upon which the church was built", reference: "Matthew 26:69" },
-            { title: "First Miracle", question: "What did Jesus turn water into at the wedding?", answer: ["wine"], hint: "His first miracle", reference: "John 2:11" },
-            { title: "Feeding 5000", question: "How many loaves fed the 5000?", answer: ["5", "five"], hint: "Plus two fish", reference: "Matthew 14:17" },
-            
-            // Acts
-            { title: "Pentecost", question: "What happened on the Day of Pentecost?", answer: ["holy spirit came", "tongues of fire"], hint: "The Spirit descended like tongues of fire", reference: "Acts 2:3" },
-            { title: "First Martyr", question: "Who was the first Christian martyr?", answer: ["stephen"], hint: "He saw Jesus standing at God's right hand", reference: "Acts 7:56" },
-            { title: "Paul's Conversion", question: "What was Paul's name before his conversion?", answer: ["saul"], hint: "Named after Israel's first king", reference: "Acts 9:4" },
-            { title: "Damascus Road", question: "On what road did Paul encounter Jesus?", answer: ["damascus"], hint: "He was blinded by the light", reference: "Acts 9:3" },
-            
-            // Wisdom Literature
-            { title: "The Wisest King", question: "Who is traditionally considered the wisest man?", answer: ["solomon"], hint: "He asked God for wisdom", reference: "1 Kings 3:9" },
-            { title: "The Good Shepherd", question: "Which psalm begins 'The Lord is my shepherd'?", answer: ["psalm 23", "23"], hint: "The most famous psalm", reference: "Psalm 23:1" },
-            { title: "Proverbs Wisdom", question: "Complete: 'The fear of the Lord is the beginning of...'", answer: ["wisdom"], hint: "From Proverbs", reference: "Proverbs 9:10" },
-            
-            // Paul's Letters
-            { title: "All Have Sinned", question: "Complete: 'For all have sinned and fall short of...'", answer: ["glory", "glory of god"], hint: "Romans 3:23", reference: "Romans 3:23" },
-            { title: "Greatest Virtue", question: "What is the greatest of faith, hope, and love?", answer: ["love"], hint: "From 1 Corinthians 13", reference: "1 Corinthians 13:13" },
-            { title: "Armor of God", question: "In which letter does Paul describe the armor of God?", answer: ["ephesians"], hint: "Stand against the devil's schemes", reference: "Ephesians 6:11" },
-            
-            // More Revelation
-            { title: "Seven Churches", question: "How many churches are addressed in Revelation?", answer: ["7", "seven"], hint: "In Asia Minor", reference: "Revelation 1:4" },
-            { title: "Beast's Number", question: "What is the number of the beast?", answer: ["666"], hint: "The mark of the beast", reference: "Revelation 13:18" },
-            { title: "John's Exile", question: "On which island did John receive the Revelation?", answer: ["patmos"], hint: "A place of exile", reference: "Revelation 1:9" },
-            { title: "New Jerusalem", question: "What comes down from heaven like a bride?", answer: ["new jerusalem"], hint: "The holy city", reference: "Revelation 21:2" }
-        ];
-
-        // Random Question Generation
-        function generateRandomSeals() {
-            const shuffled = [...bibleQuestionPool].sort(() => 0.5 - Math.random());
-            const selected = shuffled.slice(0, 7);
-            
-            return selected.map((question, index) => ({
-                number: index + 1,
-                title: question.title,
-                question: question.reference ? `${question.question}\n\n📖 ${question.reference}` : question.question,
-                answer: question.answer,
-                hint: question.hint
-            }));
-        }
+        // Old question system removed - using enhanced challenges from game-data.js
 
         // Use enhanced seals from game-data.js - no redeclaration needed
         function getSeals() {
@@ -1726,21 +1689,26 @@
             gameState.currentPuzzle = seal;
             document.getElementById('puzzleTitle').textContent = `Seal ${seal.id}: ${seal.title}`;
             
+            // Clear any previous content
+            document.getElementById('puzzleQuestion').innerHTML = '';
+            
+            // Hide legacy inputs for enhanced challenges
+            document.getElementById('legacyInputs').style.display = 'none';
+            
             // Generate enhanced challenge content
-            if (window.PuzzleManager) {
+            if (window.PuzzleManager && window.GameData) {
+                console.log('🎯 Loading enhanced challenge for seal:', seal.id, 'puzzle:', seal.puzzle);
                 const challengeContent = window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
                 document.getElementById('puzzleQuestion').innerHTML = challengeContent;
             } else {
+                console.error('❌ Enhanced system not available, falling back to description');
                 document.getElementById('puzzleQuestion').innerHTML = `
-                    <p>Challenge loading...</p>
-                    <p>${seal.description}</p>
+                    <div style="text-align: center; padding: 20px;">
+                        <h3>🔄 Loading Challenge...</h3>
+                        <p>${seal.description}</p>
+                        <p style="color: #ff6b6b;">Enhanced challenge system not available.</p>
+                    </div>
                 `;
-            }
-            
-            // Clear old answer input and hide it (challenges have their own inputs)
-            const oldAnswerInput = document.getElementById('puzzleAnswer');
-            if (oldAnswerInput) {
-                oldAnswerInput.style.display = 'none';
             }
             
             document.getElementById('puzzleModal').style.display = 'flex';
