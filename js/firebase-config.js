@@ -1,5 +1,4 @@
 // Firebase Configuration
-// Note: Replace with your actual Firebase config when deploying
 const firebaseConfig = {
     apiKey: "AIzaSyB9eQyqDeIjQvCRDtVVEsImhsfXNA9xMRc",
     authDomain: "scroll-of-seven-seals.firebaseapp.com",

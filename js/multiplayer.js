@@ -234,6 +234,9 @@ class MultiplayerManager {
                 // Add to global leaderboard
                 await this.addToGlobalLeaderboard(teamData, completionTime);
 
+                // Check if this is the first team to complete (winner detection)
+                await this.checkForGameWinner(gameId, teamId, teamData, completionTime);
+
                 showNotification(`🎉 ${teamData.name} completed the quest!`, 'success');
             }
 
@@ -371,6 +374,54 @@ class MultiplayerManager {
             showNotification('Game ended', 'success');
         } catch (error) {
             console.error('Error ending game:', error);
+        }
+    }
+
+    // Check for game winner and handle game end logic
+    async checkForGameWinner(gameId, winningTeamId, winningTeamData, completionTime) {
+        try {
+            const gameRef = FirebaseUtils.ref(`games/${gameId}`);
+            const gameSnapshot = await gameRef.once('value');
+            const gameData = gameSnapshot.val();
+
+            if (!gameData || gameData.status !== 'playing') {
+                return; // Game already ended or not active
+            }
+
+            // Check if this is the first team to complete all seals
+            const teams = Object.values(gameData.teams || {});
+            const completedTeams = teams.filter(team => team.status === 'completed');
+            
+            if (completedTeams.length === 1) {
+                // This is the winner! End the game immediately
+                const winnerTimestamp = FirebaseUtils.timestamp();
+                const finalScore = this.calculateScore(winningTeamData.progress, completionTime);
+                
+                // Update game status to finished with winner info
+                await gameRef.update({
+                    status: 'finished',
+                    endedAt: winnerTimestamp,
+                    winner: {
+                        teamId: winningTeamId,
+                        teamName: winningTeamData.name,
+                        completionTime: completionTime,
+                        score: finalScore,
+                        timestamp: winnerTimestamp
+                    }
+                });
+
+                // Lock all teams (prevent further input)
+                const lockUpdates = {};
+                Object.keys(gameData.teams).forEach(teamId => {
+                    lockUpdates[`teams/${teamId}/locked`] = true;
+                });
+                await gameRef.update(lockUpdates);
+
+                showNotification(`🏆 GAME OVER! ${winningTeamData.name} wins!`, 'success');
+            }
+
+        } catch (error) {
+            console.error('Error checking for game winner:', error);
         }
     }
 
