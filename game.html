@@ -988,6 +988,11 @@
             }
 
             roomCode = roomCode.toUpperCase();
+            
+            // DEBUG: Add extensive logging
+            console.log('🚪 JOINING ROOM - Room code:', roomCode);
+            console.log('🔥 Firebase ready?', isFirebaseReady);
+            console.log('📡 Database object:', database);
 
             try {
                 // Ensure Firebase is ready before proceeding
@@ -1005,13 +1010,25 @@
                 console.log('🔍 Checking room:', roomCode);
 
                 // Check if room exists
+                console.log('🔍 Searching for room at path:', `rooms/${roomCode}`);
                 const snapshot = await database.ref(`rooms/${roomCode}`).once('value');
                 const roomData = snapshot.val();
+                
+                console.log('📊 Room data found:', roomData);
+                console.log('📊 Snapshot exists:', snapshot.exists());
+                
+                // DEBUG: List all rooms to see what's in the database
+                const allRoomsSnapshot = await database.ref('rooms').once('value');
+                const allRooms = allRoomsSnapshot.val();
+                console.log('📋 All rooms in database:', allRooms);
 
                 if (!roomData) {
+                    console.log('❌ Room not found for code:', roomCode);
                     showAlert('Room not found. Please check the room code.', 'error');
                     return;
                 }
+                
+                console.log('✅ Room found successfully!');
 
                 if (roomData.status !== 'waiting') {
                     showAlert('This game has already started.', 'error');
