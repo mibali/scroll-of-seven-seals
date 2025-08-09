@@ -19,6 +19,11 @@ try {
         database = firebase.database();
         auth = firebase.auth();
         
+        // Make sure they're globally available
+        window.app = app;
+        window.database = database;
+        window.auth = auth;
+        
         console.log('🔥 Firebase initialized successfully');
         
         // Update connection status
@@ -197,6 +202,12 @@ const FirebaseUtils = {
     testConnectivity: async () => {
         try {
             console.log('🧪 Testing Firebase connectivity...');
+            
+            // Check if database is available
+            if (!window.database || typeof window.database.ref !== 'function') {
+                throw new Error('Firebase database not initialized');
+            }
+            
             const testRef = window.database.ref('test');
             await testRef.set({ timestamp: Date.now(), test: 'connectivity' });
             console.log('✅ Firebase write test successful');
@@ -211,6 +222,7 @@ const FirebaseUtils = {
             return true;
         } catch (error) {
             console.error('❌ Firebase connectivity test failed:', error);
+            updateConnectionStatus('disconnected');
             return false;
         }
     }
