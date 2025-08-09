@@ -16,24 +16,37 @@ class WorshipAudio {
         this.audioContext = null;
         this.setupAudioContext();
         
-        // Gospel music tracks (using free/public domain sources)
+        // Gospel music tracks (Pixabay public domain sources)
+        // Note: These are example URLs - in production, you would use actual Pixabay download URLs
         this.gospelTracks = [
             {
-                name: "Amazing Grace - Instrumental",
-                url: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Placeholder - will be replaced
+                name: "Peaceful Worship",
+                url: "https://cdn.pixabay.com/download/audio/2022/08/02/audio_550d815fa6.mp3?filename=amazing-grace-21612.mp3", // Example - replace with actual
                 duration: 180,
                 type: "hymn"
             },
             {
-                name: "How Great Thou Art - Piano",
-                url: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Placeholder
+                name: "Gospel Piano",
+                url: "https://cdn.pixabay.com/download/audio/2022/03/25/audio_1e0b4b5cd9.mp3?filename=gospel-music-21634.mp3", // Example - replace with actual
                 duration: 240,
                 type: "hymn"
             },
             {
-                name: "Blessed Assurance - Orchestral",
-                url: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav", // Placeholder
+                name: "Blessed Worship",
+                url: "https://cdn.pixabay.com/download/audio/2021/12/15/audio_2fb2b87ea4.mp3?filename=worship-background-21501.mp3", // Example - replace with actual
                 duration: 200,
+                type: "hymn"
+            },
+            {
+                name: "Soulful Gospel",
+                url: "https://cdn.pixabay.com/download/audio/2022/05/14/audio_ab7d8c7e85.mp3?filename=gospel-instrumental-21891.mp3", // Example - replace with actual
+                duration: 220,
+                type: "hymn"
+            },
+            {
+                name: "Heavenly Strings",
+                url: "https://cdn.pixabay.com/download/audio/2021/10/22/audio_7c5e2b1f94.mp3?filename=heavenly-worship-21234.mp3", // Example - replace with actual
+                duration: 195,
                 type: "hymn"
             }
         ];
@@ -162,13 +175,25 @@ class WorshipAudio {
             
             this.isPlaying = true;
             
-            // Start with harmonic progression
-            this.playHarmony();
+            // Try to play a random gospel track first
+            const hasValidTracks = this.gospelTracks.some(track => track.element && track.element.readyState >= 2);
             
-            // Set interval to play harmony every 8 seconds
+            if (hasValidTracks) {
+                // Play a random track
+                this.playNext();
+            } else {
+                // Fall back to harmonic progression
+                this.playHarmony();
+                this.updateCurrentTrackDisplay('Sacred Harmony');
+            }
+            
+            // Set interval to play harmony as backup every 8 seconds
             this.harmonyInterval = setInterval(() => {
                 if (this.isPlaying) {
-                    this.playHarmony();
+                    // If no track is currently playing, play harmony
+                    if (!this.currentTrack || this.currentTrack.element.paused) {
+                        this.playHarmony();
+                    }
                 }
             }, 8000);
             
@@ -218,16 +243,26 @@ class WorshipAudio {
     playNext() {
         if (!this.isPlaying) return;
         
-        this.currentIndex = (this.currentIndex + 1) % this.gospelTracks.length;
+        // Random track selection for variety
+        this.currentIndex = Math.floor(Math.random() * this.gospelTracks.length);
         const track = this.gospelTracks[this.currentIndex];
         
         if (track.element) {
             this.currentTrack = track;
             track.element.volume = this.volume;
+            
+            // Update now playing display
+            this.updateCurrentTrackDisplay(track.name);
+            
             track.element.play().catch(e => {
                 console.log('Failed to play track:', e);
-                setTimeout(() => this.playNext(), 1000);
+                // Fall back to harmony if track fails
+                this.playHarmony();
+                setTimeout(() => this.playNext(), 5000);
             });
+        } else {
+            // If no tracks available, continue with harmony
+            this.playHarmony();
         }
     }
     
@@ -295,6 +330,13 @@ class WorshipAudio {
                 text.textContent = 'Divine Worship Sounds';
                 if (nowPlaying) nowPlaying.style.display = 'none';
             }
+        }
+    }
+    
+    updateCurrentTrackDisplay(trackName) {
+        const currentTrackElement = document.getElementById('currentTrack');
+        if (currentTrackElement) {
+            currentTrackElement.textContent = trackName || 'Peaceful Worship';
         }
     }
     
