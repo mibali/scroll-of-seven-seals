@@ -437,15 +437,16 @@
             font-size: 1em;
             border: 2px solid #6b4d37;
             border-radius: 8px;
-            background: rgba(0, 0, 0, 0.3);
-            color: #f4f1e8;
+            background: rgba(255, 255, 255, 0.95) !important;
+            color: #1f2937 !important;
             font-family: inherit;
         }
 
         .team-input input:focus {
             outline: none;
             border-color: #d4af37;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(255, 255, 255, 0.98) !important;
+            color: #1f2937 !important;
         }
 
         .room-options {
@@ -1727,7 +1728,8 @@
                 <div class="max-w-md mx-auto mb-8">
                     <label for="teamName" class="block text-gold-300 font-semibold mb-2">Team Name:</label>
                     <input type="text" id="teamName" placeholder="Enter your team name" maxlength="20" 
-                           class="w-full px-4 py-3 bg-mystic-800/50 border border-mystic-600/50 rounded-xl text-mystic-100 placeholder-mystic-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20 transition-all duration-300">
+                           class="w-full px-4 py-3 bg-white/90 border border-mystic-600/50 rounded-xl text-gray-900 placeholder-gray-500 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20 transition-all duration-300"
+                           style="color: #1f2937 !important; background-color: rgba(255, 255, 255, 0.95) !important;">
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-6 mb-8">
@@ -3111,10 +3113,23 @@
 
         function updateLeaderboard() {
             const leaderboardList = document.getElementById('leaderboardList');
+            if (!leaderboardList) return;
+            
             leaderboardList.innerHTML = '';
 
+            // Combine regular teams and AI teams for display
+            let allTeams = [...gameState.teams];
+            
+            // Add AI teams if they exist
+            if (gameState.aiTeams && gameState.aiTeams.length > 0) {
+                allTeams = allTeams.concat(gameState.aiTeams.map(aiTeam => ({
+                    ...aiTeam,
+                    isAI: true
+                })));
+            }
+
             // Sort teams by score (descending)
-            const sortedTeams = [...gameState.teams].sort((a, b) => b.score - a.score);
+            const sortedTeams = allTeams.sort((a, b) => b.score - a.score);
 
             sortedTeams.forEach((team, index) => {
                 const item = document.createElement('div');
