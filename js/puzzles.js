@@ -6,6 +6,7 @@ class EnhancedPuzzleManager {
         this.currentPuzzles = {};
         this.teamInputs = {}; // Track team member inputs for communication challenges
         this.gameSessionId = null; // Track current game session for randomization
+        this.hintsUsed = 0;
     }
 
     // Generate challenge content for a specific seal
@@ -1263,10 +1264,55 @@ class EnhancedPuzzleManager {
             </div>
         ` : '';
     }
+
+    // Missing methods for compatibility
+    regeneratePuzzles() {
+        this.currentPuzzles = {};
+        this.gameSessionId = null;
+        console.log('🔄 Puzzles regenerated - fresh content will be generated');
+    }
+
+    getPuzzleVariation(puzzleType) {
+        return this.currentPuzzles[puzzleType] || null;
+    }
+
+    getHintsUsed() {
+        return this.hintsUsed || 0;
+    }
+
+    showHint(puzzleType) {
+        this.hintsUsed++;
+        console.log(`💡 Hint shown for ${puzzleType}, total hints used: ${this.hintsUsed}`);
+    }
+
+    resetPuzzle(puzzleType) {
+        if (this.currentPuzzles[puzzleType]) {
+            delete this.currentPuzzles[puzzleType];
+            console.log(`🔄 Reset puzzle: ${puzzleType}`);
+        }
+    }
+
+    clearPuzzles() {
+        this.currentPuzzles = {};
+        this.hintsUsed = 0;
+        this.gameSessionId = null;
+        console.log('🧹 All puzzles cleared');
+    }
+
+    recordSealSuccess(puzzleType, variation, sealNumber) {
+        console.log(`✅ Recorded success for ${puzzleType} - Seal ${sealNumber}`);
+    }
+
+    recordSealAttempt(puzzleType, variation, sealNumber, success) {
+        console.log(`📝 Recorded attempt for ${puzzleType} - Seal ${sealNumber}, Success: ${success}`);
+    }
 }
 
 // Initialize enhanced puzzle manager
 const enhancedPuzzleManager = new EnhancedPuzzleManager();
+
+// Make it globally available as PuzzleManager
+window.PuzzleManager = enhancedPuzzleManager;
 
 // Enhanced validation functions with flexible answer matching
 // Comprehensive synonym and equivalent answer system
