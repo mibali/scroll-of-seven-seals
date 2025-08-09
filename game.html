@@ -835,6 +835,135 @@
             opacity: 0.7;
         }
 
+        /* Spiritual Footer Styles */
+        .spiritual-footer {
+            background: linear-gradient(135deg, #1a1a1a, #2c1810);
+            border-top: 3px solid #d4af37;
+            padding: 30px 20px;
+            margin-top: 50px;
+            min-height: 200px;
+        }
+
+        .inspiration-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr 300px;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .scripture-motivation,
+        .ministerial-wisdom {
+            background: rgba(212, 175, 55, 0.1);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .scripture-motivation:hover,
+        .ministerial-wisdom:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: rgba(212, 175, 55, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .scripture-text,
+        .wisdom-text {
+            color: #f4f1e8;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-style: italic;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .scripture-reference,
+        .wisdom-attribution {
+            color: #d4af37;
+            font-weight: bold;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .worship-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .worship-btn {
+            background: linear-gradient(145deg, #d4af37, #b8941f);
+            color: #1a1a1a;
+            border: none;
+            border-radius: 25px;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .worship-btn:hover {
+            background: linear-gradient(145deg, #f4e876, #d4af37);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        .worship-btn.playing {
+            background: linear-gradient(145deg, #28a745, #20a83a);
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); }
+            50% { box-shadow: 0 6px 25px rgba(40, 167, 69, 0.6); }
+            100% { box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3); }
+        }
+
+        .now-playing {
+            background: rgba(0, 0, 0, 0.4);
+            color: #d4af37;
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            text-align: center;
+            font-size: 0.9em;
+            animation: nowPlayingGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes nowPlayingGlow {
+            0% { border-color: rgba(212, 175, 55, 0.3); }
+            50% { border-color: rgba(212, 175, 55, 0.7); }
+            100% { border-color: rgba(212, 175, 55, 0.3); }
+        }
+
+        /* Responsive design for spiritual footer */
+        @media (max-width: 768px) {
+            .inspiration-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .scripture-motivation,
+            .ministerial-wisdom {
+                padding: 20px;
+            }
+            
+            .scripture-text,
+            .wisdom-text {
+                font-size: 1em;
+            }
+        }
+
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -1814,6 +1943,9 @@
                 showAlert('Failed to load enhanced challenges!', 'error');
                 return;
             }
+            
+            // Update spiritual content for fresh inspiration
+            updateSpiritualContent();
             
             gameState.currentTeam = 'Player';
             gameState.teams = [{ name: 'Player', score: 0, completedSeals: [] }];
@@ -3629,13 +3761,182 @@
             }
         }
 
+        // Spiritual Content Management
+        const spiritualContent = {
+            scriptureMotivations: [
+                {
+                    text: "Study to show yourself approved unto God, a workman that needs not to be ashamed, rightly dividing the word of truth.",
+                    reference: "2 Timothy 2:15"
+                },
+                {
+                    text: "Your word is a lamp unto my feet, and a light unto my path.",
+                    reference: "Psalm 119:105"
+                },
+                {
+                    text: "Faith comes by hearing, and hearing by the word of God.",
+                    reference: "Romans 10:17"
+                },
+                {
+                    text: "All Scripture is given by inspiration of God, and is profitable for doctrine, for reproof, for correction, for instruction in righteousness.",
+                    reference: "2 Timothy 3:16"
+                },
+                {
+                    text: "The entrance of Your words gives light; it gives understanding to the simple.",
+                    reference: "Psalm 119:130"
+                },
+                {
+                    text: "Heaven and earth will pass away, but My words will by no means pass away.",
+                    reference: "Matthew 24:35"
+                },
+                {
+                    text: "Blessed is the man who walks not in the counsel of the ungodly, but his delight is in the law of the Lord.",
+                    reference: "Psalm 1:1-2"
+                },
+                {
+                    text: "The fear of the Lord is the beginning of wisdom, and the knowledge of the Holy One is understanding.",
+                    reference: "Proverbs 9:10"
+                }
+            ],
+            ministerialWisdom: [
+                {
+                    text: "The Word of God is the foundation of all true spiritual knowledge and victory in life.",
+                    attribution: "Biblical Teaching on Faith"
+                },
+                {
+                    text: "When we meditate on God's Word day and night, we become like trees planted by rivers of water.",
+                    attribution: "Wisdom on Scripture Meditation"
+                },
+                {
+                    text: "Divine wisdom is not learned in classrooms but revealed through intimate fellowship with the Holy Spirit.",
+                    attribution: "Understanding Spiritual Revelation"
+                },
+                {
+                    text: "Every believer is called to be a student of the Word, rightly dividing truth with precision and power.",
+                    attribution: "The Call to Biblical Excellence"
+                },
+                {
+                    text: "God's Word contains everything needed for life and godliness - study it with passion and purpose.",
+                    attribution: "The Sufficiency of Scripture"
+                },
+                {
+                    text: "The anointing upon your life increases as you increase in the knowledge of God's Word.",
+                    attribution: "Growing in Spiritual Authority"
+                },
+                {
+                    text: "Biblical wisdom transforms minds, renews hearts, and empowers believers to walk in divine purpose.",
+                    attribution: "The Transforming Power of Truth"
+                },
+                {
+                    text: "Understanding God's Word is not just academic pursuit - it's the pathway to experiencing His glory.",
+                    attribution: "Living in Divine Glory"
+                }
+            ],
+            worshipInstrumentals: [
+                'Peaceful Worship Ambience',
+                'Holy Spirit Instrumental',
+                'Sacred Meditation Music',
+                'Reverent Praise Atmosphere',
+                'Gentle Worship Sounds',
+                'Spiritual Reflection Music',
+                'Divine Presence Instrumental',
+                'Sanctuary Worship Ambience'
+            ]
+        };
+
+        let currentWorshipIndex = 0;
+        let worshipPlaying = false;
+
+        function updateSpiritualContent() {
+            // Update Scripture motivation
+            const scriptureIndex = Math.floor(Math.random() * spiritualContent.scriptureMotivations.length);
+            const scripture = spiritualContent.scriptureMotivations[scriptureIndex];
+            document.getElementById('scriptureText').textContent = scripture.text;
+            document.getElementById('scriptureReference').textContent = `- ${scripture.reference}`;
+
+            // Update ministerial wisdom
+            const wisdomIndex = Math.floor(Math.random() * spiritualContent.ministerialWisdom.length);
+            const wisdom = spiritualContent.ministerialWisdom[wisdomIndex];
+            document.getElementById('wisdomText').textContent = wisdom.text;
+            document.getElementById('wisdomAttribution').textContent = `- ${wisdom.attribution}`;
+
+            console.log('✝️ Spiritual content updated for fresh inspiration');
+        }
+
+        function toggleWorship() {
+            const button = document.getElementById('worshipToggle');
+            const nowPlaying = document.getElementById('nowPlaying');
+            const currentTrack = document.getElementById('currentTrack');
+
+            if (!worshipPlaying) {
+                // Start worship atmosphere
+                worshipPlaying = true;
+                button.textContent = '🔇 Pause Worship';
+                button.classList.add('playing');
+                nowPlaying.style.display = 'block';
+                
+                // Rotate through available tracks
+                currentWorshipIndex = (currentWorshipIndex + 1) % spiritualContent.worshipInstrumentals.length;
+                const trackName = spiritualContent.worshipInstrumentals[currentWorshipIndex];
+                currentTrack.textContent = `♪ ${trackName}`;
+                
+                // Note: In a real implementation, you would integrate with royalty-free worship instrumental APIs
+                // or use HTML5 audio with copyright-free worship music
+                console.log('🎵 Worship atmosphere activated:', trackName);
+                
+                // Auto-change track every 3 minutes (simulated)
+                if (window.worshipInterval) clearInterval(window.worshipInterval);
+                window.worshipInterval = setInterval(() => {
+                    if (worshipPlaying) {
+                        currentWorshipIndex = (currentWorshipIndex + 1) % spiritualContent.worshipInstrumentals.length;
+                        currentTrack.textContent = `♪ ${spiritualContent.worshipInstrumentals[currentWorshipIndex]}`;
+                    }
+                }, 180000); // 3 minutes
+                
+            } else {
+                // Stop worship atmosphere
+                worshipPlaying = false;
+                button.textContent = '🎵 Worship Atmosphere';
+                button.classList.remove('playing');
+                nowPlaying.style.display = 'none';
+                
+                if (window.worshipInterval) {
+                    clearInterval(window.worshipInterval);
+                }
+                
+                console.log('🔇 Worship atmosphere paused');
+            }
+        }
+
         // Initialize options when DOM loads
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(initializeGameEngines, 50);
             setTimeout(initializeGameOptions, 100);
             setTimeout(initializeDragAndDrop, 200);
+            setTimeout(updateSpiritualContent, 300);
         });
     </script>
+
+    <!-- Spiritual Inspiration Footer -->
+    <footer class="spiritual-footer">
+        <div class="inspiration-container">
+            <div class="scripture-motivation" id="scriptureMotivation">
+                <div class="scripture-text" id="scriptureText"></div>
+                <div class="scripture-reference" id="scriptureReference"></div>
+            </div>
+            <div class="ministerial-wisdom" id="ministerialWisdom">
+                <div class="wisdom-text" id="wisdomText"></div>
+                <div class="wisdom-attribution" id="wisdomAttribution"></div>
+            </div>
+            <div class="worship-controls">
+                <button id="worshipToggle" class="worship-btn" onclick="toggleWorship()">
+                    🎵 Worship Atmosphere
+                </button>
+                <div class="now-playing" id="nowPlaying" style="display: none;">
+                    <span id="currentTrack"></span>
+                </div>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>
