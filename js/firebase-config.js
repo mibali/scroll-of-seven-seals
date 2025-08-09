@@ -23,8 +23,10 @@ try {
         
         // Test connectivity after a short delay to ensure auth is ready
         setTimeout(async () => {
-            await FirebaseUtils.testConnectivity();
-        }, 2000);
+            if (window.FirebaseUtils && window.FirebaseUtils.testConnectivity) {
+                await window.FirebaseUtils.testConnectivity();
+            }
+        }, 3000);
         
         // Set up authentication state listener
         auth.onAuthStateChanged((user) => {
