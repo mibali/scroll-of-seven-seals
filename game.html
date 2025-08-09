@@ -29,36 +29,59 @@
 
         body {
             font-family: 'Cinzel', serif;
-            background: linear-gradient(135deg, #0f0c29, #24243e, #302b63);
+            background: 
+                linear-gradient(135deg, #1a1a3e 0%, #2d1b69 25%, #1e3a5f 50%, #2c1810 75%, #1a1a3e 100%),
+                radial-gradient(circle at 30% 20%, rgba(184, 134, 11, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 20% 60%, rgba(25, 25, 112, 0.2) 0%, transparent 60%),
+                url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="cross" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M50 10 L50 90 M10 50 L90 50" stroke="%23b8860b" stroke-width="0.5" opacity="0.1"/><circle cx="25" cy="25" r="1" fill="%23b8860b" opacity="0.15"/><circle cx="75" cy="75" r="0.8" fill="%23daa520" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23cross)"/></svg>');
             background-attachment: fixed;
-            color: #ffffff;
+            color: #f5f5dc;
             min-height: 100vh;
-            padding: 20px;
+            padding: 0;
+            margin: 0;
             position: relative;
-            background-image: 
-                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.15) 0%, transparent 60%),
-                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.08) 0%, transparent 70%),
-                url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="stars" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="45" cy="30" r="0.8" fill="%23ffd700" opacity="0.15"/><circle cx="30" cy="45" r="1.2" fill="%23ffffff" opacity="0.08"/></pattern></defs><rect width="100%" height="100%" fill="url(%23stars)"/></svg>');
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at top, rgba(184, 134, 11, 0.1) 0%, transparent 70%),
+                radial-gradient(ellipse at bottom, rgba(139, 69, 19, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 30px 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(212, 175, 55, 0.1));
-            backdrop-filter: blur(20px);
-            padding: 40px;
-            border-radius: 25px;
-            border: 2px solid rgba(255, 215, 0, 0.4);
+            margin-bottom: 40px;
+            background: 
+                linear-gradient(145deg, rgba(139, 69, 19, 0.4) 0%, rgba(160, 82, 45, 0.3) 50%, rgba(184, 134, 11, 0.4) 100%),
+                linear-gradient(45deg, rgba(25, 25, 112, 0.1) 0%, transparent 100%);
+            backdrop-filter: blur(15px);
+            padding: 50px 40px;
+            border-radius: 20px;
+            border: 3px solid;
+            border-image: linear-gradient(45deg, #b8860b, #daa520, #cd853f, #b8860b) 1;
             box-shadow: 
-                0 15px 35px rgba(0, 0, 0, 0.4),
-                0 5px 15px rgba(255, 215, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 8px 20px rgba(184, 134, 11, 0.3),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.2);
             position: relative;
             overflow: hidden;
         }
@@ -67,66 +90,96 @@
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
-            animation: shimmer 3s infinite;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(218, 165, 32, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(184, 134, 11, 0.1) 0%, transparent 50%);
+            z-index: 1;
         }
 
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        .header::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #b8860b, #daa520, #cd853f, #b8860b);
+            border-radius: 20px;
+            z-index: -1;
         }
 
         .title {
             font-family: 'Uncial Antiqua', cursive;
-            font-size: 3.2em;
-            background: linear-gradient(135deg, #ffd700, #ffed4e, #fff700, #ffd700);
-            background-size: 200% 200%;
+            font-size: 3.8em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 25%, #daa520 50%, #b8860b 75%, #ffd700 100%);
+            background-size: 300% 300%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            text-shadow: 
+                0 0 30px rgba(255, 215, 0, 0.5),
+                0 0 60px rgba(218, 165, 32, 0.3);
             filter: 
-                drop-shadow(0 3px 6px rgba(255, 215, 0, 0.4))
-                drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
-            animation: titleGlow 4s ease-in-out infinite;
+                drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6))
+                drop-shadow(0 8px 16px rgba(184, 134, 11, 0.4));
+            animation: titleGlow 6s ease-in-out infinite;
             position: relative;
             z-index: 2;
+            letter-spacing: 2px;
         }
 
         @keyframes titleGlow {
             0%, 100% { 
                 background-position: 0% 50%;
                 filter: 
-                    drop-shadow(0 3px 6px rgba(255, 215, 0, 0.4))
-                    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+                    drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6))
+                    drop-shadow(0 8px 16px rgba(184, 134, 11, 0.4));
             }
-            50% { 
+            33% { 
+                background-position: 50% 50%;
+                filter: 
+                    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.7))
+                    drop-shadow(0 12px 24px rgba(218, 165, 32, 0.5));
+            }
+            66% { 
                 background-position: 100% 50%;
                 filter: 
-                    drop-shadow(0 5px 10px rgba(255, 215, 0, 0.6))
-                    drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+                    drop-shadow(0 8px 16px rgba(0, 0, 0, 0.8))
+                    drop-shadow(0 16px 32px rgba(255, 215, 0, 0.6));
             }
         }
 
         .subtitle {
-            font-size: 1.4em;
-            color: #e6d7c3;
-            opacity: 0.95;
-            font-weight: 300;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            font-size: 1.5em;
+            color: #f5deb3;
+            font-weight: 400;
+            text-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.8),
+                0 4px 8px rgba(139, 69, 19, 0.5);
             position: relative;
             z-index: 2;
+            letter-spacing: 1px;
+            line-height: 1.4;
         }
 
         .info-box {
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid #4a90e2;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 30px;
+            background: 
+                linear-gradient(145deg, rgba(25, 25, 112, 0.2) 0%, rgba(70, 130, 180, 0.15) 50%, rgba(100, 149, 237, 0.2) 100%);
+            backdrop-filter: blur(10px);
+            border: 2px solid;
+            border-image: linear-gradient(45deg, #4169e1, #6495ed, #87ceeb, #4169e1) 1;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 35px;
+            box-shadow: 
+                0 10px 25px rgba(0, 0, 0, 0.3),
+                0 4px 10px rgba(65, 105, 225, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
         .info-title {
@@ -156,18 +209,22 @@
         }
 
         .mode-card {
-            background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(138, 43, 226, 0.05));
-            backdrop-filter: blur(15px);
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            border-radius: 25px;
-            padding: 35px;
+            background: 
+                linear-gradient(145deg, rgba(139, 69, 19, 0.3) 0%, rgba(160, 82, 45, 0.2) 50%, rgba(184, 134, 11, 0.3) 100%),
+                linear-gradient(45deg, rgba(25, 25, 112, 0.05) 0%, transparent 100%);
+            backdrop-filter: blur(10px);
+            border: 2px solid;
+            border-image: linear-gradient(45deg, #8b4513, #cd853f, #daa520, #8b4513) 1;
+            border-radius: 20px;
+            padding: 40px 30px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             box-shadow: 
-                0 8px 25px rgba(0, 0, 0, 0.2),
-                0 3px 8px rgba(255, 215, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                0 15px 35px rgba(0, 0, 0, 0.4),
+                0 5px 15px rgba(139, 69, 19, 0.3),
+                inset 0 2px 0 rgba(255, 255, 255, 0.1),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
         }
@@ -179,7 +236,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(138, 43, 226, 0.02));
+            background: 
+                radial-gradient(circle at 30% 30%, rgba(218, 165, 32, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, rgba(184, 134, 11, 0.1) 0%, transparent 50%);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -189,13 +248,16 @@
         }
 
         .mode-card:hover {
-            background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(138, 43, 226, 0.1));
-            border-color: rgba(255, 215, 0, 0.6);
-            transform: translateY(-12px) scale(1.03);
+            background: 
+                linear-gradient(145deg, rgba(139, 69, 19, 0.5) 0%, rgba(160, 82, 45, 0.4) 50%, rgba(184, 134, 11, 0.5) 100%),
+                linear-gradient(45deg, rgba(25, 25, 112, 0.1) 0%, transparent 100%);
+            border-image: linear-gradient(45deg, #daa520, #ffd700, #ffed4e, #daa520) 1;
+            transform: translateY(-15px) scale(1.05);
             box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.3),
-                0 8px 20px rgba(255, 215, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+                0 25px 50px rgba(0, 0, 0, 0.6),
+                0 10px 25px rgba(218, 165, 32, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
         }
 
         .mode-card.selected {
@@ -210,15 +272,23 @@
         }
 
         .mode-title {
-            font-size: 1.4em;
-            color: #d4af37;
-            margin-bottom: 10px;
+            font-size: 1.6em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffd700, #daa520, #b8860b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 1px;
         }
 
         .mode-description {
-            color: #b8a082;
-            font-size: 0.9em;
-            line-height: 1.4;
+            color: #f5deb3;
+            font-size: 1em;
+            line-height: 1.5;
+            font-weight: 400;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
         }
 
         .multiplayer-setup {
