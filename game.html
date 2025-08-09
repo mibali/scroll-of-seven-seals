@@ -32,30 +32,30 @@
                     },
                     colors: {
                         'midnight': {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            200: '#e2e8f0',
-                            300: '#cbd5e1',
-                            400: '#94a3b8',
-                            500: '#64748b',
-                            600: '#475569',
-                            700: '#334155',
-                            800: '#1e293b',
-                            900: '#0f172a',
-                            950: '#020617'
+                            50: '#fffef7',
+                            100: '#fefcf0',
+                            200: '#fef7de',
+                            300: '#fdf0c4',
+                            400: '#fce7a6',
+                            500: '#fad97e',
+                            600: '#f7c455',
+                            700: '#efaa44',
+                            800: '#d4884a',
+                            900: '#b8692e',
+                            950: '#7a3f1a'
                         },
                         'cosmic': {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
-                            950: '#082f49'
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                            950: '#451a03'
                         },
                         'mystic-gold': {
                             50: '#fffbeb',
@@ -72,16 +72,16 @@
                         }
                     },
                     backgroundImage: {
-                        'cosmic-void': 'linear-gradient(135deg, #020617 0%, #0c4a6e 25%, #082f49 50%, #075985 75%, #020617 100%)',
-                        'stellar-field': 'radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(147, 197, 253, 0.05) 0%, transparent 50%)',
+                        'cosmic-void': 'linear-gradient(135deg, #451a03 0%, #78350f 25%, #92400e 50%, #b45309 75%, #451a03 100%)',
+                        'stellar-field': 'radial-gradient(circle at 25% 25%, rgba(251, 191, 36, 0.15) 0%, transparent 50%), radial-gradient(circle at 75% 75%, rgba(245, 158, 11, 0.1) 0%, transparent 50%)',
                         'gold-mystique': 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 25%, #d97706 50%, #b45309 75%, #92400e 100%)',
-                        'glass-morphism': 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%)',
-                        'card-glow': 'linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%)'
+                        'glass-morphism': 'linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.08) 100%)',
+                        'card-glow': 'linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.1) 100%)'
                     },
                     boxShadow: {
-                        'golden-glow': '0 0 20px rgba(251, 191, 36, 0.3), 0 0 40px rgba(245, 158, 11, 0.1)',
-                        'cosmic-glow': '0 0 30px rgba(59, 130, 246, 0.2), 0 0 60px rgba(29, 78, 216, 0.1)',
-                        'mystic-aura': '0 0 25px rgba(251, 191, 36, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1)'
+                        'golden-glow': '0 0 20px rgba(251, 191, 36, 0.4), 0 0 40px rgba(245, 158, 11, 0.2)',
+                        'cosmic-glow': '0 0 30px rgba(251, 191, 36, 0.3), 0 0 60px rgba(245, 158, 11, 0.15)',
+                        'mystic-aura': '0 0 25px rgba(251, 191, 36, 0.5), inset 0 1px 0 rgba(251, 191, 36, 0.2)'
                     },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
@@ -1478,25 +1478,25 @@
     </style>
 </head>
 
-<body class="bg-cosmic-void min-h-screen font-inter text-slate-100 overflow-x-hidden relative">
-    <!-- Celestial Background with Stars -->
+<body class="bg-cosmic-void min-h-screen font-inter text-amber-50 overflow-x-hidden relative">
+    <!-- Golden Mystical Background -->
     <div class="fixed inset-0">
-        <!-- Deep space gradient -->
+        <!-- Deep golden gradient -->
         <div class="absolute inset-0 bg-stellar-field"></div>
-        <!-- Animated star field -->
+        <!-- Animated golden star field -->
         <div class="absolute inset-0" style="background-image: 
-            radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
-            radial-gradient(2px 2px at 40px 70px, rgba(59, 130, 246, 0.4), transparent),
-            radial-gradient(1px 1px at 90px 40px, rgba(251, 191, 36, 0.6), transparent),
-            radial-gradient(1px 1px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
-            radial-gradient(2px 2px at 160px 30px, rgba(147, 197, 253, 0.3), transparent);
+            radial-gradient(2px 2px at 20px 30px, rgba(251, 191, 36, 0.4), transparent),
+            radial-gradient(2px 2px at 40px 70px, rgba(245, 158, 11, 0.5), transparent),
+            radial-gradient(1px 1px at 90px 40px, rgba(251, 191, 36, 0.7), transparent),
+            radial-gradient(1px 1px at 130px 80px, rgba(217, 119, 6, 0.3), transparent),
+            radial-gradient(2px 2px at 160px 30px, rgba(245, 158, 11, 0.4), transparent);
             background-repeat: repeat;
             background-size: 200px 100px;
             animation: twinkle 4s ease-in-out infinite;"></div>
-        <!-- Floating cosmic particles -->
-        <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-mystic-gold-400 rounded-full opacity-60 animate-float"></div>
-        <div class="absolute top-3/4 right-1/3 w-1 h-1 bg-cosmic-300 rounded-full opacity-40 animate-pulse-slow"></div>
-        <div class="absolute bottom-1/4 left-3/4 w-3 h-3 bg-mystic-gold-300 rounded-full opacity-30 animate-twinkle"></div>
+        <!-- Floating golden particles -->
+        <div class="absolute top-1/4 left-1/4 w-2 h-2 bg-mystic-gold-300 rounded-full opacity-70 animate-float"></div>
+        <div class="absolute top-3/4 right-1/3 w-1 h-1 bg-mystic-gold-400 rounded-full opacity-50 animate-pulse-slow"></div>
+        <div class="absolute bottom-1/4 left-3/4 w-3 h-3 bg-mystic-gold-200 rounded-full opacity-40 animate-twinkle"></div>
     </div>
 
     <!-- Connection Status -->
@@ -1533,12 +1533,12 @@
                     </div>
                 </div>
                 
-                <h1 class="font-cinzel font-bold text-5xl md:text-7xl bg-gold-mystique bg-clip-text text-transparent mb-6 tracking-wide relative">
-                    <span class="relative z-10 drop-shadow-2xl" style="text-shadow: 0 0 30px rgba(251, 191, 36, 0.5);">
+                <h1 class="font-cinzel font-bold text-5xl md:text-7xl text-amber-100 mb-6 tracking-wide relative">
+                    <span class="relative z-10 drop-shadow-2xl" style="text-shadow: 0 0 40px rgba(251, 191, 36, 0.8), 0 0 80px rgba(245, 158, 11, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8);">
                         The Scroll of Seven Seals
                     </span>
                 </h1>
-                <p class="text-xl md:text-2xl text-slate-300 font-inter font-light tracking-wider mb-4">
+                <p class="text-xl md:text-2xl text-amber-200 font-inter font-light tracking-wider mb-4 opacity-90">
                     Real-time Firebase Multiplayer Bible Mystery Adventure
                 </p>
                 <div class="w-32 h-px bg-gradient-to-r from-transparent via-mystic-gold-400 to-transparent mx-auto"></div>
@@ -1547,57 +1547,57 @@
 
         <!-- Multiplayer Info Box -->
         <div class="mb-16">
-            <div class="bg-glass-morphism backdrop-blur-xl border border-cosmic-500/30 rounded-2xl p-8 shadow-cosmic-glow relative overflow-hidden">
+            <div class="bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/30 rounded-2xl p-8 shadow-golden-glow relative overflow-hidden">
                 <!-- Animated background pattern -->
                 <div class="absolute inset-0 opacity-10">
-                    <div class="absolute top-4 right-4 w-32 h-32 border border-cosmic-400/20 rounded-full animate-spin" style="animation-duration: 20s;"></div>
-                    <div class="absolute bottom-4 left-4 w-24 h-24 border border-mystic-gold-400/20 rounded-full animate-spin" style="animation-duration: 15s; animation-direction: reverse;"></div>
+                    <div class="absolute top-4 right-4 w-32 h-32 border border-mystic-gold-400/20 rounded-full animate-spin" style="animation-duration: 20s;"></div>
+                    <div class="absolute bottom-4 left-4 w-24 h-24 border border-mystic-gold-500/20 rounded-full animate-spin" style="animation-duration: 15s; animation-direction: reverse;"></div>
                 </div>
                 
                 <div class="relative z-10">
-                    <h3 class="flex items-center justify-center text-2xl font-bold text-slate-200 mb-8">
-                        <svg class="w-8 h-8 text-cosmic-400 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <h3 class="flex items-center justify-center text-2xl font-bold text-amber-100 mb-8">
+                        <svg class="w-8 h-8 text-mystic-gold-400 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9m0 9a9 9 0 01-9-9m9 9c0 5-4 9-9 9s-9-4-9-9m9 9a9 9 0 009-9"></path>
                         </svg>
-                        <span class="bg-gradient-to-r from-cosmic-300 to-cosmic-500 bg-clip-text text-transparent">
+                        <span class="bg-gradient-to-r from-mystic-gold-300 to-mystic-gold-500 bg-clip-text text-transparent">
                             Real Cross-Device Multiplayer
                         </span>
                     </h3>
                     
                     <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="flex items-center text-slate-300 group">
+                        <div class="flex items-center text-amber-200 group">
                             <div class="w-12 h-12 bg-gold-mystique rounded-xl flex items-center justify-center text-midnight-950 font-bold text-lg mr-4 shadow-golden-glow group-hover:scale-110 transition-transform duration-300">
                                 1
                             </div>
                             <div>
-                                <strong class="text-mystic-gold-300 block">Create Room</strong>
+                                <strong class="text-mystic-gold-200 block">Create Room</strong>
                                 <span class="text-sm opacity-80">Get shareable link</span>
                             </div>
                         </div>
-                        <div class="flex items-center text-slate-300 group">
+                        <div class="flex items-center text-amber-200 group">
                             <div class="w-12 h-12 bg-gold-mystique rounded-xl flex items-center justify-center text-midnight-950 font-bold text-lg mr-4 shadow-golden-glow group-hover:scale-110 transition-transform duration-300">
                                 2
                             </div>
                             <div>
-                                <strong class="text-mystic-gold-300 block">Share Link</strong>
+                                <strong class="text-mystic-gold-200 block">Share Link</strong>
                                 <span class="text-sm opacity-80">Cross-device access</span>
                             </div>
                         </div>
-                        <div class="flex items-center text-slate-300 group">
+                        <div class="flex items-center text-amber-200 group">
                             <div class="w-12 h-12 bg-gold-mystique rounded-xl flex items-center justify-center text-midnight-950 font-bold text-lg mr-4 shadow-golden-glow group-hover:scale-110 transition-transform duration-300">
                                 3
                             </div>
                             <div>
-                                <strong class="text-mystic-gold-300 block">Join Together</strong>
+                                <strong class="text-mystic-gold-200 block">Join Together</strong>
                                 <span class="text-sm opacity-80">Same link entry</span>
                             </div>
                         </div>
-                        <div class="flex items-center text-slate-300 group">
+                        <div class="flex items-center text-amber-200 group">
                             <div class="w-12 h-12 bg-gold-mystique rounded-xl flex items-center justify-center text-midnight-950 font-bold text-lg mr-4 shadow-golden-glow group-hover:scale-110 transition-transform duration-300">
                                 4
                             </div>
                             <div>
-                                <strong class="text-mystic-gold-300 block">Compete Live</strong>
+                                <strong class="text-mystic-gold-200 block">Compete Live</strong>
                                 <span class="text-sm opacity-80">Real-time gaming</span>
                             </div>
                         </div>
@@ -1630,7 +1630,7 @@
                         <h3 class="text-2xl font-bold font-cinzel bg-gold-mystique bg-clip-text text-transparent mb-4 group-hover:scale-105 transition-transform duration-300">
                             Single Group
                         </h3>
-                        <p class="text-slate-400 leading-relaxed font-inter">
+                        <p class="text-amber-300 leading-relaxed font-inter">
                             Play as one unified team and challenge your best completion time
                         </p>
                         
@@ -1644,33 +1644,33 @@
 
             <!-- VS Computer Teams -->
             <div class="group cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-translate-y-4" onclick="selectMode('ai')">
-                <div class="bg-glass-morphism backdrop-blur-xl border border-cosmic-400/20 rounded-3xl p-10 h-full shadow-cosmic-glow hover:shadow-golden-glow hover:border-mystic-gold-400/60 transition-all duration-500 relative overflow-hidden">
+                <div class="bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-3xl p-10 h-full shadow-golden-glow hover:shadow-mystic-aura hover:border-mystic-gold-400/60 transition-all duration-500 relative overflow-hidden">
                     <!-- Mystical background effect -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-cosmic-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br from-mystic-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                     
                     <div class="text-center relative z-10">
                         <!-- Modern Icon -->
                         <div class="flex justify-center mb-8">
                             <div class="relative">
-                                <div class="w-20 h-20 bg-gradient-to-br from-cosmic-500 to-cosmic-700 rounded-2xl flex items-center justify-center shadow-cosmic-glow group-hover:animate-pulse-slow transition-all duration-500 group-hover:scale-110">
+                                <div class="w-20 h-20 bg-gradient-to-br from-mystic-gold-500 to-mystic-gold-700 rounded-2xl flex items-center justify-center shadow-golden-glow group-hover:animate-pulse-slow transition-all duration-500 group-hover:scale-110">
                                     <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                     </svg>
                                 </div>
-                                <div class="absolute -inset-2 bg-cosmic-400/20 rounded-3xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                                <div class="absolute -inset-2 bg-mystic-gold-400/20 rounded-3xl blur-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                             </div>
                         </div>
                         
-                        <h3 class="text-2xl font-bold font-cinzel bg-gradient-to-r from-cosmic-300 to-cosmic-500 bg-clip-text text-transparent mb-4 group-hover:scale-105 transition-transform duration-300">
+                        <h3 class="text-2xl font-bold font-cinzel bg-gradient-to-r from-mystic-gold-200 to-mystic-gold-400 bg-clip-text text-transparent mb-4 group-hover:scale-105 transition-transform duration-300">
                             VS Computer Teams
                         </h3>
-                        <p class="text-slate-400 leading-relaxed font-inter">
+                        <p class="text-amber-300 leading-relaxed font-inter">
                             Battle against intelligent AI opponents in strategic competition
                         </p>
                         
                         <!-- Hover effect indicator -->
                         <div class="mt-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div class="w-12 h-px bg-gradient-to-r from-transparent via-cosmic-400 to-transparent mx-auto"></div>
+                            <div class="w-12 h-px bg-gradient-to-r from-transparent via-mystic-gold-400 to-transparent mx-auto"></div>
                         </div>
                     </div>
                 </div>
@@ -1698,7 +1698,7 @@
                         <h3 class="text-2xl font-bold font-cinzel bg-gradient-to-r from-mystic-gold-300 via-mystic-gold-400 to-cosmic-400 bg-clip-text text-transparent mb-4 group-hover:scale-105 transition-transform duration-300">
                             Real Multiplayer
                         </h3>
-                        <p class="text-slate-400 leading-relaxed font-inter">
+                        <p class="text-amber-300 leading-relaxed font-inter">
                             Connect with friends worldwide using Firebase real-time technology
                         </p>
                         
@@ -5031,20 +5031,20 @@
                             </svg>
                             <span class="text-mystic-gold-300 font-semibold">Sacred Scripture</span>
                         </div>
-                        <div class="text-slate-300 italic mb-4 leading-relaxed font-inter" id="scriptureText"></div>
+                        <div class="text-amber-200 italic mb-4 leading-relaxed font-inter" id="scriptureText"></div>
                         <div class="text-mystic-gold-400 font-semibold text-sm font-cinzel" id="scriptureReference"></div>
                     </div>
                     
                     <!-- Ministerial Wisdom -->
-                    <div class="bg-glass-morphism backdrop-blur-xl border border-cosmic-400/20 rounded-3xl p-8 group hover:shadow-cosmic-glow transition-all duration-500" id="ministerialWisdom">
+                    <div class="bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-3xl p-8 group hover:shadow-golden-glow transition-all duration-500" id="ministerialWisdom">
                         <div class="flex items-center mb-4">
-                            <svg class="w-6 h-6 text-cosmic-400 mr-3" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-6 h-6 text-mystic-gold-400 mr-3" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M11,17H13V11H11V17M11,9H13V7H11V9Z"/>
                             </svg>
-                            <span class="text-cosmic-300 font-semibold">Divine Wisdom</span>
+                            <span class="text-mystic-gold-300 font-semibold">Divine Wisdom</span>
                         </div>
-                        <div class="text-slate-300 italic mb-4 leading-relaxed font-inter" id="wisdomText"></div>
-                        <div class="text-cosmic-400 font-semibold text-sm font-cinzel" id="wisdomAttribution"></div>
+                        <div class="text-amber-200 italic mb-4 leading-relaxed font-inter" id="wisdomText"></div>
+                        <div class="text-mystic-gold-400 font-semibold text-sm font-cinzel" id="wisdomAttribution"></div>
                     </div>
                     
                     <!-- Worship Controls -->
@@ -5060,7 +5060,7 @@
                             <span class="text-lg font-semibold relative z-10 font-cinzel">Divine Worship Sounds</span>
                         </button>
                         
-                        <div class="flex items-center space-x-4 bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-2xl px-6 py-3 text-sm text-slate-300 shadow-golden-glow" 
+                        <div class="flex items-center space-x-4 bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-2xl px-6 py-3 text-sm text-amber-200 shadow-golden-glow" 
                              id="nowPlaying" style="display: none;">
                             <div class="flex items-end space-x-1 h-6">
                                 <div class="w-1 bg-mystic-gold-400 rounded-full animate-pulse" style="height: 30%; animation-delay: 0s;"></div>
