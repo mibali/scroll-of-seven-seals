@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Scroll of Seven Seals - UI Test</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'cinzel': ['Cinzel', 'serif'],
+                        'uncial': ['Uncial Antiqua', 'cursive']
+                    },
+                    colors: {
+                        'gold': {
+                            100: '#fffdf7',
+                            200: '#fef3c7',
+                            300: '#fcd34d',
+                            400: '#f59e0b',
+                            500: '#d97706',
+                            600: '#b45309',
+                            700: '#92400e',
+                            800: '#78350f',
+                            900: '#451a03'
+                        },
+                        'mystic': {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a'
+                        }
+                    },
+                    backgroundImage: {
+                        'spiritual-gradient': 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #475569 50%, #334155 75%, #0f172a 100%)',
+                        'gold-gradient': 'linear-gradient(135deg, #fcd34d 0%, #f59e0b  50%, #d97706 100%)',
+                        'card-gradient': 'linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6))'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
+    </style>
+</head>
+
+<body class="bg-spiritual-gradient min-h-screen font-cinzel text-mystic-100 overflow-x-hidden relative">
+    <!-- Background Pattern -->
+    <div class="fixed inset-0 opacity-5">
+        <div class="absolute inset-0 bg-gradient-to-br from-gold-300/10 via-transparent to-gold-500/5"></div>
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, rgba(252, 211, 77, 0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
+    </div>
+
+    <div class="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="bg-card-gradient backdrop-blur-xl border border-gold-400/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                <!-- Decorative Elements -->
+                <div class="absolute top-0 left-0 w-full h-1 bg-gold-gradient"></div>
+                <div class="absolute -top-2 -left-2 w-16 h-16 bg-gold-gradient rounded-full opacity-20 blur-xl"></div>
+                <div class="absolute -bottom-2 -right-2 w-20 h-20 bg-gold-gradient rounded-full opacity-15 blur-xl"></div>
+                
+                <h1 class="font-uncial text-4xl md:text-6xl bg-gold-gradient bg-clip-text text-transparent mb-4 drop-shadow-lg">
+                    🔮 The Scroll of Seven Seals
+                </h1>
+                <p class="text-lg md:text-xl text-mystic-200 font-medium tracking-wide">
+                    Real-time Firebase Multiplayer Bible Mystery Adventure
+                </p>
+            </div>
+        </header>
+
+        <!-- Multiplayer Info Box -->
+        <div class="mb-12">
+            <div class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 backdrop-blur-lg border border-blue-400/30 rounded-2xl p-6 shadow-xl">
+                <h3 class="flex items-center text-xl font-bold text-blue-300 mb-4">
+                    <span class="text-2xl mr-3">🌐</span>
+                    Real Cross-Device Multiplayer
+                </h3>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">1</div>
+                        <span><strong class="text-gold-300">Create room</strong> → Get a shareable link</span>
+                    </div>
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">2</div>
+                        <span><strong class="text-gold-300">Share link</strong> on different devices</span>
+                    </div>
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">3</div>
+                        <span><strong class="text-gold-300">Everyone clicks</strong> the same link</span>
+                    </div>
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">4</div>
+                        <span><strong class="text-gold-300">Compete</strong> in real-time!</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Mode Selection -->
+        <div class="grid md:grid-cols-3 gap-8 mb-12">
+            <!-- Single Group -->
+            <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                    <div class="text-center">
+                        <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🏠</div>
+                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">Single Group</h3>
+                        <p class="text-mystic-300 leading-relaxed">Play as one team and beat your best time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VS Computer Teams -->
+            <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                    <div class="text-center">
+                        <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🤖</div>
+                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">VS Computer Teams</h3>
+                        <p class="text-mystic-300 leading-relaxed">Compete against AI opponents</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real Multiplayer -->
+            <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2">
+                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                    <div class="text-center">
+                        <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🌐</div>
+                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">Real Multiplayer</h3>
+                        <p class="text-mystic-300 leading-relaxed">Compete with friends online using Firebase</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Sample -->
+        <footer class="bg-gradient-to-r from-gold-900/20 to-gold-800/10 backdrop-blur-xl border-t border-gold-400/30 mt-16 py-12 relative">
+            <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent"></div>
+            
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="grid lg:grid-cols-3 gap-8 items-center">
+                    <!-- Scripture Motivation -->
+                    <div class="bg-mystic-800/20 backdrop-blur-lg border border-mystic-600/30 rounded-2xl p-6">
+                        <div class="text-mystic-200 italic mb-3 leading-relaxed">
+                            "Study to show yourself approved unto God, a workman that needs not to be ashamed, rightly dividing the word of truth."
+                        </div>
+                        <div class="text-gold-300 font-semibold text-sm">- 2 Timothy 2:15</div>
+                    </div>
+                    
+                    <!-- Ministerial Wisdom -->
+                    <div class="bg-mystic-800/20 backdrop-blur-lg border border-mystic-600/30 rounded-2xl p-6">
+                        <div class="text-mystic-200 italic mb-3 leading-relaxed">
+                            "The Word of God is the foundation of all true spiritual knowledge and victory in life."
+                        </div>
+                        <div class="text-gold-300 font-semibold text-sm">- Biblical Teaching on Faith</div>
+                    </div>
+                    
+                    <!-- Worship Controls -->
+                    <div class="flex flex-col items-center space-y-4">
+                        <button class="bg-gold-gradient text-mystic-900 font-bold py-4 px-8 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center space-x-3 group">
+                            <span class="text-xl group-hover:animate-pulse">🎵</span>
+                            <span class="text-sm font-semibold">Gentle Worship Sounds</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

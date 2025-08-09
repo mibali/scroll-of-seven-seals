@@ -17,6 +17,50 @@
     <script src="js/immersion-engine.js"></script>
     <script src="js/puzzles.js"></script>
 
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'cinzel': ['Cinzel', 'serif'],
+                        'uncial': ['Uncial Antiqua', 'cursive']
+                    },
+                    colors: {
+                        'gold': {
+                            100: '#fffdf7',
+                            200: '#fef3c7',
+                            300: '#fcd34d',
+                            400: '#f59e0b',
+                            500: '#d97706',
+                            600: '#b45309',
+                            700: '#92400e',
+                            800: '#78350f',
+                            900: '#451a03'
+                        },
+                        'mystic': {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a'
+                        }
+                    },
+                    backgroundImage: {
+                        'spiritual-gradient': 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #475569 50%, #334155 75%, #0f172a 100%)',
+                        'gold-gradient': 'linear-gradient(135deg, #fcd34d 0%, #f59e0b  50%, #d97706 100%)',
+                        'card-gradient': 'linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6))'
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="enhanced-styles.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&display=swap');
@@ -27,21 +71,23 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Cinzel', serif;
-            background: 
-                linear-gradient(135deg, #1a1a3e 0%, #2d1b69 25%, #1e3a5f 50%, #2c1810 75%, #1a1a3e 100%),
-                radial-gradient(circle at 30% 20%, rgba(184, 134, 11, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 70% 80%, rgba(139, 69, 19, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 20% 60%, rgba(25, 25, 112, 0.2) 0%, transparent 60%),
-                url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="cross" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse"><path d="M50 10 L50 90 M10 50 L90 50" stroke="%23b8860b" stroke-width="0.5" opacity="0.1"/><circle cx="25" cy="25" r="1" fill="%23b8860b" opacity="0.15"/><circle cx="75" cy="75" r="0.8" fill="%23daa520" opacity="0.1"/></pattern></defs><rect width="100%" height="100%" fill="url(%23cross)"/></svg>');
-            background-attachment: fixed;
-            color: #f5f5dc;
-            min-height: 100vh;
-            padding: 0;
-            margin: 0;
-            position: relative;
-            overflow-x: hidden;
+        /* Additional custom styles for elements not easily converted to Tailwind */
+        .room-input-section {
+            display: none;
+        }
+        .room-input-section.active {
+            display: block;
+        }
+        .connecting {
+            opacity: 1;
+        }
+        .connected {
+            background: rgba(34, 139, 34, 0.8) !important;
+            border-color: rgba(34, 139, 34, 0.5) !important;
+        }
+        .error {
+            background: rgba(220, 53, 69, 0.8) !important;
+            border-color: rgba(220, 53, 69, 0.5) !important;
         }
 
         body::before {
@@ -1366,94 +1412,183 @@
     </style>
 </head>
 
-<body>
-    <div class="connection-status connecting" id="connectionStatus">
-        🔄 Connecting to Firebase...
+<body class="bg-spiritual-gradient min-h-screen font-cinzel text-mystic-100 overflow-x-hidden relative">
+    <!-- Background Pattern -->
+    <div class="fixed inset-0 opacity-5">
+        <div class="absolute inset-0 bg-gradient-to-br from-gold-300/10 via-transparent to-gold-500/5"></div>
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, rgba(252, 211, 77, 0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
     </div>
 
-    <div class="container">
-        <div class="header">
-            <h1 class="title">🔮 The Scroll of Seven Seals</h1>
-            <p class="subtitle">Real-time Firebase Multiplayer Bible Mystery Adventure</p>
-        </div>
-
-        <div class="info-box">
-            <div class="info-title">
-                🌐 Real Cross-Device Multiplayer:
+    <!-- Connection Status -->
+    <div class="fixed top-4 right-4 z-50">
+        <div class="bg-blue-900/80 backdrop-blur-md border border-blue-400/50 rounded-xl px-4 py-2 text-sm text-blue-200 connecting" id="connectionStatus">
+            <div class="flex items-center space-x-2">
+                <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span>🔄 Connecting to Firebase...</span>
             </div>
-            <ol class="info-list">
-                <li><strong>Create room →</strong> Get a shareable link</li>
-                <li><strong>Share link with friends</strong> on different devices</li>
-                <li><strong>Everyone clicks the same link to join</strong></li>
-                <li><strong>Compete in real-time across the internet!</strong></li>
-            </ol>
+        </div>
+    </div>
+
+    <div class="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="bg-card-gradient backdrop-blur-xl border border-gold-400/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+                <!-- Decorative Elements -->
+                <div class="absolute top-0 left-0 w-full h-1 bg-gold-gradient"></div>
+                <div class="absolute -top-2 -left-2 w-16 h-16 bg-gold-gradient rounded-full opacity-20 blur-xl"></div>
+                <div class="absolute -bottom-2 -right-2 w-20 h-20 bg-gold-gradient rounded-full opacity-15 blur-xl"></div>
+                
+                <h1 class="font-uncial text-4xl md:text-6xl bg-gold-gradient bg-clip-text text-transparent mb-4 drop-shadow-lg">
+                    🔮 The Scroll of Seven Seals
+                </h1>
+                <p class="text-lg md:text-xl text-mystic-200 font-medium tracking-wide">
+                    Real-time Firebase Multiplayer Bible Mystery Adventure
+                </p>
+            </div>
+        </header>
+
+        <!-- Multiplayer Info Box -->
+        <div class="mb-12">
+            <div class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 backdrop-blur-lg border border-blue-400/30 rounded-2xl p-6 shadow-xl">
+                <h3 class="flex items-center text-xl font-bold text-blue-300 mb-4">
+                    <span class="text-2xl mr-3">🌐</span>
+                    Real Cross-Device Multiplayer
+                </h3>
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">1</div>
+                        <span><strong class="text-gold-300">Create room</strong> → Get a shareable link</span>
+                    </div>
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">2</div>
+                        <span><strong class="text-gold-300">Share link</strong> on different devices</span>
+                    </div>
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">3</div>
+                        <span><strong class="text-gold-300">Everyone clicks</strong> the same link</span>
+                    </div>
+                    <div class="flex items-center text-mystic-200">
+                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">4</div>
+                        <span><strong class="text-gold-300">Compete</strong> in real-time!</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Game Mode Selection -->
-        <div id="modeSelection" class="game-mode">
-            <div class="mode-card" onclick="selectMode('single')">
-                <span class="mode-icon">🏠</span>
-                <div class="mode-title">Single Group</div>
-                <div class="mode-description">Play as one team and beat your best time</div>
+        <div id="modeSelection" class="grid md:grid-cols-3 gap-8 mb-12">
+            <!-- Single Group -->
+            <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2" onclick="selectMode('single')">
+                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                    <div class="text-center">
+                        <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🏠</div>
+                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">Single Group</h3>
+                        <p class="text-mystic-300 leading-relaxed">Play as one team and beat your best time</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="mode-card" onclick="selectMode('ai')">
-                <span class="mode-icon">🤖</span>
-                <div class="mode-title">VS Computer Teams</div>
-                <div class="mode-description">Compete against AI opponents</div>
+            <!-- VS Computer Teams -->
+            <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2" onclick="selectMode('ai')">
+                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                    <div class="text-center">
+                        <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🤖</div>
+                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">VS Computer Teams</h3>
+                        <p class="text-mystic-300 leading-relaxed">Compete against AI opponents</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="mode-card" onclick="selectMode('multiplayer')">
-                <span class="mode-icon">🌐</span>
-                <div class="mode-title">Real Multiplayer</div>
-                <div class="mode-description">Compete with friends online using Firebase</div>
+            <!-- Real Multiplayer -->
+            <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2" onclick="selectMode('multiplayer')">
+                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                    <div class="text-center">
+                        <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🌐</div>
+                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">Real Multiplayer</h3>
+                        <p class="text-mystic-300 leading-relaxed">Compete with friends online using Firebase</p>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- Multiplayer Setup -->
-        <div id="multiplayerSetup" class="multiplayer-setup">
-            <div class="setup-title">Firebase Real-time Multiplayer Setup</div>
+        <div id="multiplayerSetup" class="hidden">
+            <div class="bg-card-gradient backdrop-blur-xl border border-gold-400/30 rounded-3xl p-8 mb-8 shadow-2xl">
+                <h2 class="text-3xl font-bold text-center bg-gold-gradient bg-clip-text text-transparent mb-6">
+                    Firebase Real-time Multiplayer Setup
+                </h2>
 
-            <div class="team-input">
-                <label for="teamName">Team Name:</label>
-                <input type="text" id="teamName" placeholder="Enter your team name" maxlength="20">
-            </div>
-
-            <div class="room-options">
-                <div class="room-option" onclick="showRoomCreation()">
-                    <div class="room-option-title">🏠 Create Room</div>
-                    <div class="room-option-desc">Start a new Firebase game room</div>
+                <div class="max-w-md mx-auto mb-8">
+                    <label for="teamName" class="block text-gold-300 font-semibold mb-2">Team Name:</label>
+                    <input type="text" id="teamName" placeholder="Enter your team name" maxlength="20" 
+                           class="w-full px-4 py-3 bg-mystic-800/50 border border-mystic-600/50 rounded-xl text-mystic-100 placeholder-mystic-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20 transition-all duration-300">
                 </div>
 
-                <div class="room-option" onclick="showRoomJoin()">
-                    <div class="room-option-title">🔗 Join via Link</div>
-                    <div class="room-option-desc">Use a friend's room link</div>
-                </div>
-            </div>
+                <div class="grid md:grid-cols-2 gap-6 mb-8">
+                    <div class="group cursor-pointer" onclick="showRoomCreation()">
+                        <div class="bg-gradient-to-br from-green-900/30 to-emerald-900/20 border border-green-400/30 rounded-2xl p-6 transition-all duration-300 hover:border-green-400/60 hover:shadow-lg hover:scale-105">
+                            <div class="text-center">
+                                <div class="text-4xl mb-4">🏠</div>
+                                <h3 class="text-xl font-bold text-green-300 mb-2">Create Room</h3>
+                                <p class="text-mystic-300">Start a new Firebase game room</p>
+                            </div>
+                        </div>
+                    </div>
 
-            <div id="roomCreation" class="room-input-section">
-                <div class="room-code-display">
-                    <div>Room Code:</div>
-                    <div class="room-code" id="roomCode">------</div>
+                    <div class="group cursor-pointer" onclick="showRoomJoin()">
+                        <div class="bg-gradient-to-br from-blue-900/30 to-indigo-900/20 border border-blue-400/30 rounded-2xl p-6 transition-all duration-300 hover:border-blue-400/60 hover:shadow-lg hover:scale-105">
+                            <div class="text-center">
+                                <div class="text-4xl mb-4">🔗</div>
+                                <h3 class="text-xl font-bold text-blue-300 mb-2">Join via Link</h3>
+                                <p class="text-mystic-300">Use a friend's room link</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="room-code-display">
-                    <div>Your Room Link:</div>
-                    <div class="share-link" id="shareLink">Click Create Room to generate link...</div>
-                </div>
-                <button class="button" onclick="copyRoomLink()">📋 Copy Room Link</button>
-                <button class="button" onclick="createRoom()">Create Room</button>
-            </div>
 
-            <div id="roomJoin" class="room-input-section">
-                <div class="team-input">
-                    <label>Paste Room Link or Code:</label>
-                    <input type="text" id="roomInput" placeholder="Paste room link from your friend">
+                <div id="roomCreation" class="room-input-section hidden">
+                    <div class="bg-mystic-800/30 backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-6 mb-6">
+                        <div class="text-center mb-4">
+                            <label class="block text-gold-300 font-semibold mb-2">Room Code:</label>
+                            <div class="bg-mystic-900/50 border border-gold-400/30 rounded-xl p-4 font-mono text-2xl text-gold-300 tracking-wider" id="roomCode">
+                                ------
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <label class="block text-gold-300 font-semibold mb-2">Your Room Link:</label>
+                            <div class="bg-mystic-900/50 border border-gold-400/30 rounded-xl p-4 text-sm text-mystic-300 break-all" id="shareLink">
+                                Click Create Room to generate link...
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="copyRoomLink()" class="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                            📋 Copy Room Link
+                        </button>
+                        <button onclick="createRoom()" class="bg-gold-gradient text-mystic-900 font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                            Create Room
+                        </button>
+                    </div>
                 </div>
-                <button class="button" onclick="joinRoom()">Join Room</button>
-            </div>
 
-            <div style="text-align: center; margin-top: 20px;">
-                <button class="button secondary" onclick="goBack()">← Back</button>
+                <div id="roomJoin" class="room-input-section hidden">
+                    <div class="max-w-md mx-auto mb-6">
+                        <label class="block text-gold-300 font-semibold mb-2">Paste Room Link or Code:</label>
+                        <input type="text" id="roomInput" placeholder="Paste room link from your friend"
+                               class="w-full px-4 py-3 bg-mystic-800/50 border border-mystic-600/50 rounded-xl text-mystic-100 placeholder-mystic-400 focus:border-gold-400 focus:outline-none focus:ring-2 focus:ring-gold-400/20 transition-all duration-300">
+                    </div>
+                    <div class="text-center">
+                        <button onclick="joinRoom()" class="bg-gold-gradient text-mystic-900 font-semibold py-3 px-8 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                            Join Room
+                        </button>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button onclick="goBack()" class="bg-mystic-700 hover:bg-mystic-600 text-mystic-200 font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105">
+                        ← Back
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -4607,34 +4742,48 @@
         }
     </style>
 
-    <!-- Spiritual Inspiration Footer -->
-    <footer class="spiritual-footer">
-        <div class="inspiration-container">
-            <div class="scripture-motivation" id="scriptureMotivation">
-                <div class="scripture-text" id="scriptureText"></div>
-                <div class="scripture-reference" id="scriptureReference"></div>
-            </div>
-            <div class="ministerial-wisdom" id="ministerialWisdom">
-                <div class="wisdom-text" id="wisdomText"></div>
-                <div class="wisdom-attribution" id="wisdomAttribution"></div>
-            </div>
-            <div class="worship-controls">
-                <button id="worshipToggle" class="worship-btn" onclick="toggleWorship()">
-                    <span class="worship-icon">🎵</span>
-                    <span class="worship-text">Gentle Worship Sounds</span>
-                </button>
-                <div class="now-playing" id="nowPlaying" style="display: none;">
-                    <div class="audio-visualizer">
-                        <div class="audio-bar"></div>
-                        <div class="audio-bar"></div>
-                        <div class="audio-bar"></div>
-                        <div class="audio-bar"></div>
+        <!-- Spiritual Inspiration Footer -->
+        <footer class="bg-gradient-to-r from-gold-900/20 to-gold-800/10 backdrop-blur-xl border-t border-gold-400/30 mt-16 py-12 relative">
+            <!-- Decorative line -->
+            <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent"></div>
+            
+            <div class="container mx-auto px-4 max-w-7xl">
+                <div class="grid lg:grid-cols-3 gap-8 items-center">
+                    <!-- Scripture Motivation -->
+                    <div class="bg-mystic-800/20 backdrop-blur-lg border border-mystic-600/30 rounded-2xl p-6" id="scriptureMotivation">
+                        <div class="text-mystic-200 italic mb-3 leading-relaxed" id="scriptureText"></div>
+                        <div class="text-gold-300 font-semibold text-sm" id="scriptureReference"></div>
                     </div>
-                    <span id="currentTrack"></span>
+                    
+                    <!-- Ministerial Wisdom -->
+                    <div class="bg-mystic-800/20 backdrop-blur-lg border border-mystic-600/30 rounded-2xl p-6" id="ministerialWisdom">
+                        <div class="text-mystic-200 italic mb-3 leading-relaxed" id="wisdomText"></div>
+                        <div class="text-gold-300 font-semibold text-sm" id="wisdomAttribution"></div>
+                    </div>
+                    
+                    <!-- Worship Controls -->
+                    <div class="flex flex-col items-center space-y-4">
+                        <button id="worshipToggle" onclick="toggleWorship()" 
+                                class="bg-gold-gradient text-mystic-900 font-bold py-4 px-8 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center space-x-3 group">
+                            <span class="text-xl group-hover:animate-pulse">🎵</span>
+                            <span class="text-sm font-semibold">Gentle Worship Sounds</span>
+                        </button>
+                        
+                        <div class="flex items-center space-x-3 bg-mystic-800/30 backdrop-blur-lg border border-mystic-600/30 rounded-2xl px-4 py-2 text-sm text-mystic-200" 
+                             id="nowPlaying" style="display: none;">
+                            <div class="flex items-end space-x-1 h-4">
+                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 25%; animation-delay: 0s;"></div>
+                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 75%; animation-delay: 0.3s;"></div>
+                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 50%; animation-delay: 0.6s;"></div>
+                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 100%; animation-delay: 0.9s;"></div>
+                            </div>
+                            <span id="currentTrack"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </footer>
+        </footer>
+    </div>
 </body>
 
 </html>
