@@ -13,6 +13,7 @@
     <script src="js/firebase-config.js"></script>
     
     <!-- CORE GAME SYSTEM -->
+    <script src="js/game-data.js"></script>
     <script src="js/game.js"></script>
     <script src="js/multiplayer.js"></script>
     <script src="js/leaderboard.js"></script>
@@ -2036,17 +2037,20 @@
     </div>
 
     <script>
-        // Initialize Firebase directly
-        const firebaseConfig = {
-            apiKey: "AIzaSyB9eQyqDeIjQvCRDtVVEsImhsfXNA9xMRc",
-            authDomain: "scroll-of-seven-seals.firebaseapp.com",
-            databaseURL: "https://scroll-of-seven-seals-default-rtdb.firebaseio.com",
-            projectId: "scroll-of-seven-seals",
-            storageBucket: "scroll-of-seven-seals.firebasestorage.app",
-            messagingSenderId: "156760249212",
-            appId: "1:156760249212:web:1bf31ad5f92b410f29caf9",
-            measurementId: "G-DPY2ZJ7CSD"
-        };
+        // Firebase config handled by firebase-config.js
+        
+        // Missing function definitions
+        function showAlert(message, type = 'info') {
+            if (window.showNotification) {
+                window.showNotification(message, type);
+            } else {
+                console.log(`${type.toUpperCase()}: ${message}`);
+                alert(message);
+            }
+        }
+        
+        // Make showAlert globally available
+        window.showAlert = showAlert;
 
         // VERSION CHECK - Force browser cache refresh
         console.log('🚀 GAME VERSION: v1.4.0 - ENHANCED SYSTEM + ALL JS ERRORS FIXED');
@@ -2222,7 +2226,16 @@
 
             // Update UI
             document.querySelectorAll('.mode-card').forEach(card => card.classList.remove('selected'));
-            event.target.closest('.mode-card').classList.add('selected');
+            // Find and select the mode card by data attribute or content
+            const modeCards = document.querySelectorAll('.mode-card');
+            modeCards.forEach(card => {
+                if (card.textContent.toLowerCase().includes(mode) || 
+                    (mode === 'single' && card.textContent.includes('Single')) ||
+                    (mode === 'ai' && card.textContent.includes('VS Computer')) ||
+                    (mode === 'multiplayer' && card.textContent.includes('Real Multiplayer'))) {
+                    card.classList.add('selected');
+                }
+            });
 
             if (mode === 'multiplayer') {
                 if (!isFirebaseReady) {
@@ -4111,13 +4124,7 @@
             showAlert(`⚔️ Challenge Level: ${level.toUpperCase()} - Settings Applied!`, 'success');
         }
 
-        // Modify existing mode selection functions to show complexity modal first
-        function selectMode(mode) {
-            console.log('Mode selected:', mode);
-            
-            // Show complexity selection before starting any mode
-            showComplexityModal(mode);
-        }
+        // selectMode function is defined earlier in the file - removed duplicate
 
         // Original game start functions (now called after complexity selection)
         function startSinglePlayer() {
