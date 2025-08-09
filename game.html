@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Scroll of Seven Seals - COMPREHENSIVE FIXED v1.4.1</title>
+    <title>The Scroll of Seven Seals - FINAL FIXED v1.5.0</title>
 
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
@@ -1625,7 +1625,7 @@
         <!-- Game Mode Selection -->
         <div id="modeSelection" class="grid md:grid-cols-3 gap-8 mb-16">
             <!-- Single Group -->
-            <div class="group cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-translate-y-4" onclick="selectMode('single')">
+            <div class="group cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-translate-y-4 mode-card" data-mode="single">
                 <div class="bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-3xl p-10 h-full shadow-mystic-aura hover:shadow-golden-glow hover:border-mystic-gold-400/60 transition-all duration-500 relative overflow-hidden">
                     <!-- Mystical background effect -->
                     <div class="absolute inset-0 bg-gradient-to-br from-mystic-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -1659,7 +1659,7 @@
             </div>
 
             <!-- VS Computer Teams -->
-            <div class="group cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-translate-y-4" onclick="selectMode('ai')">
+            <div class="group cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-translate-y-4 mode-card" data-mode="ai">
                 <div class="bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-3xl p-10 h-full shadow-golden-glow hover:shadow-mystic-aura hover:border-mystic-gold-400/60 transition-all duration-500 relative overflow-hidden">
                     <!-- Mystical background effect -->
                     <div class="absolute inset-0 bg-gradient-to-br from-mystic-gold-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -1693,7 +1693,7 @@
             </div>
 
             <!-- Real Multiplayer -->
-            <div class="group cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-translate-y-4" onclick="selectMode('multiplayer')">
+            <div class="group cursor-pointer transform transition-all duration-500 hover:scale-105 hover:-translate-y-4 mode-card" data-mode="multiplayer">
                 <div class="bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-3xl p-10 h-full shadow-mystic-aura hover:shadow-golden-glow hover:border-mystic-gold-400/60 transition-all duration-500 relative overflow-hidden">
                     <!-- Mystical background effect -->
                     <div class="absolute inset-0 bg-gradient-to-br from-mystic-gold-500/5 to-cosmic-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -2051,9 +2051,50 @@
         
         // Make showAlert globally available
         window.showAlert = showAlert;
+        
+        // Initialize mode selection event listeners when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🎯 Setting up mode selection event listeners...');
+            
+            const modeCards = document.querySelectorAll('.mode-card[data-mode]');
+            modeCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const mode = this.dataset.mode;
+                    console.log('🎮 Mode selected:', mode);
+                    
+                    if (window.selectMode) {
+                        window.selectMode(mode);
+                    } else {
+                        console.error('selectMode function not yet available');
+                        // Fallback - try again after a short delay
+                        setTimeout(() => {
+                            if (window.selectMode) {
+                                window.selectMode(mode);
+                            } else {
+                                alert('Game is still loading. Please try again in a moment.');
+                            }
+                        }, 1000);
+                    }
+                });
+            });
+            
+            console.log('✅ Mode selection event listeners setup complete');
+            
+            // Initialize spiritual content when DOM is ready
+            if (typeof updateSpiritualContent === 'function') {
+                updateSpiritualContent();
+            } else {
+                // Wait for function to be defined
+                setTimeout(() => {
+                    if (typeof updateSpiritualContent === 'function') {
+                        updateSpiritualContent();
+                    }
+                }, 1000);
+            }
+        });
 
         // VERSION CHECK - Force browser cache refresh
-        console.log('🚀 GAME VERSION: v1.4.1 - COMPREHENSIVE JS FIXES + ALL FUNCTIONS WORKING');
+        console.log('🚀 GAME VERSION: v1.5.0 - FINAL FIX: Event listeners + timing + spiritual content working');
         console.log('📅 Code loaded at:', new Date().toISOString());
         
         // EMERGENCY WINNER TESTING - Call from console if needed
@@ -2107,7 +2148,7 @@
 
         // Firebase connection monitoring
         let isFirebaseReady = false;
-        let app, database, auth;
+        // Firebase variables declared in firebase-config.js
 
         function updateConnectionStatus(status) {
             const statusEl = document.getElementById('connectionStatus');
@@ -4898,7 +4939,7 @@
             setTimeout(initializeGameEngines, 50);
             setTimeout(initializeGameOptions, 100);
             setTimeout(initializeDragAndDrop, 200);
-            setTimeout(updateSpiritualContent, 300);
+            // updateSpiritualContent now called in DOMContentLoaded event
         });
     </script>
 
