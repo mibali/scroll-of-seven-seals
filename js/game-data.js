@@ -76,23 +76,17 @@ const puzzleVariations = {
                 {question: "Who was the mother of Samuel the prophet?", correctAnswer: "HANNAH", type: "exact"},
                 {question: "What mountain did Moses receive the Ten Commandments?", correctAnswer: "SINAI", type: "exact"},
                 {question: "How many times did Peter deny Jesus?", correctAnswer: "3", type: "exact"},
-                {question: "What was the name of Abraham's wife?", correctAnswer: "SARAH", type: "exact"},
-                {question: "In which book is 'For God so loved the world' found?", correctAnswer: "JOHN", type: "exact"},
-                {question: "How many plagues were sent upon Egypt?", correctAnswer: "10", type: "exact"},
-                {question: "What was the name of the first high priest of Israel?", correctAnswer: "AARON", type: "exact"}
+                {question: "What was the name of Abraham's wife?", correctAnswer: "SARAH", type: "exact"}
             ]
         },
         {
             keyword: "REDEMPTION",
             questions: [
-                {question: "How many stones did David pick for his battle with Goliath?", correctAnswer: "5", type: "exact"},
-                {question: "What was the name of the prophetess who spoke over baby Jesus?", correctAnswer: "ANNA", type: "exact"},
-                {question: "Which king built the first temple in Jerusalem?", correctAnswer: "SOLOMON", type: "exact"},
-                {question: "How many years did the Israelites wander in the desert?", correctAnswer: "40", type: "exact"},
-                {question: "What was the name of Moses' brother?", correctAnswer: "AARON", type: "exact"},
                 {question: "In what city was Jesus born?", correctAnswer: "BETHLEHEM", type: "exact"},
                 {question: "How many disciples did Jesus choose?", correctAnswer: "12", type: "exact"},
-                {question: "What was the name of the first martyr?", correctAnswer: "STEPHEN", type: "exact"}
+                {question: "Which king built the first temple in Jerusalem?", correctAnswer: "SOLOMON", type: "exact"},
+                {question: "How many years did the Israelites wander in the desert?", correctAnswer: "40", type: "exact"},
+                {question: "What was the name of Moses' brother?", correctAnswer: "AARON", type: "exact"}
             ]
         }
     ],

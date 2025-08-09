@@ -55,17 +55,29 @@ class EnhancedPuzzleManager {
         }
     }
 
-    // CHALLENGE 1: Bible Knowledge - Deep Scriptural Recall
+    // CHALLENGE 1: Bible Knowledge - Deep Scriptural Recall (Now Beginner-Friendly!)
     generateBibleKnowledgeContent(variation) {
         let questionsHtml = '';
         
         variation.questions.forEach((question, index) => {
+            // Add helpful context clues for beginners
+            let hintText = '';
+            if (question.question.includes('Noah')) hintText = '💡 Think about the great flood story';
+            else if (question.question.includes('Hannah')) hintText = '💡 Mother of a famous prophet and judge';
+            else if (question.question.includes('Moses')) hintText = '💡 The mountain where God gave the law';
+            else if (question.question.includes('Peter deny')) hintText = '💡 Think about what Jesus predicted at the Last Supper';
+            else if (question.question.includes('Abraham')) hintText = '💡 Originally called Sarai';
+            else if (question.question.includes('God so loved')) hintText = '💡 The most famous verse in Christianity';
+            else if (question.question.includes('plagues')) hintText = '💡 Same number as commandments';
+            else if (question.question.includes('high priest')) hintText = '💡 Moses\' brother';
+            
             questionsHtml += `
                 <div class="knowledge-question">
                     <div class="question-header">
                         <span class="question-number">Question ${index + 1}:</span>
                     </div>
                     <div class="question-text">${question.question}</div>
+                    ${hintText ? `<div class="question-hint" style="color: #17a2b8; font-style: italic; font-size: 0.9em; margin: 5px 0;">${hintText}</div>` : ''}
                     <div class="answer-input">
                         <input type="text" 
                                id="knowledge${index + 1}" 
@@ -80,9 +92,9 @@ class EnhancedPuzzleManager {
         return `
             <div class="bible-knowledge-challenge">
                 <h3>📖 SCRIPTURE KNOWLEDGE TRIAL</h3>
-                <div class="challenge-warning">
-                    <p><strong>⚠️ NO HINTS PROVIDED</strong></p>
-                    <p>Answer all questions correctly using only your biblical knowledge.</p>
+                <div class="challenge-info" style="background: rgba(0, 150, 0, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #009600;">
+                    <p><strong>🎯 Beginner-Friendly Challenge!</strong></p>
+                    <p>Answer questions about basic biblical knowledge. Look for the helpful hints below each question!</p>
                     <p><strong>Target Keyword:</strong> <span class="keyword-target">${variation.keyword}</span></p>
                 </div>
                 
@@ -91,12 +103,13 @@ class EnhancedPuzzleManager {
                 </div>
                 
                 <div class="challenge-controls">
-                <button class="btn primary" onclick="checkBibleKnowledge()">🔍 Verify Answers</button>
-                <button class="btn secondary" onclick="resetChallenge('bibleKnowledge')">🔄 Reset</button>
-                    ${this.getComplexityHint('bibleKnowledge')}
-                    </div>
+                    <button class="btn primary" onclick="checkBibleKnowledge()">🔍 Check Answers</button>
+                    <button class="btn secondary" onclick="resetChallenge('bibleKnowledge')">🔄 Reset</button>
+                    <button class="btn hint-btn" onclick="showBibleKnowledgeHint()" style="background: #17a2b8; color: white;">💡 Show More Hints</button>
+                </div>
                 
                 <div id="bibleKnowledgeResult" class="challenge-result"></div>
+                <div id="bibleKnowledgeHint" class="challenge-hint" style="display: none;"></div>
             </div>
         `;
     }
@@ -242,48 +255,87 @@ class EnhancedPuzzleManager {
         `;
     }
 
-    // CHALLENGE 4: Code-Breaking - Biblical Ciphers
+    // CHALLENGE 4: Code-Breaking - Biblical Classification (Testament Sorting)
     generateCodeBreakingContent(variation) {
-        let codesHtml = '';
+        if (!variation || !variation.items) {
+            console.error('Code breaking variation data is missing or malformed');
+            return `
+                <div class="code-breaking-challenge">
+                    <h3>🔐 BIBLICAL CLASSIFICATION CHALLENGE</h3>
+                    <p>Error loading challenge. Please try restarting the game.</p>
+                </div>
+            `;
+        }
+
+        // Create category drop zones
+        const categories = variation.categories || {};
+        let categoriesHtml = '';
         
-        variation.codes.forEach((code, index) => {
-            codesHtml += `
-                <div class="code-breaking-puzzle">
-                    <div class="cipher-type">${code.type.replace('_', ' ').toUpperCase()}</div>
-                    <div class="cipher-name">${code.cipher}</div>
-                    <div class="encrypted-message">
-                        <strong>Encrypted:</strong> "${code.message}"
+        Object.keys(categories).forEach(categoryKey => {
+            const category = categories[categoryKey];
+            categoriesHtml += `
+                <div class="testament-category" data-category="${categoryKey}">
+                    <h4 style="color: ${category.color}; margin-bottom: 10px;">
+                        📖 ${category.name}
+                    </h4>
+                    <p class="category-description">${category.description}</p>
+                    <div class="category-drop-zone" data-testament="${categoryKey}" style="border: 2px dashed ${category.color}; min-height: 200px; padding: 15px; border-radius: 10px; background: rgba(0,0,0,0.2);">
+                        <p class="drop-instruction" style="text-align: center; opacity: 0.7; margin: 60px 0;">
+                            Drop ${category.name} items here
+                        </p>
                     </div>
-                    ${code.hint ? `<div class="cipher-hint">💡 ${code.hint}</div>` : ''}
-                    <div class="decryption-input">
-                        <input type="text" 
-                               id="code${index + 1}" 
-                               placeholder="Enter decrypted answer"
-                               class="code-input">
-                    </div>
+                </div>
+            `;
+        });
+
+        // Create draggable items
+        let itemsHtml = '';
+        variation.items.forEach((item, index) => {
+            itemsHtml += `
+                <div class="draggable-item biblical-item" 
+                     draggable="true" 
+                     data-testament="${item.testament}" 
+                     data-category="${item.category}"
+                     data-item-id="${index}">
+                    ${item.text}
                 </div>
             `;
         });
 
         return `
             <div class="code-breaking-challenge">
-                <h3>🔐 CODE-BREAKING TRIAL</h3>
-                <div class="challenge-warning">
-                    <p><strong>⚠️ ADVANCED CIPHERS</strong></p>
-                    <p>Decrypt biblical codes using ancient and modern cipher techniques.</p>
+                <h3>🔐 BIBLICAL CLASSIFICATION CHALLENGE</h3>
+                <div class="challenge-info">
+                    <p><strong>📚 ${variation.title}</strong></p>
+                    <p>${variation.description}</p>
                     <p><strong>Target Keyword:</strong> <span class="keyword-target">${variation.keyword}</span></p>
+                    
+                    <div class="beginner-hint" style="background: rgba(0, 150, 0, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #009600;">
+                        <strong>💡 Beginner Hint:</strong> 
+                        <p>Drag each biblical event/teaching from the pool below into the correct Testament category above. Think about when each event happened in biblical history!</p>
+                        <p><em>🎯 Old Testament = Before Jesus, New Testament = During/After Jesus</em></p>
+                    </div>
                 </div>
                 
-                <div class="codes-container">
-                    ${codesHtml}
+                <div class="testament-categories" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0;">
+                    ${categoriesHtml}
+                </div>
+                
+                <div class="items-pool" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px; border: 2px solid #8b7355;">
+                    <h4 style="text-align: center; margin-bottom: 15px; color: #d4af37;">📋 Biblical Events & Teachings Pool</h4>
+                    <div class="draggable-items" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+                        ${itemsHtml}
+                    </div>
                 </div>
                 
                 <div class="challenge-controls">
-                    <button class="btn primary" onclick="checkCodeBreaking()">🔓 Decrypt Codes</button>
+                    <button class="btn primary" onclick="checkCodeBreaking()">✅ Check Classification</button>
                     <button class="btn secondary" onclick="resetChallenge('codeBreaking')">🔄 Reset</button>
+                    <button class="btn hint-btn" onclick="showCodeBreakingHint()" style="background: #17a2b8; color: white;">💡 Show Hint</button>
                 </div>
                 
                 <div id="codeBreakingResult" class="challenge-result"></div>
+                <div id="codeBreakingHint" class="challenge-hint" style="display: none;"></div>
             </div>
         `;
     }
@@ -1352,7 +1404,7 @@ function checkBibleKnowledge() {
     const variation = enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
     if (!variation) return;
     
-    let allCorrect = true;
+    let correctCount = 0;
     const results = [];
     
     variation.questions.forEach((question, index) => {
@@ -1360,12 +1412,16 @@ function checkBibleKnowledge() {
         const correctAnswer = question.correctAnswer;
         
         if (isAnswerCorrect(userAnswer, correctAnswer)) {
-            results.push(`✅ Q${index + 1}: Correct`);
+            results.push(`✅ Q${index + 1}: Correct!`);
+            correctCount++;
         } else {
-            results.push(`❌ Q${index + 1}: Incorrect`);
-            allCorrect = false;
+            results.push(`❌ Q${index + 1}: Try "${correctAnswer}"`);
         }
     });
+    
+    // Make it beginner-friendly: only need 60% correct to pass
+    const passThreshold = Math.ceil(variation.questions.length * 0.6);
+    const allCorrect = correctCount >= passThreshold;
     
     const resultDiv = document.getElementById('bibleKnowledgeResult');
     if (allCorrect) {
@@ -1375,11 +1431,12 @@ function checkBibleKnowledge() {
         // Enhanced success message with immersion
         const successMessage = window.ImmersionEngine ? 
             window.BibleGameAI?.generateSuccessMessage(1, window.gameState?.complexity?.level || 'medium') :
-            `🎉 <strong>SCRIPTURE MASTERY ACHIEVED!</strong><br>Keyword unlocked: <strong>${variation.keyword}</strong>`;
+            `🏆 <strong>GREAT JOB!</strong><br>Keyword unlocked: <strong>${variation.keyword}</strong>`;
             
         resultDiv.innerHTML = `
             <div style="color: #228b22;">
                 ${successMessage}<br>
+                You got ${correctCount}/${variation.questions.length} correct - that's enough to proceed!<br>
                 ${results.join('<br>')}
             </div>
         `;
@@ -1396,12 +1453,44 @@ function checkBibleKnowledge() {
         
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
-                📚 <strong>Study Required</strong><br>
-                Some answers are incorrect. Review Scripture carefully.<br>
+                📚 <strong>Keep Trying!</strong><br>
+                You got ${correctCount}/${variation.questions.length} correct. You need at least ${passThreshold} to proceed.<br>
+                Look at the answers above and try again!<br>
                 ${results.join('<br>')}
             </div>
         `;
     }
+}
+
+// Add hint function for Bible Knowledge
+function showBibleKnowledgeHint() {
+    const variation = enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
+    if (!variation) return;
+    
+    const hintDiv = document.getElementById('bibleKnowledgeHint');
+    
+    let hintsHtml = '<div style="background: rgba(0, 150, 0, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #009600;">';
+    hintsHtml += '<h4 style="color: #009600; margin-bottom: 10px;">🎯 Extended Hints:</h4>';
+    
+    variation.questions.forEach((question, index) => {
+        let extendedHint = '';
+        
+        if (question.question.includes('Noah')) extendedHint = 'It rained for this many days and nights during the flood.';
+        else if (question.question.includes('Hannah')) extendedHint = 'This woman prayed for a son and dedicated him to God\'s service.';
+        else if (question.question.includes('Moses')) extendedHint = 'This mountain is also called Mount Horeb.';
+        else if (question.question.includes('Peter deny')) extendedHint = 'Jesus said the rooster would crow after this many denials.';
+        else if (question.question.includes('Abraham')) extendedHint = 'Her name was changed from Sarai when God made the covenant.';
+        else if (question.question.includes('God so loved')) extendedHint = 'This verse is John 3:16 - the "Gospel in a nutshell".';
+        else if (question.question.includes('plagues')) extendedHint = 'Same number as the commandments Moses received.';
+        else if (question.question.includes('high priest')) extendedHint = 'Moses\' older brother who became the first high priest.';
+        
+        hintsHtml += `<p><strong>Q${index + 1}:</strong> ${extendedHint}</p>`;
+    });
+    
+    hintsHtml += '</div>';
+    
+    hintDiv.innerHTML = hintsHtml;
+    hintDiv.style.display = 'block';
 }
 
 function checkLogicalReasoning() {
@@ -1550,19 +1639,34 @@ function checkTeamCommunication() {
 
 function checkCodeBreaking() {
     const variation = enhancedPuzzleManager.getPuzzleVariation('codeBreaking');
-    if (!variation) return;
+    if (!variation || !variation.items) return;
     
     let allCorrect = true;
     const results = [];
+    const categories = variation.categories || {};
     
-    variation.codes.forEach((code, index) => {
-        const userAnswer = document.getElementById(`code${index + 1}`).value.trim();
-        const correctAnswer = code.solution;
+    // Check each category drop zone
+    Object.keys(categories).forEach(categoryKey => {
+        const dropZone = document.querySelector(`[data-testament="${categoryKey}"]`);
+        const droppedItems = dropZone.querySelectorAll('.draggable-item');
         
-        if (isAnswerCorrect(userAnswer, correctAnswer)) {
-            results.push(`✅ Code ${index + 1}: Decrypted`);
+        let categoryCorrect = true;
+        let correctCount = 0;
+        let totalExpected = variation.items.filter(item => item.testament === categoryKey).length;
+        
+        droppedItems.forEach(item => {
+            const itemTestament = item.getAttribute('data-testament');
+            if (itemTestament === categoryKey) {
+                correctCount++;
+            } else {
+                categoryCorrect = false;
+            }
+        });
+        
+        if (correctCount === totalExpected && categoryCorrect) {
+            results.push(`✅ ${categories[categoryKey].name}: Correctly classified (${correctCount}/${totalExpected})`);
         } else {
-            results.push(`❌ Code ${index + 1}: Still encrypted`);
+            results.push(`❌ ${categories[categoryKey].name}: Incorrect classification (${correctCount}/${totalExpected})`);
             allCorrect = false;
         }
     });
@@ -1571,9 +1675,9 @@ function checkCodeBreaking() {
     if (allCorrect) {
         resultDiv.innerHTML = `
             <div style="color: #228b22;">
-                🔓 <strong>CODES BROKEN!</strong><br>
+                🏆 <strong>PERFECT CLASSIFICATION!</strong><br>
                 Keyword unlocked: <strong>${variation.keyword}</strong><br>
-                Ancient mysteries revealed!<br>
+                You've correctly sorted all biblical events by Testament!<br>
                 ${results.join('<br>')}
             </div>
         `;
@@ -1581,12 +1685,34 @@ function checkCodeBreaking() {
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
-                🔐 <strong>Cipher Resistance</strong><br>
-                Some codes remain unbroken. Study the patterns more carefully.<br>
+                📚 <strong>Classification Incomplete</strong><br>
+                Some events are in the wrong Testament category. Try the hint for guidance!<br>
                 ${results.join('<br>')}
             </div>
         `;
     }
+}
+
+// Add hint function for code breaking
+function showCodeBreakingHint() {
+    const variation = enhancedPuzzleManager.getPuzzleVariation('codeBreaking');
+    if (!variation) return;
+    
+    const hintDiv = document.getElementById('codeBreakingHint');
+    
+    // Create specific hints for each item
+    let hintsHtml = '<div style="background: rgba(0, 150, 0, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #009600;">';
+    hintsHtml += '<h4 style="color: #009600; margin-bottom: 10px;">🎯 Classification Hints:</h4>';
+    
+    variation.items.forEach((item, index) => {
+        const testament = item.testament === 'oldTestament' ? 'Old Testament' : 'New Testament';
+        hintsHtml += `<p><strong>"${item.text}"</strong> → ${testament}</p>`;
+    });
+    
+    hintsHtml += '</div>';
+    
+    hintDiv.innerHTML = hintsHtml;
+    hintDiv.style.display = 'block';
 }
 
 function checkMetaphoricalScripture() {
@@ -1970,3 +2096,7 @@ window.checkChronologicalOrder = checkChronologicalOrder;
 window.checkScriptureTopics = checkScriptureTopics;
 window.checkBiblicalWisdom = checkBiblicalWisdom;
 window.resetChallenge = resetChallenge;
+
+// Make hint functions globally available
+window.showBibleKnowledgeHint = showBibleKnowledgeHint;
+window.showCodeBreakingHint = showCodeBreakingHint;

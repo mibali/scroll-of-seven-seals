@@ -29,10 +29,15 @@
 
         body {
             font-family: 'Cinzel', serif;
-            background: linear-gradient(135deg, #2c1810, #4a3425, #6b4d37);
-            color: #f4f1e8;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            background-attachment: fixed;
+            color: #e8e8e8;
             min-height: 100vh;
             padding: 20px;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 177, 66, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
         }
 
         .container {
@@ -43,23 +48,31 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            border-radius: 15px;
-            border: 2px solid #d4af37;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .title {
             font-family: 'Uncial Antiqua', cursive;
-            font-size: 2.5em;
-            color: #d4af37;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-            margin-bottom: 10px;
+            font-size: 2.8em;
+            background: linear-gradient(135deg, #d4af37, #f4e976, #e6c757);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            margin-bottom: 15px;
+            filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3));
         }
 
         .subtitle {
-            font-size: 1.2em;
-            color: #b8a082;
+            font-size: 1.3em;
+            color: #c8c8c8;
+            opacity: 0.9;
+            font-weight: 300;
         }
 
         .info-box {
@@ -97,19 +110,22 @@
         }
 
         .mode-card {
-            background: rgba(0, 0, 0, 0.4);
-            border: 2px solid #d4af37;
-            border-radius: 15px;
-            padding: 25px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-radius: 20px;
+            padding: 30px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
         .mode-card:hover {
-            background: rgba(212, 175, 55, 0.1);
-            border-color: #f4e876;
-            transform: translateY(-5px);
+            background: rgba(212, 175, 55, 0.08);
+            border-color: rgba(244, 233, 118, 0.5);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 12px 32px rgba(212, 175, 55, 0.2);
         }
 
         .mode-card.selected {
@@ -3973,42 +3989,118 @@
             console.log('✝️ Spiritual content updated for fresh inspiration');
         }
 
-        function toggleWorship() {
+        // Audio context and worship audio
+        let audioContext = null;
+        let worshipAudio = null;
+        let isAudioInitialized = false;
+
+        async function initializeAudio() {
+            if (isAudioInitialized) return;
+            
+            try {
+                // Initialize AudioContext (required for web audio)
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create worship audio with a gentle ambient tone
+                worshipAudio = createWorshipAmbience();
+                isAudioInitialized = true;
+                console.log('🎵 Audio system initialized');
+            } catch (error) {
+                console.log('Audio initialization failed:', error);
+                // Fallback to visual-only mode
+                isAudioInitialized = true;
+            }
+        }
+
+        function createWorshipAmbience() {
+            if (!audioContext) return null;
+            
+            // Create a gentle, peaceful ambient sound using Web Audio API
+            const gainNode = audioContext.createGain();
+            const oscillator1 = audioContext.createOscillator();
+            const oscillator2 = audioContext.createOscillator();
+            
+            // Set up peaceful frequencies (C major chord variations)
+            oscillator1.frequency.setValueAtTime(261.63, audioContext.currentTime); // C4
+            oscillator2.frequency.setValueAtTime(329.63, audioContext.currentTime); // E4
+            
+            // Very low volume for ambient background
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            
+            // Connect the audio graph
+            oscillator1.connect(gainNode);
+            oscillator2.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Start the oscillators
+            oscillator1.start();
+            oscillator2.start();
+            
+            return { gainNode, oscillator1, oscillator2 };
+        }
+
+        async function toggleWorship() {
             const button = document.getElementById('worshipToggle');
             const nowPlaying = document.getElementById('nowPlaying');
             const currentTrack = document.getElementById('currentTrack');
 
+            // Initialize audio on first interaction (required by browsers)
+            if (!isAudioInitialized) {
+                await initializeAudio();
+            }
+
             if (!worshipPlaying) {
                 // Start worship atmosphere
                 worshipPlaying = true;
-                button.textContent = '🔇 Pause Worship';
+                button.innerHTML = '<span class="worship-icon">🔇</span><span class="worship-text">Pause Worship</span>';
                 button.classList.add('playing');
                 nowPlaying.style.display = 'block';
+                
+                // Resume audio context if suspended
+                if (audioContext && audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
+                
+                // Start gentle ambient audio
+                if (worshipAudio && worshipAudio.gainNode) {
+                    worshipAudio.gainNode.gain.setTargetAtTime(0.02, audioContext.currentTime, 1.0);
+                }
                 
                 // Rotate through available tracks
                 currentWorshipIndex = (currentWorshipIndex + 1) % spiritualContent.worshipInstrumentals.length;
                 const trackName = spiritualContent.worshipInstrumentals[currentWorshipIndex];
                 currentTrack.textContent = `♪ ${trackName}`;
                 
-                // Note: In a real implementation, you would integrate with royalty-free worship instrumental APIs
-                // or use HTML5 audio with copyright-free worship music
                 console.log('🎵 Worship atmosphere activated:', trackName);
                 
-                // Auto-change track every 3 minutes (simulated)
+                // Auto-change track every 3 minutes with subtle frequency modulation
                 if (window.worshipInterval) clearInterval(window.worshipInterval);
                 window.worshipInterval = setInterval(() => {
                     if (worshipPlaying) {
                         currentWorshipIndex = (currentWorshipIndex + 1) % spiritualContent.worshipInstrumentals.length;
                         currentTrack.textContent = `♪ ${spiritualContent.worshipInstrumentals[currentWorshipIndex]}`;
+                        
+                        // Subtle frequency modulation for variety
+                        if (worshipAudio && audioContext) {
+                            const freq1 = 261.63 + (Math.random() - 0.5) * 20;
+                            const freq2 = 329.63 + (Math.random() - 0.5) * 20;
+                            worshipAudio.oscillator1.frequency.setTargetAtTime(freq1, audioContext.currentTime, 2.0);
+                            worshipAudio.oscillator2.frequency.setTargetAtTime(freq2, audioContext.currentTime, 2.0);
+                        }
                     }
                 }, 180000); // 3 minutes
                 
             } else {
                 // Stop worship atmosphere
                 worshipPlaying = false;
-                button.textContent = '🎵 Worship Atmosphere';
+                button.innerHTML = '<span class="worship-icon">🎵</span><span class="worship-text">Gentle Worship Sounds</span>';
                 button.classList.remove('playing');
                 nowPlaying.style.display = 'none';
+                
+                // Fade out audio
+                if (worshipAudio && worshipAudio.gainNode) {
+                    worshipAudio.gainNode.gain.setTargetAtTime(0, audioContext.currentTime, 1.0);
+                }
                 
                 if (window.worshipInterval) {
                     clearInterval(window.worshipInterval);
@@ -4037,6 +4129,150 @@
         });
     </script>
 
+    <style>
+        /* Enhanced Worship Controls */
+        .spiritual-footer {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(15px);
+            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            margin-top: 40px;
+            padding: 30px 0;
+        }
+
+        .inspiration-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .worship-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .worship-btn {
+            background: linear-gradient(135deg, rgba(212, 175, 55, 0.8), rgba(230, 199, 87, 0.6));
+            border: none;
+            border-radius: 25px;
+            padding: 12px 24px;
+            color: #1a1a2e;
+            font-family: 'Cinzel', serif;
+            font-weight: 600;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .worship-btn:hover {
+            background: linear-gradient(135deg, rgba(244, 233, 118, 0.9), rgba(212, 175, 55, 0.8));
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+        }
+
+        .worship-btn.playing {
+            background: linear-gradient(135deg, rgba(34, 139, 34, 0.8), rgba(50, 205, 50, 0.6));
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .worship-icon {
+            font-size: 1.2em;
+            filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        }
+
+        .worship-text {
+            font-size: 0.95em;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 4px 16px rgba(34, 139, 34, 0.3); }
+            50% { box-shadow: 0 8px 24px rgba(34, 139, 34, 0.6); }
+        }
+
+        .now-playing {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            font-size: 0.9em;
+            color: #e8e8e8;
+        }
+
+        .audio-visualizer {
+            display: flex;
+            align-items: end;
+            gap: 2px;
+            height: 16px;
+        }
+
+        .audio-bar {
+            width: 3px;
+            background: linear-gradient(to top, #d4af37, #f4e976);
+            border-radius: 2px;
+            animation: audioViz 1.5s ease-in-out infinite;
+        }
+
+        .audio-bar:nth-child(1) { animation-delay: 0s; }
+        .audio-bar:nth-child(2) { animation-delay: 0.3s; }
+        .audio-bar:nth-child(3) { animation-delay: 0.6s; }
+        .audio-bar:nth-child(4) { animation-delay: 0.9s; }
+
+        @keyframes audioViz {
+            0%, 100% { height: 4px; opacity: 0.5; }
+            50% { height: 16px; opacity: 1; }
+        }
+
+        .scripture-motivation, .ministerial-wisdom {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+
+        .scripture-text, .wisdom-text {
+            font-style: italic;
+            color: #e8e8e8;
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+
+        .scripture-reference, .wisdom-attribution {
+            color: #d4af37;
+            font-weight: 600;
+            font-size: 0.9em;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .inspiration-container {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .worship-btn {
+                font-size: 0.9em;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+
     <!-- Spiritual Inspiration Footer -->
     <footer class="spiritual-footer">
         <div class="inspiration-container">
@@ -4050,9 +4286,16 @@
             </div>
             <div class="worship-controls">
                 <button id="worshipToggle" class="worship-btn" onclick="toggleWorship()">
-                    🎵 Worship Atmosphere
+                    <span class="worship-icon">🎵</span>
+                    <span class="worship-text">Gentle Worship Sounds</span>
                 </button>
                 <div class="now-playing" id="nowPlaying" style="display: none;">
+                    <div class="audio-visualizer">
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                        <div class="audio-bar"></div>
+                    </div>
                     <span id="currentTrack"></span>
                 </div>
             </div>
