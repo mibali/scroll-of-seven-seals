@@ -70,23 +70,23 @@ const puzzleVariations = {
     // SEAL 1: Bible Knowledge Challenge - Deep Scriptural Recall
     bibleKnowledge: [
         {
-            keyword: "SALVATION",
+            keyword: "SALVATION", 
             questions: [
-                {question: "How many days did it rain during Noah's flood?", correctAnswer: "40", type: "exact"},
-                {question: "Who was the mother of Samuel the prophet?", correctAnswer: "HANNAH", type: "exact"},
-                {question: "What mountain did Moses receive the Ten Commandments?", correctAnswer: "SINAI", type: "exact"},
-                {question: "How many times did Peter deny Jesus?", correctAnswer: "3", type: "exact"},
-                {question: "What was the name of Abraham's wife?", correctAnswer: "SARAH", type: "exact"}
+                {question: "How many days and nights did it rain during Noah's flood?", correctAnswer: "40", type: "exact", hint: "The same number of years Israel wandered in the desert"},
+                {question: "In what city was Jesus born?", correctAnswer: "BETHLEHEM", type: "exact", hint: "This city is called the 'City of David'"},
+                {question: "How many disciples did Jesus choose?", correctAnswer: "12", type: "exact", hint: "The same number as the tribes of Israel"},
+                {question: "What was the name of Moses' brother who helped him?", correctAnswer: "AARON", type: "exact", hint: "He was the first high priest of Israel"},
+                {question: "How many times did Peter deny knowing Jesus?", correctAnswer: "3", type: "exact", hint: "Jesus asked Peter to feed His sheep this many times"}
             ]
         },
         {
             keyword: "REDEMPTION",
             questions: [
-                {question: "In what city was Jesus born?", correctAnswer: "BETHLEHEM", type: "exact"},
-                {question: "How many disciples did Jesus choose?", correctAnswer: "12", type: "exact"},
-                {question: "Which king built the first temple in Jerusalem?", correctAnswer: "SOLOMON", type: "exact"},
-                {question: "How many years did the Israelites wander in the desert?", correctAnswer: "40", type: "exact"},
-                {question: "What was the name of Moses' brother?", correctAnswer: "AARON", type: "exact"}
+                {question: "Who built the giant boat to save his family from the flood?", correctAnswer: "NOAH", type: "exact", hint: "God told him to take two of every animal"},
+                {question: "What did David use to defeat the giant Goliath?", correctAnswer: "SLING", type: "exact", hint: "A simple shepherd's weapon with stones"},
+                {question: "What sea did Moses part for the Israelites to cross?", correctAnswer: "RED SEA", type: "exact", hint: "It's named after its color"},
+                {question: "How many years did the Israelites wander in the desert?", correctAnswer: "40", type: "exact", hint: "The same number of days it rained during the flood"},
+                {question: "Who was thrown into a den of lions but was protected by God?", correctAnswer: "DANIEL", type: "exact", hint: "He was a prophet who refused to stop praying"}
             ]
         }
     ],
@@ -183,64 +183,62 @@ const puzzleVariations = {
         }
     ],
 
-    // SEAL 4: Testament Current Affairs - Old vs New Testament
+    // SEAL 4: Testament Current Affairs - Old vs New Testament  
     codeBreaking: [
         {
             keyword: "TESTAMENT",
-            title: "Old vs New Testament Current Affairs",
-            description: "Classify biblical events, teachings, and figures by Testament period",
+            title: "Old vs New Testament Events",
+            description: "Sort these biblical events into Old Testament (before Jesus) or New Testament (Jesus' time and after)",
             categories: {
                 oldTestament: {
-                    name: "Old Testament Era",
+                    name: "Old Testament",
                     color: "#8b4513",
-                    description: "Before Christ - Law, Prophets, History"
+                    description: "Before Jesus was born"
                 },
                 newTestament: {
-                    name: "New Testament Era", 
+                    name: "New Testament", 
                     color: "#1e90ff",
-                    description: "Christ & Church - Grace, Gospel, Letters"
+                    description: "Jesus' time and after"
                 }
             },
             items: [
-                { text: "Moses receives Ten Commandments", testament: "oldTestament", category: "Law" },
+                { text: "Noah builds the ark", testament: "oldTestament", category: "History" },
+                { text: "Jesus is born in Bethlehem", testament: "newTestament", category: "Gospel" },
+                { text: "Moses parts the Red Sea", testament: "oldTestament", category: "Miracles" },
                 { text: "Jesus feeds 5,000 people", testament: "newTestament", category: "Miracles" },
-                { text: "David defeats Goliath", testament: "oldTestament", category: "History" },
-                { text: "Paul's missionary journeys", testament: "newTestament", category: "Church" },
-                { text: "Daniel in the lion's den", testament: "oldTestament", category: "Prophets" },
-                { text: "Pentecost and Holy Spirit", testament: "newTestament", category: "Church" },
-                { text: "Solomon builds the Temple", testament: "oldTestament", category: "History" },
-                { text: "Sermon on the Mount", testament: "newTestament", category: "Teaching" },
-                { text: "Elijah calls down fire", testament: "oldTestament", category: "Prophets" },
-                { text: "Great Commission given", testament: "newTestament", category: "Church" },
-                { text: "Passover instituted", testament: "oldTestament", category: "Law" },
-                { text: "Jesus' crucifixion", testament: "newTestament", category: "Gospel" }
+                { text: "David fights Goliath", testament: "oldTestament", category: "History" },
+                { text: "Jesus dies on the cross", testament: "newTestament", category: "Gospel" },
+                { text: "Daniel in the lion's den", testament: "oldTestament", category: "History" },
+                { text: "Paul becomes a Christian", testament: "newTestament", category: "Church" },
+                { text: "Solomon builds God's temple", testament: "oldTestament", category: "History" },
+                { text: "Jesus rises from the dead", testament: "newTestament", category: "Gospel" }
             ]
         },
         {
             keyword: "COVENANT",
-            title: "Biblical Covenants & Dispensations",
-            description: "Match biblical covenants with their respective Testament periods",
+            title: "Old vs New Covenant Ways",
+            description: "Sort these into Old Covenant (Old Testament way) or New Covenant (New Testament way)",
             categories: {
                 oldCovenant: {
-                    name: "Old Covenant",
+                    name: "Old Covenant Way",
                     color: "#cd853f", 
-                    description: "Law, Sacrifice, Temple Worship"
+                    description: "Old Testament - Rules and Sacrifices"
                 },
                 newCovenant: {
-                    name: "New Covenant",
+                    name: "New Covenant Way",
                     color: "#4169e1",
-                    description: "Grace, Faith, Spirit-led Living"
+                    description: "New Testament - Jesus and Grace"
                 }
             },
             items: [
-                { text: "Mosaic Law & Commandments", testament: "oldCovenant", category: "Law" },
-                { text: "Grace through Faith", testament: "newCovenant", category: "Salvation" },
-                { text: "Animal sacrifices for sin", testament: "oldCovenant", category: "Atonement" },
-                { text: "Christ's perfect sacrifice", testament: "newCovenant", category: "Atonement" },
-                { text: "Temple worship in Jerusalem", testament: "oldCovenant", category: "Worship" },
-                { text: "Worship in Spirit and Truth", testament: "newCovenant", category: "Worship" },
-                { text: "Priests mediate for people", testament: "oldCovenant", category: "Priesthood" },
-                { text: "All believers are priests", testament: "newCovenant", category: "Priesthood" }
+                { text: "Follow the Ten Commandments", testament: "oldCovenant", category: "Law" },
+                { text: "Believe in Jesus for salvation", testament: "newCovenant", category: "Salvation" },
+                { text: "Offer animal sacrifices for sins", testament: "oldCovenant", category: "Atonement" },
+                { text: "Jesus died for our sins", testament: "newCovenant", category: "Atonement" },
+                { text: "Worship at the temple in Jerusalem", testament: "oldCovenant", category: "Worship" },
+                { text: "Worship God anywhere in spirit", testament: "newCovenant", category: "Worship" },
+                { text: "Only priests can approach God", testament: "oldCovenant", category: "Priesthood" },
+                { text: "All Christians can pray to God", testament: "newCovenant", category: "Priesthood" }
             ]
         }
     ],

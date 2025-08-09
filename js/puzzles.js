@@ -60,16 +60,8 @@ class EnhancedPuzzleManager {
         let questionsHtml = '';
         
         variation.questions.forEach((question, index) => {
-            // Add helpful context clues for beginners
-            let hintText = '';
-            if (question.question.includes('Noah')) hintText = '💡 Think about the great flood story';
-            else if (question.question.includes('Hannah')) hintText = '💡 Mother of a famous prophet and judge';
-            else if (question.question.includes('Moses')) hintText = '💡 The mountain where God gave the law';
-            else if (question.question.includes('Peter deny')) hintText = '💡 Think about what Jesus predicted at the Last Supper';
-            else if (question.question.includes('Abraham')) hintText = '💡 Originally called Sarai';
-            else if (question.question.includes('God so loved')) hintText = '💡 The most famous verse in Christianity';
-            else if (question.question.includes('plagues')) hintText = '💡 Same number as commandments';
-            else if (question.question.includes('high priest')) hintText = '💡 Moses\' brother';
+            // Use the hint from the question data or create a kid-friendly hint
+            const hintText = question.hint ? `💡 ${question.hint}` : '';
             
             questionsHtml += `
                 <div class="knowledge-question">
@@ -1357,47 +1349,28 @@ function isAnswerCorrect(userAnswer, correctAnswer) {
     const user = userAnswer.trim().toUpperCase();
     const correct = correctAnswer.toUpperCase();
     
-    // Direct match
+    // Exact match is preferred
     if (user === correct) return true;
     
-    // Get current complexity settings
-    const complexity = window.gameState?.complexity?.settings || { answerTolerance: 'medium' };
+    // Simple variations for children/teens - help with common misspellings
+    const acceptableVariations = {
+        'RED SEA': ['REDSEA', 'THE RED SEA'],
+        'NOAH': ['NOAH\'S'],
+        'AARON': ['AARON\'S'],  
+        'BETHLEHEM': ['BETHELEM', 'BETHLAHEM'],
+        'DANIEL': ['DANIAL', 'DANNIEL'],
+        'SLING': ['SLINGSHOT', 'STONE', 'ROCK', 'STONES'],
+        '40': ['FORTY', 'FOURTY'],
+        '12': ['TWELVE'],
+        '3': ['THREE']
+    };
     
-    // Apply complexity-based answer tolerance
-    switch (complexity.answerTolerance) {
-        case 'strict':
-            // Expert mode - exact matches only
-            return false;
-            
-        case 'low':
-            // Advanced mode - limited synonyms
-            const limitedSynonyms = (answerSynonyms[correct] || []).slice(0, 2);
-            return limitedSynonyms.some(synonym => user === synonym.toUpperCase());
-            
-        case 'medium':
-            // Intermediate mode - standard synonyms
-            const synonyms = answerSynonyms[correct] || [];
-            return synonyms.some(synonym => user === synonym.toUpperCase());
-            
-        case 'high':
-            // Beginner mode - very forgiving matching
-            const allSynonyms = answerSynonyms[correct] || [];
-            const isBasicMatch = allSynonyms.some(synonym => user === synonym.toUpperCase());
-            
-            // Also allow partial matches for beginners
-            const isPartialMatch = user.length >= 3 && (
-                correct.includes(user) || 
-                user.includes(correct.substring(0, Math.min(correct.length, 4))) ||
-                allSynonyms.some(syn => syn.includes(user) || user.includes(syn.substring(0, 3)))
-            );
-            
-            return isBasicMatch || isPartialMatch;
-            
-        default:
-            // Fallback to medium tolerance
-            const defaultSynonyms = answerSynonyms[correct] || [];
-            return defaultSynonyms.some(synonym => user === synonym.toUpperCase());
+    // Check if user's answer is an acceptable variation
+    if (acceptableVariations[correct]) {
+        return acceptableVariations[correct].includes(user);
     }
+    
+    return false;
 }
 
 function checkBibleKnowledge() {
@@ -1473,18 +1446,8 @@ function showBibleKnowledgeHint() {
     hintsHtml += '<h4 style="color: #009600; margin-bottom: 10px;">🎯 Extended Hints:</h4>';
     
     variation.questions.forEach((question, index) => {
-        let extendedHint = '';
-        
-        if (question.question.includes('Noah')) extendedHint = 'It rained for this many days and nights during the flood.';
-        else if (question.question.includes('Hannah')) extendedHint = 'This woman prayed for a son and dedicated him to God\'s service.';
-        else if (question.question.includes('Moses')) extendedHint = 'This mountain is also called Mount Horeb.';
-        else if (question.question.includes('Peter deny')) extendedHint = 'Jesus said the rooster would crow after this many denials.';
-        else if (question.question.includes('Abraham')) extendedHint = 'Her name was changed from Sarai when God made the covenant.';
-        else if (question.question.includes('God so loved')) extendedHint = 'This verse is John 3:16 - the "Gospel in a nutshell".';
-        else if (question.question.includes('plagues')) extendedHint = 'Same number as the commandments Moses received.';
-        else if (question.question.includes('high priest')) extendedHint = 'Moses\' older brother who became the first high priest.';
-        
-        hintsHtml += `<p><strong>Q${index + 1}:</strong> ${extendedHint}</p>`;
+        // Show the correct answer as an extended hint for struggling children
+        hintsHtml += `<p><strong>Q${index + 1}:</strong> The answer is "${question.correctAnswer}"</p>`;
     });
     
     hintsHtml += '</div>';

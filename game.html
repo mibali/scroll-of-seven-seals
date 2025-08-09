@@ -3778,49 +3778,89 @@
             showAlert(`🎮 Single Player Mode Started! Complexity: ${gameComplexity.level.toUpperCase()}`, 'success');
         }
 
-        // Drag and Drop Functionality
+        // Enhanced Drag and Drop Functionality
         function initializeDragAndDrop() {
-            // Enable drag and drop for all drag items
+            // Enable drag and drop for all draggable items
             document.addEventListener('dragstart', function(e) {
-                if (e.target.classList.contains('drag-item')) {
+                if (e.target.classList.contains('draggable-item') || e.target.classList.contains('drag-item')) {
                     e.target.classList.add('dragging');
                     e.dataTransfer.setData('text/plain', '');
+                    e.dataTransfer.effectAllowed = 'move';
                 }
             });
 
             document.addEventListener('dragend', function(e) {
-                if (e.target.classList.contains('drag-item')) {
+                if (e.target.classList.contains('draggable-item') || e.target.classList.contains('drag-item')) {
                     e.target.classList.remove('dragging');
                 }
             });
 
             document.addEventListener('dragover', function(e) {
                 e.preventDefault();
-                if (e.target.classList.contains('drop-zone') || e.target.closest('.drop-zone')) {
-                    const dropZone = e.target.classList.contains('drop-zone') ? e.target : e.target.closest('.drop-zone');
+                e.dataTransfer.dropEffect = 'move';
+                
+                // Find the drop zone
+                let dropZone = null;
+                if (e.target.classList.contains('category-drop-zone') || e.target.classList.contains('drop-zone')) {
+                    dropZone = e.target;
+                } else {
+                    dropZone = e.target.closest('.category-drop-zone') || e.target.closest('.drop-zone');
+                }
+                
+                if (dropZone) {
                     dropZone.classList.add('drag-over');
+                    dropZone.style.backgroundColor = 'rgba(255, 215, 0, 0.2)';
                 }
             });
 
             document.addEventListener('dragleave', function(e) {
-                if (e.target.classList.contains('drop-zone')) {
-                    e.target.classList.remove('drag-over');
+                let dropZone = null;
+                if (e.target.classList.contains('category-drop-zone') || e.target.classList.contains('drop-zone')) {
+                    dropZone = e.target;
+                }
+                
+                if (dropZone) {
+                    dropZone.classList.remove('drag-over');
+                    dropZone.style.backgroundColor = '';
                 }
             });
 
             document.addEventListener('drop', function(e) {
                 e.preventDefault();
-                const dropZone = e.target.classList.contains('drop-zone') ? e.target : e.target.closest('.drop-zone');
+                
+                // Find the drop zone
+                let dropZone = null;
+                if (e.target.classList.contains('category-drop-zone') || e.target.classList.contains('drop-zone')) {
+                    dropZone = e.target;
+                } else {
+                    dropZone = e.target.closest('.category-drop-zone') || e.target.closest('.drop-zone');
+                }
                 
                 if (dropZone) {
                     dropZone.classList.remove('drag-over');
+                    dropZone.style.backgroundColor = '';
+                    
                     const draggedItem = document.querySelector('.dragging');
                     
                     if (draggedItem) {
+                        // For biblical classification (Seal 4) - testament sorting
+                        if (dropZone.hasAttribute('data-testament')) {
+                            // Remove instruction text
+                            const instruction = dropZone.querySelector('.drop-instruction');
+                            if (instruction) {
+                                instruction.style.display = 'none';
+                            }
+                            
+                            // Add the dragged item to this drop zone
+                            dropZone.appendChild(draggedItem);
+                            dropZone.classList.add('filled');
+                            
+                            console.log('Item dropped:', draggedItem.textContent, 'into', dropZone.getAttribute('data-testament'));
+                        }
                         // For chronological order - only allow one item per drop zone
-                        if (dropZone.hasAttribute('data-position')) {
+                        else if (dropZone.hasAttribute('data-position')) {
                             // Remove any existing item from this drop zone
-                            const existingItem = dropZone.querySelector('.drag-item');
+                            const existingItem = dropZone.querySelector('.draggable-item, .drag-item');
                             if (existingItem) {
                                 // Move existing item back to pool
                                 const pool = document.querySelector('.items-pool');
