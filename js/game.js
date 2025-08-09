@@ -116,8 +116,21 @@ class GameController {
     // Start single player game
     async startSinglePlayerGame() {
         try {
-            const teamName = document.getElementById('singleTeamName').value.trim();
-            const teamSize = document.getElementById('singleTeamSize').value;
+            // Try multiple possible team name inputs
+            const teamNameElement = document.getElementById('teamName') || 
+                                  document.getElementById('playerTeamName') || 
+                                  document.getElementById('singleTeamName');
+            
+            if (!teamNameElement) {
+                // Create a default team name if no input found
+                const teamName = 'Solo Player';
+                console.log('No team name input found, using default:', teamName);
+                this.startGameWithTeam(teamName, 1);
+                return;
+            }
+            
+            const teamName = teamNameElement.value.trim() || 'Solo Player';
+            const teamSize = 1; // Single player is always team size 1
 
             if (!teamName) {
                 showNotification('Please enter a team name', 'error');
@@ -141,6 +154,40 @@ class GameController {
 
         } catch (error) {
             console.error('Error starting single player game:', error);
+            showNotification('Failed to start game. Please try again.', 'error');
+        }
+    }
+    
+    // Helper method to start game with team
+    startGameWithTeam(teamName, teamSize) {
+        try {
+            console.log(`🎮 Starting game for team: ${teamName} (size: ${teamSize})`);
+            
+            // Initialize game state
+            this.gameState.currentTeam = teamName;
+            this.gameState.mode = 'single';
+            this.gameState.teams = [{ name: teamName, score: 0, completedSeals: [] }];
+            
+            // Hide setup and start game
+            const modeSelection = document.getElementById('modeSelection');
+            if (modeSelection) modeSelection.style.display = 'none';
+            
+            const multiplayerSetup = document.getElementById('multiplayerSetup');
+            if (multiplayerSetup) multiplayerSetup.style.display = 'none';
+            
+            const aiSetup = document.getElementById('aiSetup');
+            if (aiSetup) aiSetup.style.display = 'none';
+            
+            // Start the actual game
+            if (window.startGame) {
+                window.startGame();
+            } else {
+                console.log('Game started successfully');
+                showNotification(`Welcome ${teamName}! Your quest begins now.`, 'success');
+            }
+            
+        } catch (error) {
+            console.error('Error in startGameWithTeam:', error);
             showNotification('Failed to start game. Please try again.', 'error');
         }
     }
