@@ -21,6 +21,9 @@ try {
         
         console.log('🔥 Firebase initialized successfully');
         
+        // Update connection status
+        updateConnectionStatus('connecting');
+        
         // Test connectivity after a short delay to ensure auth is ready
         setTimeout(async () => {
             if (window.FirebaseUtils && window.FirebaseUtils.testConnectivity) {
@@ -34,12 +37,27 @@ try {
                 console.log('👤 User authenticated:', user.uid);
                 console.log('👤 User details:', { uid: user.uid, isAnonymous: user.isAnonymous });
                 window.currentUser = user;
+                updateConnectionStatus('connected');
+                
+                // Monitor connection status
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    const connected = snapshot.val();
+                    console.log('🔥 Firebase connection status:', connected);
+                    if (connected === true) {
+                        updateConnectionStatus('connected');
+                    } else {
+                        updateConnectionStatus('disconnected');
+                    }
+                });
             } else {
                 console.log('👤 No user authenticated, signing in anonymously...');
                 // Sign in anonymously for game participation
                 auth.signInAnonymously().catch((error) => {
                     console.error('Authentication error:', error);
-                    showNotification('Authentication failed. Some features may not work.', 'error');
+                    updateConnectionStatus('disconnected');
+                    if (window.showNotification) {
+                        showNotification('Authentication failed. Some features may not work.', 'error');
+                    }
                 });
             }
         });
@@ -123,6 +141,31 @@ function createDemoFirebase() {
     };
     
     window.currentUser = window.auth.currentUser;
+}
+
+// Connection status update function
+function updateConnectionStatus(status) {
+    const statusEl = document.getElementById('connectionStatus');
+    if (!statusEl) return;
+    
+    statusEl.className = `connection-status ${status}`;
+    
+    switch (status) {
+        case 'connecting':
+            statusEl.textContent = '🔄 Connecting to Firebase...';
+            statusEl.style.display = 'block';
+            break;
+        case 'connected':
+            statusEl.textContent = '✅ Firebase Connected';
+            setTimeout(() => {
+                if (statusEl) statusEl.style.display = 'none';
+            }, 3000);
+            break;
+        case 'disconnected':
+            statusEl.textContent = '❌ Firebase Disconnected';
+            statusEl.style.display = 'block';
+            break;
+    }
 }
 
 // Utility functions for Firebase operations

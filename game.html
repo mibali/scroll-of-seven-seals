@@ -2197,8 +2197,8 @@
             }
         }
 
-        // Start Firebase initialization
-        waitForFirebase();
+        // Firebase initialization handled by firebase-config.js
+        // waitForFirebase(); // Removed to prevent duplicate initialization
 
         // Check for room parameter in URL
         window.addEventListener('load', () => {
