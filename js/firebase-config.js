@@ -148,21 +148,24 @@ function updateConnectionStatus(status) {
     const statusEl = document.getElementById('connectionStatus');
     if (!statusEl) return;
     
-    statusEl.className = `connection-status ${status}`;
+    const textSpan = statusEl.querySelector('span.font-medium');
+    if (!textSpan) return;
+    
+    statusEl.className = `bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/30 rounded-2xl px-4 py-2 text-sm text-slate-200 shadow-golden-glow ${status}`;
     
     switch (status) {
         case 'connecting':
-            statusEl.textContent = '🔄 Connecting to Firebase...';
+            textSpan.textContent = '⚡ Connecting to Firebase...';
             statusEl.style.display = 'block';
             break;
         case 'connected':
-            statusEl.textContent = '✅ Firebase Connected';
+            textSpan.textContent = '✅ Firebase Connected';
             setTimeout(() => {
                 if (statusEl) statusEl.style.display = 'none';
             }, 3000);
             break;
         case 'disconnected':
-            statusEl.textContent = '❌ Firebase Disconnected';
+            textSpan.textContent = '❌ Firebase Disconnected';
             statusEl.style.display = 'block';
             break;
     }
