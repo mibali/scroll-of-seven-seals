@@ -39,13 +39,15 @@
     color: #d4af37;
     font-weight: bold;
     margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .question-text {
-    color: #f4f1e8;
+    color: #ffffff;
     margin-bottom: 10px;
     font-size: 1.1em;
     line-height: 1.4;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .knowledge-input {
@@ -90,10 +92,11 @@
 }
 
 .puzzle-question {
-    color: #f4f1e8;
+    color: #ffffff;
     font-size: 1.1em;
     margin-bottom: 15px;
     line-height: 1.5;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .logical-select, .logical-input {
@@ -135,14 +138,16 @@
 }
 
 .role-label {
-    color: #32cd32;
+    color: #d4af37;
     font-weight: bold;
     margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .task-description {
-    color: #f4f1e8;
+    color: #ffffff;
     margin-bottom: 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .team-input, .chain-input {
@@ -201,9 +206,10 @@
 }
 
 .cipher-name {
-    color: #ff6b35;
+    color: #d4af37;
     font-weight: bold;
     margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .encrypted-message {
@@ -213,7 +219,8 @@
     border-radius: 5px;
     margin-bottom: 10px;
     font-family: 'Courier New', monospace;
-    color: #f4f1e8;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .cipher-hint {
@@ -254,8 +261,9 @@
     border-radius: 8px;
     margin-bottom: 15px;
     font-style: italic;
-    color: #f4f1e8;
+    color: #ffffff;
     text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .interpretation-levels {
@@ -279,9 +287,10 @@
 }
 
 .interpretation-question {
-    color: #9c27b0;
+    color: #d4af37;
     font-weight: bold;
     margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .metaphor-input {
@@ -317,22 +326,25 @@
     border-left: 4px solid #e91e63;
     padding: 10px;
     margin-bottom: 8px;
-    color: #f4f1e8;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .conclusion-question {
-    color: #e91e63;
+    color: #d4af37;
     font-weight: bold;
     margin-bottom: 15px;
     text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-title {
-    color: #e91e63;
+    color: #d4af37;
     font-weight: bold;
     text-align: center;
     margin-bottom: 15px;
     font-size: 1.2em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .timeline-events {
@@ -354,14 +366,16 @@
 }
 
 .stage {
-    color: #e91e63;
+    color: #d4af37;
     font-weight: bold;
     margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .content {
-    color: #f4f1e8;
+    color: #ffffff;
     font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .syllogism {
@@ -371,8 +385,9 @@
     border-radius: 8px;
     margin-bottom: 15px;
     text-align: center;
-    color: #f4f1e8;
+    color: #ffffff;
     font-style: italic;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .prophetic-input {
@@ -422,8 +437,9 @@
     padding: 8px;
     border-radius: 5px;
     text-align: center;
-    color: #f4f1e8;
+    color: #ffffff;
     font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .matrix-pattern, .prophecy-sequence, .prophecy-meaning {
@@ -451,9 +467,10 @@
     border-radius: 10px;
     margin-bottom: 15px;
     text-align: center;
-    color: #f4f1e8;
+    color: #ffffff;
     font-size: 1.2em;
     font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .revelation-input {
