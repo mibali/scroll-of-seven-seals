@@ -449,6 +449,92 @@ function getAgeHintTitle(ageGroup) {
     return titles[ageGroup] || titles['adults'];
 }
 
+// Chronological order validation function
+window.checkChronologicalOrder = function() {
+    console.log('📅 Checking Chronological Order...');
+    
+    const dropZones = document.querySelectorAll('.chronological-drop');
+    const droppedEvents = [];
+    
+    // Collect all dropped events in order
+    dropZones.forEach((zone, index) => {
+        const droppedItem = zone.querySelector('.drag-item');
+        if (droppedItem) {
+            droppedEvents[index] = droppedItem.dataset.eventId;
+        }
+    });
+    
+    // Check if we have all events placed
+    if (droppedEvents.length !== dropZones.length || droppedEvents.includes(undefined)) {
+        const resultDiv = document.getElementById('chronologicalOrderResult');
+        if (resultDiv) {
+            resultDiv.innerHTML = `
+                <div class="warning-message">
+                    <p>⚠️ Please place all events on the timeline before verifying!</p>
+                    <p>You need to drag all ${dropZones.length} events to their correct positions.</p>
+                </div>
+            `;
+        }
+        return;
+    }
+    
+    // Get the correct order (assuming events with id 1-N should be in order)
+    const correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+    
+    // Compare with placed order
+    let correctCount = 0;
+    droppedEvents.forEach((eventId, index) => {
+        if (eventId === correctOrder[index]) {
+            correctCount++;
+            // Highlight correct placements
+            dropZones[index].style.backgroundColor = '#4ade80';
+        } else {
+            // Highlight incorrect placements
+            dropZones[index].style.backgroundColor = '#f87171';
+        }
+    });
+    
+    const resultDiv = document.getElementById('chronologicalOrderResult');
+    if (resultDiv) {
+        const percentage = Math.round((correctCount / dropZones.length) * 100);
+        
+        if (percentage === 100) {
+            resultDiv.innerHTML = `
+                <div class="success-message">
+                    <h4>🎉 Perfect Timeline!</h4>
+                    <p>You correctly ordered all ${correctCount}/${dropZones.length} events! (${percentage}%)</p>
+                    <p>Your understanding of biblical history is excellent!</p>
+                </div>
+            `;
+            
+            // Trigger completion
+            setTimeout(() => {
+                if (window.completeSeal) {
+                    window.completeSeal(5);
+                }
+            }, 2000);
+        } else if (percentage >= 70) {
+            resultDiv.innerHTML = `
+                <div class="partial-success">
+                    <h4>📚 Good Progress!</h4>
+                    <p>You got ${correctCount}/${dropZones.length} events correct (${percentage}%)</p>
+                    <p>Review the historical context and try again. You're close!</p>
+                    <button onclick="resetChallenge('chronologicalOrder')" class="btn secondary" style="margin-top: 10px;">🔄 Try Again</button>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="encouragement-message">
+                    <h4>📖 Keep Learning!</h4>
+                    <p>You got ${correctCount}/${dropZones.length} events correct (${percentage}%)</p>
+                    <p>Study the biblical timeline more carefully. Each event has its proper place in God's plan!</p>
+                    <button onclick="resetChallenge('chronologicalOrder')" class="btn secondary" style="margin-top: 10px;">🔄 Reset & Try Again</button>
+                </div>
+            `;
+        }
+    }
+};
+
 // Scripture topics validation function
 window.checkScriptureTopics = function() {
     console.log('🗂️ Checking Scripture Topics organization...');
@@ -496,11 +582,22 @@ window.checkScriptureTopics = function() {
                     window.completeSeal(6);
                 }
             }, 2000);
-        } else {
+        } else if (percentage >= 50) {
             resultDiv.innerHTML = `
                 <div class="partial-success">
-                    <p>Good effort! ${correctCount}/${totalTopics} topics correct (${percentage}%)</p>
-                    <p>Try reorganizing the verses to better match their themes.</p>
+                    <h4>📚 Good Progress!</h4>
+                    <p>You got ${correctCount}/${totalTopics} topics correct (${percentage}%)</p>
+                    <p>Review the verse themes and try reorganizing. You're getting there!</p>
+                    <button onclick="resetChallenge('scriptureTopics')" class="btn secondary" style="margin-top: 10px;">🔄 Try Again</button>
+                </div>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <div class="encouragement-message">
+                    <h4>📖 Keep Learning!</h4>
+                    <p>You got ${correctCount}/${totalTopics} topics correct (${percentage}%)</p>
+                    <p>Study each verse carefully to understand its main theme. God's Word has perfect organization!</p>
+                    <button onclick="resetChallenge('scriptureTopics')" class="btn secondary" style="margin-top: 10px;">🔄 Reset & Try Again</button>
                 </div>
             `;
         }

@@ -458,7 +458,27 @@ class EnhancedPuzzleManager {
             this.resetDragAndDrop();
         }
 
+        // Clear visual feedback for drop zones
+        this.clearVisualFeedback(challengeType);
+
         console.log(`🔄 Challenge ${challengeType} reset`);
+    }
+
+    clearVisualFeedback(challengeType) {
+        // Reset drop zone background colors
+        const dropZones = document.querySelectorAll('.drop-zone, .topic-drop, .chronological-drop');
+        dropZones.forEach(zone => {
+            zone.style.backgroundColor = '';
+            zone.style.borderColor = '';
+        });
+
+        // Reset any success/error styling on draggable items
+        const dragItems = document.querySelectorAll('.drag-item, .draggable-item');
+        dragItems.forEach(item => {
+            item.style.backgroundColor = '';
+            item.style.borderColor = '';
+            item.classList.remove('correct', 'incorrect', 'success', 'error');
+        });
     }
 
     resetDragAndDrop() {
@@ -493,6 +513,172 @@ class EnhancedPuzzleManager {
             return `<div class="complexity-hint" id="${puzzleType}Hint" style="display: none;"></div>`;
         }
         return '';
+    }
+
+    // SEAL 5: Chronological Order with enhanced UX
+    renderChronologicalOrder(content, profile) {
+        const ageStyle = this.getAgeAppropriateStyles(profile.ageGroup);
+        
+        let eventsHtml = '';
+        content.events.forEach((event, index) => {
+            eventsHtml += `
+                <div class="drag-item" draggable="true" data-event-id="${event.id}">
+                    ${event.text}
+                </div>
+            `;
+        });
+
+        let dropZonesHtml = '';
+        content.events.forEach((event, index) => {
+            dropZonesHtml += `
+                <div class="drop-zone chronological-drop" data-position="${index + 1}">
+                    Drop event ${index + 1} here
+                </div>
+            `;
+        });
+
+        return `
+            <div class="chronological-challenge">
+                <h3>📜 ${this.getChronologicalTitle(profile.ageGroup)}</h3>
+                <div class="challenge-description" style="margin-bottom: 20px;">
+                    <p><strong>⏰ CHRONOLOGICAL CHALLENGE</strong></p>
+                    <p>Arrange these biblical events in the correct historical order.</p>
+                    <p><strong>Timeline:</strong> <span class="keyword-target">${content.timeline}</span></p>
+                </div>
+                
+                <div class="items-pool">
+                    <div class="pool-title">📚 Biblical Events (Drag to Timeline)</div>
+                    ${eventsHtml}
+                </div>
+                
+                <div class="timeline-container">
+                    <div class="timeline-title">⏳ Historical Timeline</div>
+                    <div class="drop-zones-container">
+                        ${dropZonesHtml}
+                    </div>
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary ${ageStyle.buttonClass}" onclick="checkChronologicalOrder()">📅 Verify Timeline</button>
+                    <button class="btn secondary ${ageStyle.buttonClass}" onclick="resetChallenge('chronologicalOrder')">🔄 ${this.getResetButtonText(profile.ageGroup)}</button>
+                    ${this.getComplexityHint('chronologicalOrder')}
+                </div>
+                
+                <div id="chronologicalOrderResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
+    // SEAL 6: Scripture Topics with enhanced UX
+    renderScriptureTopics(content, profile) {
+        const ageStyle = this.getAgeAppropriateStyles(profile.ageGroup);
+        
+        // Combine all verses and shuffle them
+        let allVerses = [];
+        content.topics.forEach(topic => {
+            topic.correctVerses.forEach(verse => {
+                allVerses.push({
+                    text: verse,
+                    topicName: topic.name,
+                    isCorrect: true
+                });
+            });
+        });
+        
+        // Add distractor verses
+        content.distractorVerses.forEach(verse => {
+            allVerses.push({
+                text: verse,
+                topicName: 'distractor',
+                isCorrect: false
+            });
+        });
+        
+        // Shuffle all verses
+        allVerses.sort(() => Math.random() - 0.5);
+        
+        let versesHtml = '';
+        allVerses.forEach((verse, index) => {
+            versesHtml += `
+                <div class="drag-item" draggable="true" data-verse-topic="${verse.topicName}" data-verse-text="${verse.text}">
+                    ${verse.text}
+                </div>
+            `;
+        });
+
+        let topicsHtml = '';
+        content.topics.forEach((topic, index) => {
+            topicsHtml += `
+                <div class="topic-section">
+                    <div class="topic-title">${topic.name}</div>
+                    <div class="topic-description" style="font-size: 0.9em; color: #b8a082; margin-bottom: 10px;">
+                        ${topic.description}
+                    </div>
+                    <div class="drop-zone topic-drop" data-topic="${topic.name}">
+                        Drop ${topic.name.toLowerCase()} verses here
+                    </div>
+                </div>
+            `;
+        });
+
+        return `
+            <div class="scripture-topics-challenge">
+                <h3>📚 ${this.getScriptureTopicsTitle(profile.ageGroup)}</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ ORGANIZE BY TOPIC</strong></p>
+                    <p>Drag Bible verses to their correct thematic categories.</p>
+                    <p><strong>Topic Theme:</strong> <span class="keyword-target">${content.topicName}</span></p>
+                </div>
+                
+                <div class="items-pool">
+                    <div class="pool-title">📖 Bible Verses (Drag to Categories)</div>
+                    ${versesHtml}
+                </div>
+                
+                <div class="scripture-topics">
+                    ${topicsHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary ${ageStyle.buttonClass}" onclick="checkScriptureTopics()">🗂️ Verify Organization</button>
+                    <button class="btn secondary ${ageStyle.buttonClass}" onclick="resetChallenge('scriptureTopics')">🔄 ${this.getResetButtonText(profile.ageGroup)}</button>
+                    ${this.getComplexityHint('scriptureTopics')}
+                </div>
+                
+                <div id="scriptureTopicsResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
+    // Helper methods for chronological titles
+    getChronologicalTitle(ageGroup) {
+        const titles = {
+            kids: 'BIBLE STORY TIMELINE',
+            teenagers: 'HISTORICAL SEQUENCE CHALLENGE', 
+            adults: 'CHRONOLOGICAL ORDER VERIFICATION',
+            scholars: 'HISTORICAL CHRONOLOGY ANALYSIS'
+        };
+        return titles[ageGroup] || titles['adults'];
+    }
+
+    getScriptureTopicsTitle(ageGroup) {
+        const titles = {
+            kids: 'BIBLE VERSE SORTING',
+            teenagers: 'SCRIPTURE ORGANIZATION TRIAL',
+            adults: 'THEMATIC VERSE CLASSIFICATION', 
+            scholars: 'SCRIPTURAL TAXONOMY EXERCISE'
+        };
+        return titles[ageGroup] || titles['adults'];
+    }
+
+    getResetButtonText(ageGroup) {
+        const texts = {
+            kids: '🔄 Try Again',
+            teenagers: '🔄 Reset Challenge',
+            adults: '🔄 Reset',
+            scholars: '🔄 Reset Analysis'
+        };
+        return texts[ageGroup] || texts['adults'];
     }
 }
 
