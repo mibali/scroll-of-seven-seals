@@ -449,4 +449,62 @@ function getAgeHintTitle(ageGroup) {
     return titles[ageGroup] || titles['adults'];
 }
 
+// Scripture topics validation function
+window.checkScriptureTopics = function() {
+    console.log('🗂️ Checking Scripture Topics organization...');
+    
+    const topicDrops = document.querySelectorAll('.topic-drop');
+    let correctCount = 0;
+    let totalTopics = topicDrops.length;
+    
+    topicDrops.forEach(drop => {
+        const topicName = drop.dataset.topic;
+        const droppedVerses = drop.querySelectorAll('.drag-item');
+        
+        let topicCorrect = true;
+        droppedVerses.forEach(verse => {
+            const verseTopicName = verse.dataset.verseTopic;
+            if (verseTopicName !== topicName && verseTopicName !== 'distractor') {
+                topicCorrect = false;
+            }
+        });
+        
+        if (topicCorrect && droppedVerses.length > 0) {
+            correctCount++;
+            drop.style.backgroundColor = '#4ade80';
+        } else {
+            drop.style.backgroundColor = '#f87171';
+        }
+    });
+    
+    const resultDiv = document.getElementById('scriptureTopicsResult');
+    if (resultDiv) {
+        const percentage = Math.round((correctCount / Math.max(1, totalTopics)) * 100);
+        
+        if (percentage >= 80) {
+            resultDiv.innerHTML = `
+                <div class="success-message">
+                    <h4>🎉 Excellent Scripture Organization!</h4>
+                    <p>You correctly organized ${correctCount}/${totalTopics} topics! ${percentage}%</p>
+                    <p>Your understanding of biblical themes is growing strong!</p>
+                </div>
+            `;
+            
+            // Trigger completion
+            setTimeout(() => {
+                if (window.completeSeal) {
+                    window.completeSeal(6);
+                }
+            }, 2000);
+        } else {
+            resultDiv.innerHTML = `
+                <div class="partial-success">
+                    <p>Good effort! ${correctCount}/${totalTopics} topics correct (${percentage}%)</p>
+                    <p>Try reorganizing the verses to better match their themes.</p>
+                </div>
+            `;
+        }
+    }
+};
+
 console.log('🎯 Flexible Answer Engine loaded - Age-appropriate validation ready!');

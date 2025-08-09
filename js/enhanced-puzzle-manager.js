@@ -486,6 +486,14 @@ class EnhancedPuzzleManager {
             });
         });
     }
+
+    // Get complexity hint for puzzles
+    getComplexityHint(puzzleType) {
+        if (!this.currentGameContent || this.currentGameContent.profile.complexity <= 2) {
+            return `<div class="complexity-hint" id="${puzzleType}Hint" style="display: none;"></div>`;
+        }
+        return '';
+    }
 }
 
 // ANSWER VALIDATION ENGINE - Flexible answer checking

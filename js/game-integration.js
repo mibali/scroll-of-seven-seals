@@ -228,6 +228,13 @@ async function startEnhancedGame(difficulty, ageGroup, playerName) {
         // Start learning journey
         const journey = learningJourneyManager.startJourney(difficulty, ageGroup, playerName);
         
+        // Initialize progress tracker
+        if (window.ProgressTracker) {
+            const progressTracker = new ProgressTracker();
+            progressTracker.initializeJourney(journey);
+            window.progressTracker = progressTracker;
+        }
+        
         console.log(`✅ Enhanced game started successfully!`);
         console.log(`📊 Session ID: ${gameSession.sessionId}`);
         console.log(`🛤️ Journey ID: ${journey.id}`);
@@ -320,6 +327,11 @@ window.completeSeal = async function(sealId) {
                 performance: { /* performance data */ },
                 timeSpent: Date.now() - (window.sealStartTime || Date.now())
             });
+            
+            // Update progress tracker
+            if (window.progressTracker) {
+                window.progressTracker.updateProgress(learningJourneyManager.currentJourney, sealId);
+            }
         } catch (error) {
             console.error('Error in learning journey completion:', error);
         }

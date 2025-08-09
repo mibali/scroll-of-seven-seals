@@ -10,25 +10,21 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
     
-    <!-- Enhanced Challenge System - Load BEFORE main game script -->
-    <script src="js/game-data.js"></script>
-    <script src="js/dynamic-engine.js"></script>
-    <script src="js/immersion-engine.js"></script>
-    <script src="js/worship-audio.js"></script>
-    <script src="js/puzzles.js"></script>
-    
-    <!-- NEW ENHANCED SYSTEM - Unique Content & Age Adaptation -->
+    <!-- ENHANCED GAME SYSTEM - Unique Content & Age Adaptation -->
+    <script src="js/security-utils.js"></script>
     <script src="js/unique-content-engine.js"></script>
     <script src="js/enhanced-puzzle-manager.js"></script>
     <script src="js/flexible-answer-engine.js"></script>
     <script src="js/learning-journey-manager.js"></script>
+    <script src="js/immersion-engine.js"></script>
+    <script src="js/worship-audio.js"></script>
     <script src="js/game-integration.js"></script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Heroicons for modern iconography -->
-    <script src="https://unpkg.com/@heroicons/react@2.0.18/24/outline/index.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -115,8 +111,7 @@
             }
         }
     </script>
-    <link rel="stylesheet" href="enhanced-styles.css">
-    <link rel="stylesheet" href="age-adaptive-styles.css">
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Uncial+Antiqua&family=Inter:wght@300;400;500;600;700&display=swap');
 
