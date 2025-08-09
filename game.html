@@ -772,32 +772,106 @@
             border: 3px solid #d4af37;
             border-radius: 20px;
             padding: 30px;
-            max-width: 800px;
-            max-height: 90vh;
-            width: 95%;
+            max-width: 95vw;
+            width: 95vw;
+            max-height: 95vh;
             overflow-y: auto;
             position: relative;
+            box-sizing: border-box;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .puzzle-content {
+                padding: 20px;
+                max-width: 98vw;
+                width: 98vw;
+                max-height: 98vh;
+                border-radius: 15px;
+                margin: 1vh auto;
+            }
+            
+            .modal-header {
+                flex-direction: column;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+            
+            .puzzle-title {
+                font-size: 1.4em;
+                text-align: center;
+            }
+            
+            .close-button {
+                align-self: flex-end;
+                width: 40px;
+                height: 40px;
+                font-size: 1.3em;
+            }
         }
 
         /* Enhanced scrolling for chronological challenges */
         .chronology-timeline {
-            max-height: 400px;
+            max-height: 60vh;
             overflow-y: auto;
             border: 2px solid #d4af37;
             border-radius: 10px;
             padding: 15px;
             margin: 20px 0;
             background: rgba(0, 0, 0, 0.3);
+            min-height: 200px;
         }
 
         .chronology-events {
-            max-height: 300px;
+            max-height: 40vh;
             overflow-y: auto;
             border: 2px solid #8b6914;
             border-radius: 10px;
             padding: 15px;
             margin: 20px 0;
             background: rgba(139, 105, 20, 0.2);
+            min-height: 150px;
+        }
+
+        /* Mobile improvements for drag and drop */
+        @media (max-width: 768px) {
+            .chronology-timeline,
+            .chronology-events {
+                max-height: 35vh;
+                min-height: 120px;
+                padding: 10px;
+                margin: 10px 0;
+            }
+            
+            .draggable-item {
+                padding: 15px !important;
+                margin: 8px 0 !important;
+                font-size: 0.9em !important;
+                touch-action: none;
+                cursor: grab;
+            }
+            
+            .draggable-item:active {
+                cursor: grabbing;
+            }
+            
+            .drop-zone {
+                min-height: 60px !important;
+                padding: 12px !important;
+                margin: 5px 0 !important;
+            }
+            
+            .challenge-controls {
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 20px;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 15px;
+                font-size: 1.1em;
+            }
         }
 
         /* Improved scrollbar styling for drag areas */
@@ -961,6 +1035,43 @@
             .scripture-text,
             .wisdom-text {
                 font-size: 1em;
+            }
+
+            /* Mobile game layout improvements */
+            .seals-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 15px !important;
+                padding: 15px !important;
+            }
+
+            .seal {
+                min-height: 120px !important;
+                padding: 15px 10px !important;
+                font-size: 0.9em !important;
+            }
+
+            .game-options {
+                flex-direction: column !important;
+                gap: 15px !important;
+                padding: 20px !important;
+            }
+
+            .option-toggle {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                text-align: center !important;
+                gap: 10px !important;
+            }
+
+            .progress-container {
+                flex-direction: column !important;
+                gap: 10px !important;
+                text-align: center !important;
+            }
+
+            .timer {
+                font-size: 1.5em !important;
+                margin-bottom: 15px !important;
             }
         }
 
@@ -3904,6 +4015,16 @@
                 }
                 
                 console.log('🔇 Worship atmosphere paused');
+            }
+        }
+
+        // Global reset function for challenges
+        function resetChallenge(challengeType) {
+            if (window.PuzzleManager && window.PuzzleManager.resetChallenge) {
+                window.PuzzleManager.resetChallenge(challengeType);
+            } else {
+                console.error('PuzzleManager not available for reset');
+                location.reload(); // Fallback
             }
         }
 

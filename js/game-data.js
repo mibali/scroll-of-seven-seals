@@ -189,54 +189,64 @@ const puzzleVariations = {
         }
     ],
 
-    // SEAL 4: Code-Breaking Challenge - Biblical Ciphers
+    // SEAL 4: Testament Current Affairs - Old vs New Testament
     codeBreaking: [
         {
-            keyword: "MYSTERY",
-            codes: [
-                {
-                    type: "gematria",
-                    cipher: "Hebrew Letter Values",
-                    message: "י ה ו ה",
-                    hint: "Add the values: Yod(10) + He(5) + Vav(6) + He(5)",
-                    solution: "26",
-                    verification: "The sacred name equals 26"
+            keyword: "TESTAMENT",
+            title: "Old vs New Testament Current Affairs",
+            description: "Classify biblical events, teachings, and figures by Testament period",
+            categories: {
+                oldTestament: {
+                    name: "Old Testament Era",
+                    color: "#8b4513",
+                    description: "Before Christ - Law, Prophets, History"
                 },
-                {
-                    type: "atbash",
-                    cipher: "Atbash Cipher (A=Z, B=Y, etc.)",
-                    message: "SVOOL",
-                    solution: "HELLO",
-                    hint: "Biblical scribes used this cipher in Jeremiah"
-                },
-                {
-                    type: "biblical_substitution",
-                    cipher: "Book of Numbers Cipher",
-                    message: "7 12 15 22 5",
-                    hint: "Each number represents a Bible book position (Genesis=1, Exodus=2, etc.)",
-                    solution: "GLORY",
-                    explanation: "Judges(7)=G, Kings(12)=L, Proverbs(15)=O, Revelation(22)=R, Deuteronomy(5)=Y"
+                newTestament: {
+                    name: "New Testament Era", 
+                    color: "#1e90ff",
+                    description: "Christ & Church - Grace, Gospel, Letters"
                 }
+            },
+            items: [
+                { text: "Moses receives Ten Commandments", testament: "oldTestament", category: "Law" },
+                { text: "Jesus feeds 5,000 people", testament: "newTestament", category: "Miracles" },
+                { text: "David defeats Goliath", testament: "oldTestament", category: "History" },
+                { text: "Paul's missionary journeys", testament: "newTestament", category: "Church" },
+                { text: "Daniel in the lion's den", testament: "oldTestament", category: "Prophets" },
+                { text: "Pentecost and Holy Spirit", testament: "newTestament", category: "Church" },
+                { text: "Solomon builds the Temple", testament: "oldTestament", category: "History" },
+                { text: "Sermon on the Mount", testament: "newTestament", category: "Teaching" },
+                { text: "Elijah calls down fire", testament: "oldTestament", category: "Prophets" },
+                { text: "Great Commission given", testament: "newTestament", category: "Church" },
+                { text: "Passover instituted", testament: "oldTestament", category: "Law" },
+                { text: "Jesus' crucifixion", testament: "newTestament", category: "Gospel" }
             ]
         },
         {
-            keyword: "REVELATION",
-            codes: [
-                {
-                    type: "cross_reference",
-                    cipher: "Scripture Cross-Reference Code",
-                    message: "John 3:16, Romans 6:23, Ephesians 2:8-9",
-                    hint: "What doctrine do these verses teach?",
-                    solution: "SALVATION",
-                    explanation: "All verses teach salvation by grace through faith"
+            keyword: "COVENANT",
+            title: "Biblical Covenants & Dispensations",
+            description: "Match biblical covenants with their respective Testament periods",
+            categories: {
+                oldCovenant: {
+                    name: "Old Covenant",
+                    color: "#cd853f", 
+                    description: "Law, Sacrifice, Temple Worship"
                 },
-                {
-                    type: "numerical",
-                    cipher: "Biblical Number Code",
-                    message: "3 (Trinity) + 12 (Disciples) + 40 (Testing) - 8 (New Beginning) = ?",
-                    solution: "47",
-                    hint: "Calculate the biblical significance sum"
+                newCovenant: {
+                    name: "New Covenant",
+                    color: "#4169e1",
+                    description: "Grace, Faith, Spirit-led Living"
                 }
+            },
+            items: [
+                { text: "Mosaic Law & Commandments", testament: "oldCovenant", category: "Law" },
+                { text: "Grace through Faith", testament: "newCovenant", category: "Salvation" },
+                { text: "Animal sacrifices for sin", testament: "oldCovenant", category: "Atonement" },
+                { text: "Christ's perfect sacrifice", testament: "newCovenant", category: "Atonement" },
+                { text: "Temple worship in Jerusalem", testament: "oldCovenant", category: "Worship" },
+                { text: "Worship in Spirit and Truth", testament: "newCovenant", category: "Worship" },
+                { text: "Priests mediate for people", testament: "oldCovenant", category: "Priesthood" },
+                { text: "All believers are priests", testament: "newCovenant", category: "Priesthood" }
             ]
         }
     ],
