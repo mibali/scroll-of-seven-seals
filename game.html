@@ -2628,13 +2628,17 @@
                 lastSealTime: null
             };
 
-            // Create AI teams
+            // Create AI teams with unique names
             const selectedAINames = aiTeamNames
                 .sort(() => Math.random() - 0.5)  // Shuffle
                 .slice(0, aiTeamCount);           // Take required number
 
-            const aiTeams = selectedAINames.map(name => ({
+            console.log('🤖 Selected AI names:', selectedAINames);
+            console.log('🤖 AI team count requested:', aiTeamCount);
+
+            const aiTeams = selectedAINames.map((name, index) => ({
                 name: name,
+                id: `ai_${index}`, // Add unique ID
                 score: 0,
                 completedSeals: [],
                 isAI: true,
@@ -2642,9 +2646,12 @@
                 nextSealTime: null
             }));
 
-            // Combine all teams
+            // Combine all teams (ensure no duplication)
             gameState.teams = [playerTeam, ...aiTeams];
             gameState.aiTeams = aiTeams;
+
+            console.log('🤖 Final teams array:', gameState.teams);
+            console.log('🤖 Teams count - Expected:', aiTeamCount + 1, 'Actual:', gameState.teams.length);
 
             console.log('🤖 Teams created:', gameState.teams);
 
@@ -2823,15 +2830,26 @@
 
         function calculateAIFinalRankings() {
             console.log('📊 Calculating AI game final rankings');
+            console.log('📊 gameState.teams:', gameState.teams);
+            console.log('📊 gameState.completedSeals:', gameState.completedSeals);
             
-            const rankings = gameState.teams.map(team => ({
-                teamName: team.name,
-                sealsCompleted: team.score,
-                completionTime: team.score === 7 ? (Date.now() - gameState.startTime) : null,
-                lastSealTime: team.lastSealTime || Date.now(),
-                completed: team.score === 7,
-                isAI: team.isAI || false
-            }));
+            const rankings = gameState.teams.map(team => {
+                // For the player team, use gameState.completedSeals.length as authoritative source
+                let sealsCompleted = team.score;
+                if (!team.isAI && team.name === gameState.currentTeam) {
+                    sealsCompleted = Math.max(team.score, gameState.completedSeals.length);
+                    console.log(`📊 Player team ${team.name}: score=${team.score}, gameState=${gameState.completedSeals.length}, using=${sealsCompleted}`);
+                }
+                
+                return {
+                    teamName: team.name,
+                    sealsCompleted: sealsCompleted,
+                    completionTime: sealsCompleted === 7 ? (Date.now() - gameState.startTime) : null,
+                    lastSealTime: team.lastSealTime || Date.now(),
+                    completed: sealsCompleted === 7,
+                    isAI: team.isAI || false
+                };
+            });
 
             // Sort rankings: completed first, then by seals, then by completion/last seal time
             rankings.sort((a, b) => {
@@ -2900,6 +2918,20 @@
             if (!gameState.completedSeals.includes(sealId)) {
                 gameState.completedSeals.push(sealId);
                 console.log('✅ Seal completed, total seals:', gameState.completedSeals.length);
+                
+                // Update player team score in AI mode
+                if (gameState.mode === 'ai') {
+                    const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+                    if (currentTeam) {
+                        currentTeam.score = gameState.completedSeals.length;
+                        currentTeam.completedSeals = [...gameState.completedSeals];
+                        currentTeam.lastSealTime = Date.now();
+                        console.log('🏆 Updated player team score:', currentTeam.score);
+                    }
+                    
+                    // Update leaderboard immediately
+                    updateLeaderboard();
+                }
                 
                 // Update progress
                 updateProgress();
@@ -3115,21 +3147,20 @@
         }
 
         function updateLeaderboard() {
+            console.log('📊 updateLeaderboard() called');
+            console.log('📊 gameState.teams:', gameState.teams);
+            console.log('📊 gameState.completedSeals:', gameState.completedSeals);
+            console.log('📊 gameState.currentTeam:', gameState.currentTeam);
+            
             const leaderboardList = document.getElementById('leaderboardList');
             if (!leaderboardList) return;
             
             leaderboardList.innerHTML = '';
 
-            // Combine regular teams and AI teams for display
+            // Use teams directly - AI teams are already included in gameState.teams
             let allTeams = [...gameState.teams];
-            
-            // Add AI teams if they exist
-            if (gameState.aiTeams && gameState.aiTeams.length > 0) {
-                allTeams = allTeams.concat(gameState.aiTeams.map(aiTeam => ({
-                    ...aiTeam,
-                    isAI: true
-                })));
-            }
+
+            console.log('📊 All teams before sort:', allTeams);
 
             // Sort teams by score (descending)
             const sortedTeams = allTeams.sort((a, b) => b.score - a.score);
