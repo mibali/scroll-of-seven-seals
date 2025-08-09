@@ -28,34 +28,61 @@
                         'uncial': ['Uncial Antiqua', 'cursive']
                     },
                     colors: {
-                        'gold': {
-                            100: '#fffdf7',
-                            200: '#fef3c7',
-                            300: '#fcd34d',
-                            400: '#f59e0b',
-                            500: '#d97706',
-                            600: '#b45309',
-                            700: '#92400e',
-                            800: '#78350f',
-                            900: '#451a03'
+                        'divine': {
+                            50: '#fefefe',
+                            100: '#fef7f0',
+                            200: '#fcedde',
+                            300: '#f8dcc6',
+                            400: '#f2c49b',
+                            500: '#e9a96f',
+                            600: '#d4884a',
+                            700: '#b8692e',
+                            800: '#9c5424',
+                            900: '#7a3f1a'
                         },
-                        'mystic': {
-                            50: '#f8fafc',
-                            100: '#f1f5f9',
-                            200: '#e2e8f0',
-                            300: '#cbd5e1',
-                            400: '#94a3b8',
-                            500: '#64748b',
-                            600: '#475569',
-                            700: '#334155',
-                            800: '#1e293b',
-                            900: '#0f172a'
+                        'celestial': {
+                            50: '#f0f4ff',
+                            100: '#e5edff',
+                            200: '#d0dcff',
+                            300: '#b2c1ff',
+                            400: '#8b99ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#312e81'
+                        },
+                        'sacred': {
+                            50: '#fefcf3',
+                            100: '#fef7e0',
+                            200: '#fcecc0',
+                            300: '#f9db94',
+                            400: '#f4c465',
+                            500: '#efaa44',
+                            600: '#e08c1f',
+                            700: '#bc6f1a',
+                            800: '#975a1c',
+                            900: '#7a4a1b'
+                        },
+                        'ethereal': {
+                            50: '#f7f8fc',
+                            100: '#ebeef7',
+                            200: '#d3daf0',
+                            300: '#afbae4',
+                            400: '#8592d6',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#413bc7',
+                            800: '#3730a3',
+                            900: '#2d2669'
                         }
                     },
                     backgroundImage: {
-                        'spiritual-gradient': 'linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #475569 50%, #334155 75%, #0f172a 100%)',
-                        'gold-gradient': 'linear-gradient(135deg, #fcd34d 0%, #f59e0b  50%, #d97706 100%)',
-                        'card-gradient': 'linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6))'
+                        'spiritual-gradient': 'linear-gradient(135deg, #f7f8fc 0%, #ebeef7 15%, #d3daf0 35%, #afbae4 65%, #8592d6 85%, #6366f1 100%)',
+                        'divine-gradient': 'linear-gradient(135deg, #efaa44 0%, #e08c1f 50%, #bc6f1a 100%)',
+                        'celestial-gradient': 'linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%)',
+                        'card-gradient': 'linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7))',
+                        'card-dark': 'linear-gradient(145deg, rgba(99, 102, 241, 0.1), rgba(79, 70, 229, 0.05))'
                     }
                 }
             }
@@ -1412,18 +1439,18 @@
     </style>
 </head>
 
-<body class="bg-spiritual-gradient min-h-screen font-cinzel text-mystic-100 overflow-x-hidden relative">
+<body class="bg-spiritual-gradient min-h-screen font-cinzel text-celestial-900 overflow-x-hidden relative">
     <!-- Background Pattern -->
-    <div class="fixed inset-0 opacity-5">
-        <div class="absolute inset-0 bg-gradient-to-br from-gold-300/10 via-transparent to-gold-500/5"></div>
-        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, rgba(252, 211, 77, 0.15) 1px, transparent 0); background-size: 20px 20px;"></div>
+    <div class="fixed inset-0 opacity-10">
+        <div class="absolute inset-0 bg-gradient-to-br from-sacred-300/20 via-transparent to-celestial-300/15"></div>
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, rgba(239, 170, 68, 0.1) 1px, transparent 0); background-size: 30px 30px;"></div>
     </div>
 
     <!-- Connection Status -->
     <div class="fixed top-4 right-4 z-50">
-        <div class="bg-blue-900/80 backdrop-blur-md border border-blue-400/50 rounded-xl px-4 py-2 text-sm text-blue-200 connecting" id="connectionStatus">
+        <div class="bg-celestial-800/80 backdrop-blur-md border border-celestial-400/50 rounded-xl px-4 py-2 text-sm text-white connecting" id="connectionStatus">
             <div class="flex items-center space-x-2">
-                <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <div class="w-2 h-2 bg-celestial-400 rounded-full animate-pulse"></div>
                 <span>🔄 Connecting to Firebase...</span>
             </div>
         </div>
@@ -1432,16 +1459,16 @@
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-7xl">
         <!-- Header -->
         <header class="text-center mb-12">
-            <div class="bg-card-gradient backdrop-blur-xl border border-gold-400/30 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+            <div class="bg-card-gradient backdrop-blur-xl border border-sacred-400/40 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
                 <!-- Decorative Elements -->
-                <div class="absolute top-0 left-0 w-full h-1 bg-gold-gradient"></div>
-                <div class="absolute -top-2 -left-2 w-16 h-16 bg-gold-gradient rounded-full opacity-20 blur-xl"></div>
-                <div class="absolute -bottom-2 -right-2 w-20 h-20 bg-gold-gradient rounded-full opacity-15 blur-xl"></div>
+                <div class="absolute top-0 left-0 w-full h-1 bg-divine-gradient"></div>
+                <div class="absolute -top-2 -left-2 w-16 h-16 bg-divine-gradient rounded-full opacity-20 blur-xl"></div>
+                <div class="absolute -bottom-2 -right-2 w-20 h-20 bg-celestial-gradient rounded-full opacity-15 blur-xl"></div>
                 
-                <h1 class="font-uncial text-4xl md:text-6xl bg-gold-gradient bg-clip-text text-transparent mb-4 drop-shadow-lg">
+                <h1 class="font-uncial text-4xl md:text-6xl bg-divine-gradient bg-clip-text text-transparent mb-4 drop-shadow-lg">
                     🔮 The Scroll of Seven Seals
                 </h1>
-                <p class="text-lg md:text-xl text-mystic-200 font-medium tracking-wide">
+                <p class="text-lg md:text-xl text-celestial-700 font-medium tracking-wide">
                     Real-time Firebase Multiplayer Bible Mystery Adventure
                 </p>
             </div>
@@ -1449,27 +1476,27 @@
 
         <!-- Multiplayer Info Box -->
         <div class="mb-12">
-            <div class="bg-gradient-to-r from-blue-900/20 to-indigo-900/20 backdrop-blur-lg border border-blue-400/30 rounded-2xl p-6 shadow-xl">
-                <h3 class="flex items-center text-xl font-bold text-blue-300 mb-4">
+            <div class="bg-card-dark backdrop-blur-lg border border-celestial-300/40 rounded-2xl p-6 shadow-xl">
+                <h3 class="flex items-center text-xl font-bold text-celestial-600 mb-4">
                     <span class="text-2xl mr-3">🌐</span>
                     Real Cross-Device Multiplayer
                 </h3>
                 <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div class="flex items-center text-mystic-200">
-                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">1</div>
-                        <span><strong class="text-gold-300">Create room</strong> → Get a shareable link</span>
+                    <div class="flex items-center text-celestial-800">
+                        <div class="w-8 h-8 bg-sacred-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">1</div>
+                        <span><strong class="text-sacred-600">Create room</strong> → Get a shareable link</span>
                     </div>
-                    <div class="flex items-center text-mystic-200">
-                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">2</div>
-                        <span><strong class="text-gold-300">Share link</strong> on different devices</span>
+                    <div class="flex items-center text-celestial-800">
+                        <div class="w-8 h-8 bg-sacred-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">2</div>
+                        <span><strong class="text-sacred-600">Share link</strong> on different devices</span>
                     </div>
-                    <div class="flex items-center text-mystic-200">
-                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">3</div>
-                        <span><strong class="text-gold-300">Everyone clicks</strong> the same link</span>
+                    <div class="flex items-center text-celestial-800">
+                        <div class="w-8 h-8 bg-sacred-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">3</div>
+                        <span><strong class="text-sacred-600">Everyone clicks</strong> the same link</span>
                     </div>
-                    <div class="flex items-center text-mystic-200">
-                        <div class="w-8 h-8 bg-gold-400 rounded-full flex items-center justify-center text-mystic-900 font-bold text-sm mr-3">4</div>
-                        <span><strong class="text-gold-300">Compete</strong> in real-time!</span>
+                    <div class="flex items-center text-celestial-800">
+                        <div class="w-8 h-8 bg-sacred-500 rounded-full flex items-center justify-center text-white font-bold text-sm mr-3">4</div>
+                        <span><strong class="text-sacred-600">Compete</strong> in real-time!</span>
                     </div>
                 </div>
             </div>
@@ -1479,33 +1506,33 @@
         <div id="modeSelection" class="grid md:grid-cols-3 gap-8 mb-12">
             <!-- Single Group -->
             <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2" onclick="selectMode('single')">
-                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                <div class="bg-card-gradient backdrop-blur-lg border border-ethereal-300/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-sacred-400/70 transition-all duration-300">
                     <div class="text-center">
                         <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🏠</div>
-                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">Single Group</h3>
-                        <p class="text-mystic-300 leading-relaxed">Play as one team and beat your best time</p>
+                        <h3 class="text-2xl font-bold bg-divine-gradient bg-clip-text text-transparent mb-4">Single Group</h3>
+                        <p class="text-celestial-700 leading-relaxed">Play as one team and beat your best time</p>
                     </div>
                 </div>
             </div>
 
             <!-- VS Computer Teams -->
             <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2" onclick="selectMode('ai')">
-                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                <div class="bg-card-gradient backdrop-blur-lg border border-ethereal-300/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-sacred-400/70 transition-all duration-300">
                     <div class="text-center">
                         <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🤖</div>
-                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">VS Computer Teams</h3>
-                        <p class="text-mystic-300 leading-relaxed">Compete against AI opponents</p>
+                        <h3 class="text-2xl font-bold bg-divine-gradient bg-clip-text text-transparent mb-4">VS Computer Teams</h3>
+                        <p class="text-celestial-700 leading-relaxed">Compete against AI opponents</p>
                     </div>
                 </div>
             </div>
 
             <!-- Real Multiplayer -->
             <div class="group cursor-pointer transform transition-all duration-300 hover:scale-105 hover:-translate-y-2" onclick="selectMode('multiplayer')">
-                <div class="bg-card-gradient backdrop-blur-lg border border-mystic-600/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-gold-400/50 transition-all duration-300">
+                <div class="bg-card-gradient backdrop-blur-lg border border-ethereal-300/50 rounded-2xl p-8 h-full shadow-xl hover:shadow-2xl hover:border-sacred-400/70 transition-all duration-300">
                     <div class="text-center">
                         <div class="text-6xl mb-6 transform group-hover:scale-110 transition-transform duration-300">🌐</div>
-                        <h3 class="text-2xl font-bold bg-gold-gradient bg-clip-text text-transparent mb-4">Real Multiplayer</h3>
-                        <p class="text-mystic-300 leading-relaxed">Compete with friends online using Firebase</p>
+                        <h3 class="text-2xl font-bold bg-divine-gradient bg-clip-text text-transparent mb-4">Real Multiplayer</h3>
+                        <p class="text-celestial-700 leading-relaxed">Compete with friends online using Firebase</p>
                     </div>
                 </div>
             </div>
@@ -4312,28 +4339,52 @@
 
         const worshipTracks = [
             {
-                name: "Heavenly Peace",
-                frequencies: [261.63, 329.63, 392.00, 523.25], // C major chord with octave
-                modulation: { rate: 0.3, depth: 2 },
-                reverb: { roomSize: 0.8, damping: 0.3 }
-            },
-            {
-                name: "Sacred Harmony", 
-                frequencies: [220.00, 277.18, 330.00, 440.00], // A minor chord
+                name: "Holy Spirit's Presence",
+                frequencies: [261.63, 329.63, 392.00, 523.25, 659.25], // C major pentatonic
+                harmonics: [130.81, 164.81, 196.00], // Lower harmony
                 modulation: { rate: 0.2, depth: 1.5 },
-                reverb: { roomSize: 0.7, damping: 0.4 }
+                reverb: { roomSize: 0.85, damping: 0.25 },
+                atmosphere: "peaceful"
             },
             {
-                name: "Divine Serenity",
-                frequencies: [196.00, 246.94, 293.66, 392.00], // G major chord
-                modulation: { rate: 0.25, depth: 1.8 },
-                reverb: { roomSize: 0.9, damping: 0.2 }
+                name: "Sanctuary of Grace", 
+                frequencies: [220.00, 277.18, 329.63, 440.00, 554.37], // A minor pentatonic
+                harmonics: [110.00, 138.59, 164.81], // Lower harmony
+                modulation: { rate: 0.18, depth: 1.8 },
+                reverb: { roomSize: 0.9, damping: 0.3 },
+                atmosphere: "contemplative"
             },
             {
-                name: "Eternal Rest",
-                frequencies: [174.61, 220.00, 261.63, 349.23], // F major chord
-                modulation: { rate: 0.15, depth: 1.2 },
-                reverb: { roomSize: 0.85, damping: 0.35 }
+                name: "Divine Light",
+                frequencies: [196.00, 246.94, 293.66, 392.00, 493.88], // G major pentatonic
+                harmonics: [98.00, 123.47, 146.83], // Lower harmony
+                modulation: { rate: 0.25, depth: 2.2 },
+                reverb: { roomSize: 0.95, damping: 0.2 },
+                atmosphere: "uplifting"
+            },
+            {
+                name: "River of Peace",
+                frequencies: [174.61, 220.00, 261.63, 349.23, 440.00], // F major pentatonic
+                harmonics: [87.31, 110.00, 130.81], // Lower harmony
+                modulation: { rate: 0.15, depth: 1.0 },
+                reverb: { roomSize: 0.8, damping: 0.4 },
+                atmosphere: "tranquil"
+            },
+            {
+                name: "Eternal Worship",
+                frequencies: [293.66, 369.99, 440.00, 587.33, 739.99], // D major pentatonic
+                harmonics: [146.83, 185.00, 220.00], // Lower harmony
+                modulation: { rate: 0.22, depth: 1.6 },
+                reverb: { roomSize: 0.88, damping: 0.28 },
+                atmosphere: "majestic"
+            },
+            {
+                name: "Morning Prayer",
+                frequencies: [246.94, 311.13, 369.99, 493.88, 622.25], // B major pentatonic
+                harmonics: [123.47, 155.56, 185.00], // Lower harmony
+                modulation: { rate: 0.19, depth: 1.3 },
+                reverb: { roomSize: 0.82, damping: 0.32 },
+                atmosphere: "hopeful"
             }
         ];
 
@@ -4366,65 +4417,108 @@
             const masterGain = audioContext.createGain();
             masterGain.gain.setValueAtTime(0, audioContext.currentTime);
             
-            // Create reverb effect
+            // Create enhanced reverb effect
             const convolver = audioContext.createConvolver();
             const reverbGain = audioContext.createGain();
-            reverbGain.gain.setValueAtTime(track.reverb.roomSize * 0.3, audioContext.currentTime);
+            reverbGain.gain.setValueAtTime(track.reverb.roomSize * 0.4, audioContext.currentTime);
             
-            // Create artificial reverb impulse response
+            // Create richer reverb impulse response
             const sampleRate = audioContext.sampleRate;
-            const length = sampleRate * 2; // 2 seconds reverb
+            const length = sampleRate * 3; // 3 seconds reverb for cathedral effect
             const impulse = audioContext.createBuffer(2, length, sampleRate);
             
             for (let channel = 0; channel < 2; channel++) {
                 const channelData = impulse.getChannelData(channel);
                 for (let i = 0; i < length; i++) {
-                    channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, track.reverb.damping);
+                    const progress = i / length;
+                    const envelope = Math.pow(1 - progress, track.reverb.damping);
+                    // Add some early reflections for cathedral effect
+                    const earlyReflection = Math.sin(progress * Math.PI * 20) * 0.1 * envelope;
+                    const randomNoise = (Math.random() * 2 - 1) * envelope;
+                    channelData[i] = randomNoise + earlyReflection;
                 }
             }
             convolver.buffer = impulse;
             
-            // Create oscillators for each frequency with modulation
+            // Create low-pass filter for warmth
+            const lowPassFilter = audioContext.createBiquadFilter();
+            lowPassFilter.type = 'lowpass';
+            lowPassFilter.frequency.setValueAtTime(8000, audioContext.currentTime);
+            lowPassFilter.Q.setValueAtTime(1, audioContext.currentTime);
+            
+            // Create oscillators for main frequencies
             const oscillators = [];
             const gains = [];
             
+            // Main melody frequencies
             track.frequencies.forEach((freq, index) => {
-                // Main oscillator
                 const osc = audioContext.createOscillator();
                 const gain = audioContext.createGain();
-                
-                // LFO for gentle modulation
                 const lfo = audioContext.createOscillator();
                 const lfoGain = audioContext.createGain();
                 
-                // Set up oscillator
-                osc.type = index % 2 === 0 ? 'sine' : 'triangle';
+                // Use more musical waveforms
+                osc.type = index % 3 === 0 ? 'sine' : index % 3 === 1 ? 'triangle' : 'sawtooth';
                 osc.frequency.setValueAtTime(freq, audioContext.currentTime);
                 
-                // Set up LFO
+                // Slower, more gentle modulation
                 lfo.type = 'sine';
-                lfo.frequency.setValueAtTime(track.modulation.rate, audioContext.currentTime);
-                lfoGain.gain.setValueAtTime(track.modulation.depth, audioContext.currentTime);
+                lfo.frequency.setValueAtTime(track.modulation.rate + (Math.random() * 0.05), audioContext.currentTime);
+                lfoGain.gain.setValueAtTime(track.modulation.depth * 0.5, audioContext.currentTime);
                 
-                // Set up gain with gentle panning
+                // Stereo positioning
                 const panner = audioContext.createStereoPanner();
-                panner.pan.setValueAtTime((index % 2 === 0 ? -0.3 : 0.3) * (index / track.frequencies.length), audioContext.currentTime);
+                const panPosition = (index / track.frequencies.length - 0.5) * 0.6;
+                panner.pan.setValueAtTime(panPosition, audioContext.currentTime);
                 
-                gain.gain.setValueAtTime(0.15 / track.frequencies.length, audioContext.currentTime);
+                gain.gain.setValueAtTime(0.08 / track.frequencies.length, audioContext.currentTime);
                 
-                // Connect LFO modulation
+                // Connect modulation
                 lfo.connect(lfoGain);
                 lfoGain.connect(osc.frequency);
                 
-                // Connect audio chain
+                // Connect audio chain with filter
                 osc.connect(gain);
                 gain.connect(panner);
-                panner.connect(masterGain);
-                
-                // Also send to reverb
+                panner.connect(lowPassFilter);
+                lowPassFilter.connect(masterGain);
                 panner.connect(reverbGain);
                 
-                // Start oscillators
+                osc.start();
+                lfo.start();
+                
+                oscillators.push(osc);
+                gains.push(gain);
+            });
+            
+            // Add harmonic bass frequencies for richness
+            track.harmonics.forEach((freq, index) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const lfo = audioContext.createOscillator();
+                const lfoGain = audioContext.createGain();
+                
+                osc.type = 'sine'; // Bass frequencies work best with sine
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                
+                lfo.type = 'sine';
+                lfo.frequency.setValueAtTime(track.modulation.rate * 0.7, audioContext.currentTime);
+                lfoGain.gain.setValueAtTime(track.modulation.depth * 0.3, audioContext.currentTime);
+                
+                const panner = audioContext.createStereoPanner();
+                panner.pan.setValueAtTime(0, audioContext.currentTime); // Center bass
+                
+                gain.gain.setValueAtTime(0.04 / track.harmonics.length, audioContext.currentTime);
+                
+                lfo.connect(lfoGain);
+                lfoGain.connect(osc.frequency);
+                
+                osc.connect(gain);
+                gain.connect(panner);
+                panner.connect(lowPassFilter);
+                lowPassFilter.connect(masterGain);
+                panner.connect(reverbGain);
+                
                 osc.start();
                 lfo.start();
                 
@@ -4434,7 +4528,8 @@
             
             // Connect reverb
             reverbGain.connect(convolver);
-            convolver.connect(masterGain);
+            convolver.connect(lowPassFilter);
+            lowPassFilter.connect(masterGain);
             
             // Connect to destination
             masterGain.connect(audioContext.destination);
@@ -4445,7 +4540,9 @@
                 gains, 
                 convolver, 
                 reverbGain,
-                trackName: track.name 
+                lowPassFilter,
+                trackName: track.name,
+                atmosphere: track.atmosphere
             };
         }
 
@@ -4476,11 +4573,12 @@
                     worshipAudio.masterGain.gain.setTargetAtTime(0.08, audioContext.currentTime, 2.0);
                 }
                 
-                // Display current track name
+                // Display current track name with atmosphere
                 const trackName = worshipAudio ? worshipAudio.trackName : 'Divine Ambience';
-                currentTrack.textContent = `♪ ${trackName}`;
+                const atmosphere = worshipAudio ? worshipAudio.atmosphere : 'peaceful';
+                currentTrack.textContent = `♪ ${trackName} • ${atmosphere}`;
                 
-                console.log('🎵 Enhanced worship atmosphere activated:', trackName);
+                console.log(`🎵 Enhanced worship atmosphere activated: ${trackName} (${atmosphere})`);
                 
                 // Auto-change track every 4 minutes with smooth transitions
                 if (window.worshipInterval) clearInterval(window.worshipInterval);
@@ -4511,8 +4609,9 @@
                             
                             // Update display
                             const newTrackName = worshipAudio ? worshipAudio.trackName : 'Divine Ambience';
-                            currentTrack.textContent = `♪ ${newTrackName}`;
-                            console.log('🎵 Transitioned to:', newTrackName);
+                            const newAtmosphere = worshipAudio ? worshipAudio.atmosphere : 'peaceful';
+                            currentTrack.textContent = `♪ ${newTrackName} • ${newAtmosphere}`;
+                            console.log(`🎵 Transitioned to: ${newTrackName} (${newAtmosphere})`);
                         }, 1000);
                     }
                 }, 240000); // 4 minutes
@@ -4743,39 +4842,39 @@
     </style>
 
         <!-- Spiritual Inspiration Footer -->
-        <footer class="bg-gradient-to-r from-gold-900/20 to-gold-800/10 backdrop-blur-xl border-t border-gold-400/30 mt-16 py-12 relative">
+        <footer class="bg-gradient-to-r from-sacred-100/20 to-celestial-100/10 backdrop-blur-xl border-t border-sacred-400/30 mt-16 py-12 relative">
             <!-- Decorative line -->
-            <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent"></div>
+            <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-sacred-400/60 to-transparent"></div>
             
             <div class="container mx-auto px-4 max-w-7xl">
                 <div class="grid lg:grid-cols-3 gap-8 items-center">
                     <!-- Scripture Motivation -->
-                    <div class="bg-mystic-800/20 backdrop-blur-lg border border-mystic-600/30 rounded-2xl p-6" id="scriptureMotivation">
-                        <div class="text-mystic-200 italic mb-3 leading-relaxed" id="scriptureText"></div>
-                        <div class="text-gold-300 font-semibold text-sm" id="scriptureReference"></div>
+                    <div class="bg-white/60 backdrop-blur-lg border border-ethereal-300/50 rounded-2xl p-6" id="scriptureMotivation">
+                        <div class="text-celestial-800 italic mb-3 leading-relaxed" id="scriptureText"></div>
+                        <div class="text-sacred-600 font-semibold text-sm" id="scriptureReference"></div>
                     </div>
                     
                     <!-- Ministerial Wisdom -->
-                    <div class="bg-mystic-800/20 backdrop-blur-lg border border-mystic-600/30 rounded-2xl p-6" id="ministerialWisdom">
-                        <div class="text-mystic-200 italic mb-3 leading-relaxed" id="wisdomText"></div>
-                        <div class="text-gold-300 font-semibold text-sm" id="wisdomAttribution"></div>
+                    <div class="bg-white/60 backdrop-blur-lg border border-ethereal-300/50 rounded-2xl p-6" id="ministerialWisdom">
+                        <div class="text-celestial-800 italic mb-3 leading-relaxed" id="wisdomText"></div>
+                        <div class="text-sacred-600 font-semibold text-sm" id="wisdomAttribution"></div>
                     </div>
                     
                     <!-- Worship Controls -->
                     <div class="flex flex-col items-center space-y-4">
                         <button id="worshipToggle" onclick="toggleWorship()" 
-                                class="bg-gold-gradient text-mystic-900 font-bold py-4 px-8 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center space-x-3 group">
+                                class="bg-divine-gradient text-white font-bold py-4 px-8 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center space-x-3 group shadow-lg">
                             <span class="text-xl group-hover:animate-pulse">🎵</span>
-                            <span class="text-sm font-semibold">Gentle Worship Sounds</span>
+                            <span class="text-sm font-semibold">Divine Worship Sounds</span>
                         </button>
                         
-                        <div class="flex items-center space-x-3 bg-mystic-800/30 backdrop-blur-lg border border-mystic-600/30 rounded-2xl px-4 py-2 text-sm text-mystic-200" 
+                        <div class="flex items-center space-x-3 bg-white/50 backdrop-blur-lg border border-ethereal-300/50 rounded-2xl px-4 py-2 text-sm text-celestial-800" 
                              id="nowPlaying" style="display: none;">
                             <div class="flex items-end space-x-1 h-4">
-                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 25%; animation-delay: 0s;"></div>
-                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 75%; animation-delay: 0.3s;"></div>
-                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 50%; animation-delay: 0.6s;"></div>
-                                <div class="w-1 bg-gold-400 rounded-full animate-pulse" style="height: 100%; animation-delay: 0.9s;"></div>
+                                <div class="w-1 bg-sacred-500 rounded-full animate-pulse" style="height: 25%; animation-delay: 0s;"></div>
+                                <div class="w-1 bg-sacred-500 rounded-full animate-pulse" style="height: 75%; animation-delay: 0.3s;"></div>
+                                <div class="w-1 bg-sacred-500 rounded-full animate-pulse" style="height: 50%; animation-delay: 0.6s;"></div>
+                                <div class="w-1 bg-sacred-500 rounded-full animate-pulse" style="height: 100%; animation-delay: 0.9s;"></div>
                             </div>
                             <span id="currentTrack"></span>
                         </div>
