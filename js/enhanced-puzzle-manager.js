@@ -463,14 +463,28 @@ class EnhancedPuzzleManager {
 
     resetDragAndDrop() {
         // Move all draggable items back to their pool
-        const draggableItems = document.querySelectorAll('.draggable-item');
-        const itemsPool = document.querySelector('.draggable-items') || document.querySelector('.items-pool .draggable-items');
+        const draggableItems = document.querySelectorAll('.draggable-item, .drag-item');
+        const itemsPool = document.querySelector('.draggable-items') || document.querySelector('.items-pool');
         
         if (itemsPool) {
             draggableItems.forEach(item => {
-                itemsPool.appendChild(item);
+                // Only move items that are currently in drop zones back to the pool
+                if (!itemsPool.contains(item)) {
+                    itemsPool.appendChild(item);
+                }
             });
         }
+        
+        // Clear all drop zones
+        const dropZones = document.querySelectorAll('.drop-zone, .topic-drop');
+        dropZones.forEach(zone => {
+            const items = zone.querySelectorAll('.draggable-item, .drag-item');
+            items.forEach(item => {
+                if (itemsPool) {
+                    itemsPool.appendChild(item);
+                }
+            });
+        });
     }
 }
 

@@ -301,15 +301,7 @@ const puzzleVariations = {
                         "Beloved, I pray that you may prosper and be in health - 3 John 1:2"
                     ]
                 },
-                {
-                    name: "Mental Peace",
-                    description: "Scriptures about peace of mind and anxiety",
-                    correctVerses: [
-                        "Do not be anxious about anything - Philippians 4:6",
-                        "Peace I leave with you - John 14:27",
-                        "You will keep him in perfect peace - Isaiah 26:3"
-                    ]
-                }
+
             ],
             distractorVerses: [
                 "In the beginning was the Word - John 1:1",
