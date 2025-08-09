@@ -29,15 +29,17 @@
 
         body {
             font-family: 'Cinzel', serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            background: linear-gradient(135deg, #0f0c29, #24243e, #302b63);
             background-attachment: fixed;
-            color: #e8e8e8;
+            color: #ffffff;
             min-height: 100vh;
             padding: 20px;
+            position: relative;
             background-image: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 177, 66, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 70%);
+                radial-gradient(circle at 20% 80%, rgba(212, 175, 55, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.08) 0%, transparent 70%),
+                url('data:image/svg+xml,<svg width="60" height="60" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="stars" x="0" y="0" width="60" height="60" patternUnits="userSpaceOnUse"><circle cx="15" cy="15" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="45" cy="30" r="0.8" fill="%23ffd700" opacity="0.15"/><circle cx="30" cy="45" r="1.2" fill="%23ffffff" opacity="0.08"/></pattern></defs><rect width="100%" height="100%" fill="url(%23stars)"/></svg>');
         }
 
         .container {
@@ -48,31 +50,75 @@
         .header {
             text-align: center;
             margin-bottom: 30px;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 20px;
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(212, 175, 55, 0.1));
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 25px;
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            box-shadow: 
+                0 15px 35px rgba(0, 0, 0, 0.4),
+                0 5px 15px rgba(255, 215, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
         }
 
         .title {
             font-family: 'Uncial Antiqua', cursive;
-            font-size: 2.8em;
-            background: linear-gradient(135deg, #d4af37, #f4e976, #e6c757);
+            font-size: 3.2em;
+            background: linear-gradient(135deg, #ffd700, #ffed4e, #fff700, #ffd700);
+            background-size: 200% 200%;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
             margin-bottom: 15px;
-            filter: drop-shadow(0 2px 4px rgba(212, 175, 55, 0.3));
+            filter: 
+                drop-shadow(0 3px 6px rgba(255, 215, 0, 0.4))
+                drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+            animation: titleGlow 4s ease-in-out infinite;
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { 
+                background-position: 0% 50%;
+                filter: 
+                    drop-shadow(0 3px 6px rgba(255, 215, 0, 0.4))
+                    drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3));
+            }
+            50% { 
+                background-position: 100% 50%;
+                filter: 
+                    drop-shadow(0 5px 10px rgba(255, 215, 0, 0.6))
+                    drop-shadow(0 10px 20px rgba(0, 0, 0, 0.4));
+            }
         }
 
         .subtitle {
-            font-size: 1.3em;
-            color: #c8c8c8;
-            opacity: 0.9;
+            font-size: 1.4em;
+            color: #e6d7c3;
+            opacity: 0.95;
             font-weight: 300;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         .info-box {
@@ -110,22 +156,46 @@
         }
 
         .mode-card {
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(212, 175, 55, 0.3);
-            border-radius: 20px;
-            padding: 30px;
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.1), rgba(138, 43, 226, 0.05));
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 25px;
+            padding: 35px;
             text-align: center;
             cursor: pointer;
             transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.2),
+                0 3px 8px rgba(255, 215, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mode-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.05), rgba(138, 43, 226, 0.02));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mode-card:hover::before {
+            opacity: 1;
         }
 
         .mode-card:hover {
-            background: rgba(212, 175, 55, 0.08);
-            border-color: rgba(244, 233, 118, 0.5);
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 12px 32px rgba(212, 175, 55, 0.2);
+            background: linear-gradient(145deg, rgba(255, 215, 0, 0.2), rgba(138, 43, 226, 0.1));
+            border-color: rgba(255, 215, 0, 0.6);
+            transform: translateY(-12px) scale(1.03);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 8px 20px rgba(255, 215, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .mode-card.selected {
@@ -3989,54 +4059,149 @@
             console.log('✝️ Spiritual content updated for fresh inspiration');
         }
 
-        // Audio context and worship audio
+        // Enhanced Audio System for Beautiful Worship Atmosphere
         let audioContext = null;
         let worshipAudio = null;
         let isAudioInitialized = false;
+        let currentTrackIndex = 0;
+
+        const worshipTracks = [
+            {
+                name: "Heavenly Peace",
+                frequencies: [261.63, 329.63, 392.00, 523.25], // C major chord with octave
+                modulation: { rate: 0.3, depth: 2 },
+                reverb: { roomSize: 0.8, damping: 0.3 }
+            },
+            {
+                name: "Sacred Harmony", 
+                frequencies: [220.00, 277.18, 330.00, 440.00], // A minor chord
+                modulation: { rate: 0.2, depth: 1.5 },
+                reverb: { roomSize: 0.7, damping: 0.4 }
+            },
+            {
+                name: "Divine Serenity",
+                frequencies: [196.00, 246.94, 293.66, 392.00], // G major chord
+                modulation: { rate: 0.25, depth: 1.8 },
+                reverb: { roomSize: 0.9, damping: 0.2 }
+            },
+            {
+                name: "Eternal Rest",
+                frequencies: [174.61, 220.00, 261.63, 349.23], // F major chord
+                modulation: { rate: 0.15, depth: 1.2 },
+                reverb: { roomSize: 0.85, damping: 0.35 }
+            }
+        ];
 
         async function initializeAudio() {
             if (isAudioInitialized) return;
             
             try {
-                // Initialize AudioContext (required for web audio)
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                // Initialize AudioContext with higher quality settings
+                audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                    sampleRate: 44100,
+                    latencyHint: 'playback'
+                });
                 
-                // Create worship audio with a gentle ambient tone
-                worshipAudio = createWorshipAmbience();
+                // Create beautiful worship audio
+                worshipAudio = createEnhancedWorshipAmbience();
                 isAudioInitialized = true;
-                console.log('🎵 Audio system initialized');
+                console.log('🎵 Enhanced worship audio system initialized');
             } catch (error) {
                 console.log('Audio initialization failed:', error);
-                // Fallback to visual-only mode
                 isAudioInitialized = true;
             }
         }
 
-        function createWorshipAmbience() {
+        function createEnhancedWorshipAmbience() {
             if (!audioContext) return null;
             
-            // Create a gentle, peaceful ambient sound using Web Audio API
-            const gainNode = audioContext.createGain();
-            const oscillator1 = audioContext.createOscillator();
-            const oscillator2 = audioContext.createOscillator();
+            const track = worshipTracks[currentTrackIndex];
             
-            // Set up peaceful frequencies (C major chord variations)
-            oscillator1.frequency.setValueAtTime(261.63, audioContext.currentTime); // C4
-            oscillator2.frequency.setValueAtTime(329.63, audioContext.currentTime); // E4
+            // Create main gain node
+            const masterGain = audioContext.createGain();
+            masterGain.gain.setValueAtTime(0, audioContext.currentTime);
             
-            // Very low volume for ambient background
-            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            // Create reverb effect
+            const convolver = audioContext.createConvolver();
+            const reverbGain = audioContext.createGain();
+            reverbGain.gain.setValueAtTime(track.reverb.roomSize * 0.3, audioContext.currentTime);
             
-            // Connect the audio graph
-            oscillator1.connect(gainNode);
-            oscillator2.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            // Create artificial reverb impulse response
+            const sampleRate = audioContext.sampleRate;
+            const length = sampleRate * 2; // 2 seconds reverb
+            const impulse = audioContext.createBuffer(2, length, sampleRate);
             
-            // Start the oscillators
-            oscillator1.start();
-            oscillator2.start();
+            for (let channel = 0; channel < 2; channel++) {
+                const channelData = impulse.getChannelData(channel);
+                for (let i = 0; i < length; i++) {
+                    channelData[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / length, track.reverb.damping);
+                }
+            }
+            convolver.buffer = impulse;
             
-            return { gainNode, oscillator1, oscillator2 };
+            // Create oscillators for each frequency with modulation
+            const oscillators = [];
+            const gains = [];
+            
+            track.frequencies.forEach((freq, index) => {
+                // Main oscillator
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                
+                // LFO for gentle modulation
+                const lfo = audioContext.createOscillator();
+                const lfoGain = audioContext.createGain();
+                
+                // Set up oscillator
+                osc.type = index % 2 === 0 ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                
+                // Set up LFO
+                lfo.type = 'sine';
+                lfo.frequency.setValueAtTime(track.modulation.rate, audioContext.currentTime);
+                lfoGain.gain.setValueAtTime(track.modulation.depth, audioContext.currentTime);
+                
+                // Set up gain with gentle panning
+                const panner = audioContext.createStereoPanner();
+                panner.pan.setValueAtTime((index % 2 === 0 ? -0.3 : 0.3) * (index / track.frequencies.length), audioContext.currentTime);
+                
+                gain.gain.setValueAtTime(0.15 / track.frequencies.length, audioContext.currentTime);
+                
+                // Connect LFO modulation
+                lfo.connect(lfoGain);
+                lfoGain.connect(osc.frequency);
+                
+                // Connect audio chain
+                osc.connect(gain);
+                gain.connect(panner);
+                panner.connect(masterGain);
+                
+                // Also send to reverb
+                panner.connect(reverbGain);
+                
+                // Start oscillators
+                osc.start();
+                lfo.start();
+                
+                oscillators.push(osc);
+                gains.push(gain);
+            });
+            
+            // Connect reverb
+            reverbGain.connect(convolver);
+            convolver.connect(masterGain);
+            
+            // Connect to destination
+            masterGain.connect(audioContext.destination);
+            
+            return { 
+                masterGain, 
+                oscillators, 
+                gains, 
+                convolver, 
+                reverbGain,
+                trackName: track.name 
+            };
         }
 
         async function toggleWorship() {
@@ -4050,7 +4215,7 @@
             }
 
             if (!worshipPlaying) {
-                // Start worship atmosphere
+                // Start beautiful worship atmosphere
                 worshipPlaying = true;
                 button.innerHTML = '<span class="worship-icon">🔇</span><span class="worship-text">Pause Worship</span>';
                 button.classList.add('playing');
@@ -4061,52 +4226,73 @@
                     await audioContext.resume();
                 }
                 
-                // Start gentle ambient audio
-                if (worshipAudio && worshipAudio.gainNode) {
-                    worshipAudio.gainNode.gain.setTargetAtTime(0.02, audioContext.currentTime, 1.0);
+                // Start enhanced worship audio with smooth fade-in
+                if (worshipAudio && worshipAudio.masterGain) {
+                    worshipAudio.masterGain.gain.setTargetAtTime(0.08, audioContext.currentTime, 2.0);
                 }
                 
-                // Rotate through available tracks
-                currentWorshipIndex = (currentWorshipIndex + 1) % spiritualContent.worshipInstrumentals.length;
-                const trackName = spiritualContent.worshipInstrumentals[currentWorshipIndex];
+                // Display current track name
+                const trackName = worshipAudio ? worshipAudio.trackName : 'Divine Ambience';
                 currentTrack.textContent = `♪ ${trackName}`;
                 
-                console.log('🎵 Worship atmosphere activated:', trackName);
+                console.log('🎵 Enhanced worship atmosphere activated:', trackName);
                 
-                // Auto-change track every 3 minutes with subtle frequency modulation
+                // Auto-change track every 4 minutes with smooth transitions
                 if (window.worshipInterval) clearInterval(window.worshipInterval);
-                window.worshipInterval = setInterval(() => {
-                    if (worshipPlaying) {
-                        currentWorshipIndex = (currentWorshipIndex + 1) % spiritualContent.worshipInstrumentals.length;
-                        currentTrack.textContent = `♪ ${spiritualContent.worshipInstrumentals[currentWorshipIndex]}`;
-                        
-                        // Subtle frequency modulation for variety
-                        if (worshipAudio && audioContext) {
-                            const freq1 = 261.63 + (Math.random() - 0.5) * 20;
-                            const freq2 = 329.63 + (Math.random() - 0.5) * 20;
-                            worshipAudio.oscillator1.frequency.setTargetAtTime(freq1, audioContext.currentTime, 2.0);
-                            worshipAudio.oscillator2.frequency.setTargetAtTime(freq2, audioContext.currentTime, 2.0);
+                window.worshipInterval = setInterval(async () => {
+                    if (worshipPlaying && audioContext) {
+                        // Fade out current track
+                        if (worshipAudio && worshipAudio.masterGain) {
+                            worshipAudio.masterGain.gain.setTargetAtTime(0, audioContext.currentTime, 1.0);
                         }
+                        
+                        // Wait for fade out, then change track
+                        setTimeout(() => {
+                            // Stop current oscillators
+                            if (worshipAudio && worshipAudio.oscillators) {
+                                worshipAudio.oscillators.forEach(osc => {
+                                    try { osc.stop(); } catch(e) {}
+                                });
+                            }
+                            
+                            // Move to next track
+                            currentTrackIndex = (currentTrackIndex + 1) % worshipTracks.length;
+                            worshipAudio = createEnhancedWorshipAmbience();
+                            
+                            // Fade in new track
+                            if (worshipAudio && worshipAudio.masterGain) {
+                                worshipAudio.masterGain.gain.setTargetAtTime(0.08, audioContext.currentTime, 2.0);
+                            }
+                            
+                            // Update display
+                            const newTrackName = worshipAudio ? worshipAudio.trackName : 'Divine Ambience';
+                            currentTrack.textContent = `♪ ${newTrackName}`;
+                            console.log('🎵 Transitioned to:', newTrackName);
+                        }, 1000);
                     }
-                }, 180000); // 3 minutes
+                }, 240000); // 4 minutes
                 
             } else {
-                // Stop worship atmosphere
+                // Stop worship atmosphere with graceful fade-out
                 worshipPlaying = false;
                 button.innerHTML = '<span class="worship-icon">🎵</span><span class="worship-text">Gentle Worship Sounds</span>';
                 button.classList.remove('playing');
-                nowPlaying.style.display = 'none';
                 
-                // Fade out audio
-                if (worshipAudio && worshipAudio.gainNode) {
-                    worshipAudio.gainNode.gain.setTargetAtTime(0, audioContext.currentTime, 1.0);
+                // Smooth fade out
+                if (worshipAudio && worshipAudio.masterGain) {
+                    worshipAudio.masterGain.gain.setTargetAtTime(0, audioContext.currentTime, 1.5);
                 }
+                
+                // Hide now playing after fade completes
+                setTimeout(() => {
+                    nowPlaying.style.display = 'none';
+                }, 1500);
                 
                 if (window.worshipInterval) {
                     clearInterval(window.worshipInterval);
                 }
                 
-                console.log('🔇 Worship atmosphere paused');
+                console.log('🔇 Worship atmosphere gracefully faded out');
             }
         }
 
@@ -4132,11 +4318,25 @@
     <style>
         /* Enhanced Worship Controls */
         .spiritual-footer {
-            background: rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(15px);
-            border-top: 1px solid rgba(212, 175, 55, 0.2);
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.08), rgba(138, 43, 226, 0.05));
+            backdrop-filter: blur(20px);
+            border-top: 2px solid rgba(255, 215, 0, 0.3);
             margin-top: 40px;
-            padding: 30px 0;
+            padding: 40px 0;
+            position: relative;
+            box-shadow: 
+                0 -5px 20px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .spiritual-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.6), transparent);
         }
 
         .inspiration-container {
@@ -4157,27 +4357,51 @@
         }
 
         .worship-btn {
-            background: linear-gradient(135deg, rgba(212, 175, 55, 0.8), rgba(230, 199, 87, 0.6));
-            border: none;
-            border-radius: 25px;
-            padding: 12px 24px;
-            color: #1a1a2e;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.9), rgba(255, 240, 120, 0.8));
+            border: 2px solid rgba(255, 215, 0, 0.6);
+            border-radius: 30px;
+            padding: 15px 30px;
+            color: #1a0f0f;
             font-family: 'Cinzel', serif;
-            font-weight: 600;
-            font-size: 1em;
+            font-weight: 700;
+            font-size: 1.1em;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            box-shadow: 0 4px 16px rgba(212, 175, 55, 0.3);
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 
+                0 6px 20px rgba(255, 215, 0, 0.4),
+                0 3px 10px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
             display: flex;
             align-items: center;
-            gap: 8px;
-            backdrop-filter: blur(10px);
+            gap: 10px;
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .worship-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .worship-btn:hover::before {
+            left: 100%;
         }
 
         .worship-btn:hover {
-            background: linear-gradient(135deg, rgba(244, 233, 118, 0.9), rgba(212, 175, 55, 0.8));
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+            background: linear-gradient(135deg, rgba(255, 240, 120, 1), rgba(255, 215, 0, 0.9));
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 10px 30px rgba(255, 215, 0, 0.5),
+                0 5px 15px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            border-color: rgba(255, 215, 0, 0.8);
         }
 
         .worship-btn.playing {
