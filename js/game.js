@@ -479,6 +479,8 @@ class GameController {
             if (isCompleted) statusClass = 'completed';
             else if (isLocked) statusClass = 'locked';
             
+            console.log(`🔧 Processing seal ${seal.id}: completed=${isCompleted}, locked=${isLocked}`);
+            
             html += `
                 <div class="seal ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}">
                     <div class="seal-number">${seal.id}</div>
@@ -490,7 +492,20 @@ class GameController {
             `;
         });
         
+        console.log('🔧 Generated HTML length:', html.length);
+        console.log('🔧 Container before:', container.innerHTML.length);
+        
         container.innerHTML = html;
+        
+        console.log('🔧 Container after:', container.innerHTML.length);
+        console.log('🔧 sealsGrid element:', container, 'visible:', container.offsetWidth, 'x', container.offsetHeight);
+        console.log('🔧 Container computed styles:', window.getComputedStyle(container).display, window.getComputedStyle(container).visibility);
+        
+        // Force make visible for debugging
+        container.style.display = 'block';
+        container.style.visibility = 'visible';
+        container.style.minHeight = '200px';
+        container.style.backgroundColor = 'rgba(255,0,0,0.1)'; // Red tint for debugging
     }
 
     // Check if seal can be opened
