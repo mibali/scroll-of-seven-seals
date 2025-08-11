@@ -8,6 +8,12 @@ class EnhancedPuzzleManager {
         this.answerValidationEngine = new AnswerValidationEngine();
         this.visualEffectsEngine = new VisualEffectsEngine();
         this.audioFeedbackEngine = new AudioFeedbackEngine();
+        
+        // Legacy compatibility properties
+        this.currentPuzzles = {};
+        this.teamInputs = {};
+        this.hintsUsed = 0;
+        this.gameSessionId = Date.now();
     }
 
     // MAIN: Start new game with completely unique content
@@ -1077,6 +1083,42 @@ class AudioFeedbackEngine {
     toggleAudio() {
         this.audioEnabled = !this.audioEnabled;
         console.log(`🔊 Audio feedback ${this.audioEnabled ? 'enabled' : 'disabled'}`);
+    }
+
+    // --- Compatibility with legacy GameController & helpers ---
+    getPuzzleVariation(puzzleType) {
+        return this.currentPuzzles[puzzleType] || null;
+    }
+
+    regeneratePuzzles() {
+        console.log('🔄 Regenerating puzzles (compat)');
+        this.currentPuzzles = {};
+        this.teamInputs = {};
+        this.hintsUsed = 0;
+        this.gameSessionId = Date.now();
+    }
+
+    getHintsUsed() {
+        return this.hintsUsed || 0;
+    }
+
+    showHint(puzzleType) {
+        // optional – keeps stat counters for achievements
+        this.hintsUsed = (this.hintsUsed || 0) + 1;
+        console.log(`💡 Hint used for ${puzzleType}, total: ${this.hintsUsed}`);
+    }
+
+    resetPuzzle(puzzleType) {
+        if (this.currentPuzzles && this.currentPuzzles[puzzleType]) {
+            delete this.currentPuzzles[puzzleType];
+        }
+        console.log(`🔄 Reset puzzle: ${puzzleType}`);
+    }
+
+    clearPuzzles() {
+        this.currentPuzzles = {};
+        this.teamInputs = {};
+        console.log('🧹 Cleared all puzzles');
     }
 }
 

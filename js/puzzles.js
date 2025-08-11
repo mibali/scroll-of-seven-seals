@@ -1308,11 +1308,7 @@ class EnhancedPuzzleManager {
     }
 }
 
-// Initialize enhanced puzzle manager
-const enhancedPuzzleManager = new EnhancedPuzzleManager();
-
-// Make it globally available as PuzzleManager
-window.PuzzleManager = enhancedPuzzleManager;
+// Note: PuzzleManager initialization moved to game-integration.js
 
 // Enhanced validation functions with flexible answer matching
 // Comprehensive synonym and equivalent answer system
