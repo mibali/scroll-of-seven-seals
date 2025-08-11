@@ -3830,8 +3830,10 @@
 
         function resetGameState() {
             // Generate new random questions for replayability
-            if (gameOptions.randomMode) {
+            if (gameOptions.randomMode && window.PuzzleManager && window.PuzzleManager.regeneratePuzzles) {
                 window.PuzzleManager.regeneratePuzzles();
+            } else if (gameOptions.randomMode) {
+                console.warn('⚠️ PuzzleManager not available for reset');
             }
             
             gameState.completedSeals = [];

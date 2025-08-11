@@ -116,6 +116,28 @@ class GameController {
     // Start single player game
     async startSinglePlayerGame() {
         try {
+            // Ensure PuzzleManager is available before starting
+            if (!window.PuzzleManager || !window.PuzzleManager.generatePuzzleContent) {
+                console.error('❌ PuzzleManager not ready! Available:', {
+                    exists: !!window.PuzzleManager,
+                    hasGenerateMethod: !!(window.PuzzleManager && window.PuzzleManager.generatePuzzleContent)
+                });
+                // Try a few more times before giving up
+                const retryCount = this._retryCount || 0;
+                if (retryCount < 5) {
+                    this._retryCount = retryCount + 1;
+                    setTimeout(() => this.startSinglePlayerGame(), 300);
+                    return;
+                } else {
+                    console.error('❌ Giving up on PuzzleManager initialization after 5 attempts');
+                    showNotification('Game initialization failed. Please refresh the page.', 'error');
+                    return;
+                }
+            }
+            
+            // Reset retry count on success
+            this._retryCount = 0;
+            
             // Try multiple possible team name inputs
             const teamNameElement = document.getElementById('teamName') || 
                                   document.getElementById('playerTeamName') || 
@@ -390,14 +412,18 @@ class GameController {
         // Use the enhanced puzzle manager's regeneration function
         if (window.PuzzleManager && window.PuzzleManager.regeneratePuzzles) {
             window.PuzzleManager.regeneratePuzzles();
-        } else {
+        } else if (window.GameData && window.GameData.puzzleVariations && window.PuzzleManager && window.PuzzleManager.currentPuzzles) {
             // Fallback to manual generation
             const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
             puzzleTypes.forEach(type => {
                 const variations = window.GameData.puzzleVariations[type];
-                const randomIndex = Math.floor(Math.random() * variations.length);
-                window.PuzzleManager.currentPuzzles[type] = variations[randomIndex];
+                if (variations && variations.length > 0) {
+                    const randomIndex = Math.floor(Math.random() * variations.length);
+                    window.PuzzleManager.currentPuzzles[type] = variations[randomIndex];
+                }
             });
+        } else {
+            console.warn('⚠️ PuzzleManager or GameData not ready for variation generation');
         }
     }
 

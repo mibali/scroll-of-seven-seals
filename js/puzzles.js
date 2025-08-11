@@ -1308,7 +1308,15 @@ class EnhancedPuzzleManager {
     }
 }
 
-// Note: PuzzleManager initialization moved to game-integration.js
+// Initialize enhanced puzzle manager
+const enhancedPuzzleManager = new EnhancedPuzzleManager();
+
+// Verify initialization
+console.log('✅ EnhancedPuzzleManager created with methods:', {
+    generatePuzzleContent: typeof enhancedPuzzleManager.generatePuzzleContent,
+    regeneratePuzzles: typeof enhancedPuzzleManager.regeneratePuzzles,
+    getPuzzleVariation: typeof enhancedPuzzleManager.getPuzzleVariation
+});
 
 // Enhanced validation functions with flexible answer matching
 // Comprehensive synonym and equivalent answer system
@@ -2086,15 +2094,16 @@ function resetChallenge(challengeType) {
     enhancedPuzzleManager.resetChallenge(challengeType);
 }
 
-// Export enhanced manager with all methods
+// Export enhanced manager with all methods IMMEDIATELY
 window.PuzzleManager = enhancedPuzzleManager;
 
 // Debug: Verify methods are available
-console.log('🔧 PuzzleManager methods available:', {
-    generatePuzzleContent: typeof enhancedPuzzleManager.generatePuzzleContent,
-    regeneratePuzzles: typeof enhancedPuzzleManager.regeneratePuzzles,
-    getPuzzleVariation: typeof enhancedPuzzleManager.getPuzzleVariation,
-    getHintsUsed: typeof enhancedPuzzleManager.getHintsUsed
+console.log('🔧 window.PuzzleManager assigned! Methods available:', {
+    generatePuzzleContent: typeof window.PuzzleManager.generatePuzzleContent,
+    regeneratePuzzles: typeof window.PuzzleManager.regeneratePuzzles,
+    getPuzzleVariation: typeof window.PuzzleManager.getPuzzleVariation,
+    getHintsUsed: typeof window.PuzzleManager.getHintsUsed,
+    currentPuzzles: typeof window.PuzzleManager.currentPuzzles
 });
 
 // Make regeneration function globally available for easy access
