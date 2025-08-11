@@ -621,6 +621,14 @@ class GameController {
             });
             
             console.log('🏆 Updated leaderboard for single player:', singlePlayerTeam);
+            
+            // Force refresh the leaderboard display
+            setTimeout(() => {
+                if (window.LeaderboardManager.renderLiveLeaderboard) {
+                    window.LeaderboardManager.renderLiveLeaderboard();
+                    console.log('🔄 Forced leaderboard refresh');
+                }
+            }, 100);
         }
         
         this.updateProgress();
@@ -933,7 +941,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     window.openSeal = (sealId) => window.gameController.openSeal(sealId);
     window.closePuzzle = () => window.gameController.closePuzzle();
-    window.completeSeal = (sealId) => window.gameController.completeSeal(sealId);
+    window.completeSeal = (sealId) => {
+    console.log('🚀 completeSeal called with sealId:', sealId);
+    if (!window.gameController) {
+        console.error('❌ gameController not available!');
+        return;
+    }
+    return window.gameController.completeSeal(sealId);
+};
     window.checkFinalAnswer = () => window.gameController.checkFinalAnswer();
     window.newGame = () => window.gameController.newGame();
     
