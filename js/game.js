@@ -179,6 +179,22 @@ class GameController {
             this.showGameScreen();
             this.startGameTimer();
             
+            // Initialize leaderboard for single player
+            if (window.LeaderboardManager) {
+                const singlePlayerTeam = {
+                    id: 'single-player',
+                    name: this.gameState.teamName,
+                    status: 'playing',
+                    progress: this.gameState.progress
+                };
+                
+                window.LeaderboardManager.updateLiveLeaderboard({
+                    'single-player': singlePlayerTeam
+                });
+                
+                console.log('🏆 Initialized leaderboard for single player mode');
+            }
+            
             showNotification(`Welcome ${teamName}! Your quest begins now.`, 'success');
 
         } catch (error) {
@@ -574,6 +590,12 @@ class GameController {
         this.gameState.progress.keywords = [...this.gameState.keywords];
         this.gameState.progress.hintsUsed = window.PuzzleManager.getHintsUsed();
         
+        console.log('🎯 Seal completed! Progress:', {
+            sealId,
+            totalCompleted: this.gameState.completedSeals.length,
+            progress: this.gameState.progress
+        });
+        
         // Update multiplayer progress
         if (this.gameState.mode === 'multiplayer') {
             await window.MultiplayerManager.updateTeamProgress(
@@ -581,6 +603,24 @@ class GameController {
                 window.MultiplayerManager.currentTeam.id,
                 this.gameState.progress
             );
+        }
+        
+        // Update leaderboard for single player mode
+        if (this.gameState.mode === 'single' && window.LeaderboardManager) {
+            // Create a fake team data structure for single player
+            const singlePlayerTeam = {
+                id: 'single-player',
+                name: this.gameState.teamName,
+                status: 'playing',
+                progress: this.gameState.progress
+            };
+            
+            // Update leaderboard with current progress
+            window.LeaderboardManager.updateLiveLeaderboard({
+                'single-player': singlePlayerTeam
+            });
+            
+            console.log('🏆 Updated leaderboard for single player:', singlePlayerTeam);
         }
         
         this.updateProgress();
