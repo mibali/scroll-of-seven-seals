@@ -138,6 +138,13 @@ class GameController {
             // Reset retry count on success
             this._retryCount = 0;
             
+            // Debug: Check if GameData is available
+            console.log('🔧 GameData check:', {
+                exists: !!window.GameData,
+                hasSeals: !!(window.GameData && window.GameData.seals),
+                sealsCount: window.GameData && window.GameData.seals ? window.GameData.seals.length : 0
+            });
+            
             // Try multiple possible team name inputs
             const teamNameElement = document.getElementById('teamName') || 
                                   document.getElementById('playerTeamName') || 
@@ -451,9 +458,17 @@ class GameController {
     renderSeals() {
         const container = document.getElementById('sealsGrid');
         if (!container) {
-            console.warn('sealsGrid element not found');
+            console.warn('❌ sealsGrid element not found');
             return;
         }
+        
+        if (!window.GameData || !window.GameData.seals) {
+            console.error('❌ GameData or GameData.seals not available');
+            container.innerHTML = '<p style="color: white; text-align: center; padding: 20px;">Game data not loaded. Please refresh the page.</p>';
+            return;
+        }
+        
+        console.log('🎯 Rendering seals. GameData.seals:', window.GameData.seals.length);
         let html = '';
         
         window.GameData.seals.forEach(seal => {
