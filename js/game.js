@@ -24,6 +24,9 @@ class GameController {
         this.gameTimer = null;
         this.autoSaveInterval = null;
         this.init();
+        
+        // Expose globally for other scripts (Oracle's fix)
+        window.GameController = this;
     }
 
     // Initialize the game
@@ -564,91 +567,64 @@ class GameController {
         this.gameState.currentSeal = null;
     }
 
-    // Complete a seal
-    async completeSeal(sealId) {
-        if (this.gameState.completedSeals.includes(sealId)) return;
+    // ---- UNIVERSAL seal-completion handler (Oracle's fix) ----
+    async completeSeal(sealId, keyword = null) {
+        console.log('🎯 GAMECONTROLLER.completeSeal called with:', sealId, keyword);
         
-        const seal = window.GameData.seals.find(s => s.id === sealId);
-        const variation = window.PuzzleManager.getPuzzleVariation(seal.puzzle);
-        const keyword = variation.keyword;
-        
+        // ignore duplicates
+        if (this.gameState.completedSeals.includes(sealId)) {
+            console.log('⚠️ Seal', sealId, 'already completed, skipping');
+            return;
+        }
+
+        // Get keyword if not provided
+        if (!keyword && window.GameData && window.PuzzleManager) {
+            const seal = window.GameData.seals.find(s => s.id === sealId);
+            if (seal) {
+                const variation = window.PuzzleManager.getPuzzleVariation(seal.puzzle);
+                keyword = variation?.keyword || `keyword${sealId}`;
+            }
+        }
+
+        // 1. update local state
         this.gameState.completedSeals.push(sealId);
-        this.gameState.keywords.push(keyword);
-        
-        // Update progress
         this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
-        this.gameState.progress.keywords = [...this.gameState.keywords];
-        this.gameState.progress.hintsUsed = window.PuzzleManager.getHintsUsed();
-        
-        console.log('🎯 Seal completed! Progress:', {
-            sealId,
-            totalCompleted: this.gameState.completedSeals.length,
-            progress: this.gameState.progress
-        });
-        
-        // FORCE UPDATE LEADERBOARD IMMEDIATELY - SIMPLE AND DIRECT
-        this.forceUpdateLeaderboard();
-        
-        // Update multiplayer progress
-        if (this.gameState.mode === 'multiplayer') {
+
+        if (keyword) {
+            this.gameState.keywords.push(keyword);
+            this.gameState.progress.keywords = [...this.gameState.keywords];
+        }
+
+        console.log('✅ Updated gameState.completedSeals to:', this.gameState.completedSeals);
+
+        // 2. refresh UI
+        this.updateProgress();
+        this.renderSeals();
+
+        // 3. leaderboard / sync
+        if (this.gameState.mode === 'single') {
+            console.log('🏆 Updating single player leaderboard...');
+            if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
+                window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
+            }
+        } else {
             await window.MultiplayerManager.updateTeamProgress(
                 this.gameState.gameId,
                 window.MultiplayerManager.currentTeam.id,
                 this.gameState.progress
             );
         }
-        
-        this.updateProgress();
-        this.renderSeals();
-        this.closePuzzle();
-        
-        showNotification(`🎉 Seal ${sealId} broken! Keyword revealed: ${keyword}`, 'success');
-        
-        // Check if all seals complete
+
+        // 4. notifications
+        showNotification(`🎉 Seal ${sealId} broken! Keyword: ${keyword}`, 'success');
+
+        // 5. final challenge?
         if (this.gameState.completedSeals.length === 7) {
             this.showFinalChallenge();
         }
     }
 
-    // Force update leaderboard - bypass all the complex systems
-    forceUpdateLeaderboard() {
-        const container = document.getElementById('leaderboardList');
-        if (!container) return;
-        
-        const playerSeals = this.gameState.completedSeals.length;
-        console.log('🔥 FORCE UPDATE: Player has', playerSeals, 'seals completed');
-        
-        // Create simple leaderboard HTML directly
-        const html = `
-            <div class="leaderboard-entry player-team">
-                <div class="rank">#3</div>
-                <div class="team-info">
-                    <div class="team-name">${this.gameState.teamName || 'Player'} (You) 🔄</div>
-                    <div class="team-progress">${playerSeals}/7</div>
-                </div>
-                <div class="team-time">00:00</div>
-            </div>
-            <div class="leaderboard-entry first">
-                <div class="rank">🥇</div>
-                <div class="team-info">
-                    <div class="team-name">Heaven Hounds 🛡️ ✅</div>
-                    <div class="team-progress">5/7</div>
-                </div>
-                <div class="team-time">25:30</div>
-            </div>
-            <div class="leaderboard-entry second">
-                <div class="rank">🥈</div>
-                <div class="team-info">
-                    <div class="team-name">Grace Gladiators ⚔️ 🔄</div>
-                    <div class="team-progress">3/7</div>
-                </div>
-                <div class="team-time">18:45</div>
-            </div>
-        `;
-        
-        container.innerHTML = html;
-        console.log('✅ Leaderboard forcefully updated!');
-    }
+
 
     // Update progress bar
     updateProgress() {

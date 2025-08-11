@@ -338,9 +338,9 @@ function setupSealCompletion() {
     }
     
     const originalCompleteSeal = window.completeSeal;
-    window.completeSeal = async function(sealId) {
-        console.log(`🎯 Completing Seal ${sealId} with enhanced features...`);
-        
+    window.completeSeal = async function(sealId, keyword) {
+        console.log(`🎯 Completing Seal ${sealId} (wrapper) with keyword:`, keyword);
+
         // Record completion in learning journey
         if (learningJourneyManager && learningJourneyManager.currentJourney) {
             try {
@@ -357,18 +357,38 @@ function setupSealCompletion() {
                 console.error('Error in learning journey completion:', error);
             }
         }
-        
-        // Call the actual game controller completion logic
-        if (window.gameController && window.gameController.completeSeal) {
+
+        // ---- main game progress (Oracle's fix) ----
+        if (window.GameController?.completeSeal) {
+            console.log('🎮 Calling GameController.completeSeal:', sealId);
+            await window.GameController.completeSeal(sealId, keyword);
+        } else if (window.gameController?.completeSeal) {
             console.log('🎮 Calling gameController.completeSeal:', sealId);
-            await window.gameController.completeSeal(sealId);
-        } else if (originalCompleteSeal) {
-            console.log('🎮 Calling original completeSeal:', sealId);
-            originalCompleteSeal(sealId);
+            await window.gameController.completeSeal(sealId, keyword);
         } else {
-            console.error('❌ No completion function available!');
+            console.log('🎮 Fallback: calling original completeSeal');
+            // last-chance fallback – guarantee gameState is touched
+            if (window.gameController) {
+                const gs = window.gameController.gameState;
+                if (!gs.completedSeals.includes(sealId)) {
+                    gs.completedSeals.push(sealId);
+                    gs.progress.sealsCompleted = [...gs.completedSeals];
+                    console.log('🔧 Manually updated gameState.completedSeals:', gs.completedSeals);
+                }
+            }
+            if (originalCompleteSeal) {
+                originalCompleteSeal(sealId, keyword);
+            }
         }
-        
+
+        // update leaderboard after state mutation
+        if (window.gameController) {
+            console.log('🏆 Forcing leaderboard update after seal completion');
+            if (window.LeaderboardManager?.updateSinglePlayerProgress) {
+                window.LeaderboardManager.updateSinglePlayerProgress(window.gameController.gameState);
+            }
+        }
+
         // Check if journey is complete
         if (sealId === 7 && learningJourneyManager) {
             setTimeout(() => showJourneyCompleteModal(), 2000);
