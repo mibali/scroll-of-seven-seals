@@ -10,16 +10,30 @@ let currentPlayerAge = null;
 function initializeEnhancedGame() {
     console.log('🚀 Initializing Enhanced Seven Seals Game System...');
     
-    // Initialize managers
-    enhancedPuzzleManager = new EnhancedPuzzleManager();
+    // Initialize learning journey manager only
     learningJourneyManager = new LearningJourneyManager();
+    
+    // Use the existing PuzzleManager from puzzles.js if available
+    enhancedPuzzleManager = window.PuzzleManager || new EnhancedPuzzleManager();
     
     // Make managers globally available
     window.enhancedPuzzleManager = enhancedPuzzleManager;
     window.learningJourneyManager = learningJourneyManager;
     
-    // Override original puzzle manager
-    window.PuzzleManager = enhancedPuzzleManager;
+    // Ensure PuzzleManager is set (don't overwrite if already set)
+    if (!window.PuzzleManager) {
+        window.PuzzleManager = enhancedPuzzleManager;
+        console.log('🔧 Set PuzzleManager from game-integration.js');
+    } else {
+        console.log('🔧 PuzzleManager already exists, not overwriting');
+    }
+    
+    // Debug: Check final PuzzleManager state
+    console.log('🔧 Final PuzzleManager state:', {
+        exists: !!window.PuzzleManager,
+        hasGenerateMethod: typeof window.PuzzleManager?.generatePuzzleContent,
+        hasRegenerateMethod: typeof window.PuzzleManager?.regeneratePuzzles
+    });
     
     console.log('✅ Enhanced game system ready!');
     

@@ -2089,6 +2089,14 @@ function resetChallenge(challengeType) {
 // Export enhanced manager with all methods
 window.PuzzleManager = enhancedPuzzleManager;
 
+// Debug: Verify methods are available
+console.log('🔧 PuzzleManager methods available:', {
+    generatePuzzleContent: typeof enhancedPuzzleManager.generatePuzzleContent,
+    regeneratePuzzles: typeof enhancedPuzzleManager.regeneratePuzzles,
+    getPuzzleVariation: typeof enhancedPuzzleManager.getPuzzleVariation,
+    getHintsUsed: typeof enhancedPuzzleManager.getHintsUsed
+});
+
 // Make regeneration function globally available for easy access
 window.regeneratePuzzles = () => enhancedPuzzleManager.regeneratePuzzles();
 
