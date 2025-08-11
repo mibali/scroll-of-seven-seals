@@ -1469,7 +1469,15 @@ function checkBibleKnowledge() {
             window.ImmersionEngine.triggerSuccessCelebration(1);
         }
         
-        setTimeout(() => window.completeSeal(1), 1500);
+        console.log('🎯 Bible Knowledge passed! About to call completeSeal(1)');
+        setTimeout(() => {
+            console.log('🎯 Calling window.completeSeal(1) now...');
+            if (typeof window.completeSeal === 'function') {
+                window.completeSeal(1);
+            } else {
+                console.error('❌ window.completeSeal is not a function!', typeof window.completeSeal);
+            }
+        }, 1500);
     } else {
         // Record attempt for learning
         window.PuzzleManager.recordSealAttempt('bibleKnowledge', variation, 1, false);
@@ -1534,7 +1542,15 @@ function checkLogicalReasoning() {
                 ${results.join('<br>')}
             </div>
         `;
-        setTimeout(() => window.completeSeal(2), 1500);
+        console.log('🎯 Logical Reasoning passed! About to call completeSeal(2)');
+        setTimeout(() => {
+            console.log('🎯 Calling window.completeSeal(2) now...');
+            if (typeof window.completeSeal === 'function') {
+                window.completeSeal(2);
+            } else {
+                console.error('❌ window.completeSeal is not a function!', typeof window.completeSeal);
+            }
+        }, 1500);
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
