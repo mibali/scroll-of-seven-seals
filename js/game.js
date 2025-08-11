@@ -406,7 +406,11 @@ class GameController {
         this.showScreen('gameScreen');
         this.updatePageState('gameScreen');
         
-        document.getElementById('currentTeamName').textContent = this.gameState.teamName;
+        // team name display (make call safe - element may not exist)
+        const teamNameEl = document.getElementById('currentTeamName');
+        if (teamNameEl) {
+            teamNameEl.textContent = this.gameState.teamName;
+        }
         
         this.renderSeals();
         this.updateProgress();
@@ -419,7 +423,11 @@ class GameController {
 
     // Render seals grid
     renderSeals() {
-        const container = document.getElementById('sealsContainer');
+        const container = document.getElementById('sealsGrid');
+        if (!container) {
+            console.warn('sealsGrid element not found');
+            return;
+        }
         let html = '';
         
         window.GameData.seals.forEach(seal => {
@@ -457,10 +465,19 @@ class GameController {
         
         this.gameState.currentSeal = seal;
         
-        document.getElementById('modalTitle').textContent = `Seal ${seal.id}: ${seal.title}`;
-        document.getElementById('puzzleContent').innerHTML = 
-            await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
-        document.getElementById('puzzleModal').style.display = 'block';
+        const titleEl = document.getElementById('puzzleTitle');
+        const questionEl = document.getElementById('puzzleQuestion');
+        const modalEl = document.getElementById('puzzleModal');
+        
+        if (titleEl) {
+            titleEl.textContent = `Seal ${seal.id}: ${seal.title}`;
+        }
+        if (questionEl) {
+            questionEl.innerHTML = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+        }
+        if (modalEl) {
+            modalEl.style.display = 'block';
+        }
     }
 
     // Close puzzle modal
