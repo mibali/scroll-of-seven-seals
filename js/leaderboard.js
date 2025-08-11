@@ -65,6 +65,89 @@ class LeaderboardManager {
         this.renderLiveLeaderboard();
     }
 
+    // Update live leaderboard for single player
+    updateSinglePlayerProgress(gameState) {
+        if (!gameState) return;
+        
+        console.log('🏆 Updating single player leaderboard with gameState:', {
+            teamName: gameState.teamName,
+            completedSeals: gameState.completedSeals,
+            sealsLength: gameState.completedSeals?.length
+        });
+        
+        // Create single player team structure
+        const singlePlayerTeam = {
+            id: 'player',
+            name: gameState.teamName || 'Player',
+            status: 'playing',
+            progress: {
+                sealsCompleted: gameState.completedSeals || [],
+                startTime: gameState.startTime || Date.now(),
+                completionTime: null
+            }
+        };
+        
+        console.log('👤 Single player team:', singlePlayerTeam);
+        
+        // Add AI teams to create competitive atmosphere
+        const aiTeams = this.generateAITeams(singlePlayerTeam.progress.sealsCompleted.length);
+        
+        // Combine player and AI teams
+        const allTeams = [singlePlayerTeam, ...aiTeams];
+        
+        this.liveLeaderboard = allTeams.sort((a, b) => {
+            const aSeals = a.progress?.sealsCompleted?.length || 0;
+            const bSeals = b.progress?.sealsCompleted?.length || 0;
+            
+            if (aSeals !== bSeals) {
+                return bSeals - aSeals;
+            }
+            
+            const aElapsed = this.getElapsedTime(a);
+            const bElapsed = this.getElapsedTime(b);
+            return aElapsed - bElapsed;
+        });
+        
+        console.log('📊 Updated leaderboard:', this.liveLeaderboard.map(t => ({ 
+            name: t.name, 
+            seals: t.progress?.sealsCompleted?.length || 0 
+        })));
+        
+        this.renderLiveLeaderboard();
+    }
+
+    // Generate AI teams for single player mode
+    generateAITeams(playerSeals) {
+        const aiTeamNames = [
+            'Gospel Guardians 🛡️', 
+            'Covenant Crusaders ⚔️', 
+            'Scripture Seekers 📚',
+            'Faith Warriors 🗡️',
+            'Divine Defenders 🙏'
+        ];
+        
+        return aiTeamNames.map((name, index) => {
+            // AI teams have slightly different progress to create challenge
+            let aiSeals = playerSeals;
+            if (index === 0) aiSeals = Math.min(7, playerSeals + Math.floor(Math.random() * 2)); // Ahead
+            else if (index === 1) aiSeals = Math.max(0, playerSeals - Math.floor(Math.random() * 2)); // Behind
+            else aiSeals = playerSeals + Math.floor(Math.random() * 3) - 1; // Varied
+            
+            aiSeals = Math.max(0, Math.min(7, aiSeals));
+            
+            return {
+                id: `ai-${index}`,
+                name: name,
+                status: aiSeals === 7 ? 'completed' : 'playing',
+                progress: {
+                    sealsCompleted: Array(aiSeals).fill().map((_, i) => i + 1),
+                    startTime: Date.now() - (Math.random() * 600000), // Random start time
+                    completionTime: aiSeals === 7 ? Math.random() * 300000 : null
+                }
+            };
+        });
+    }
+
     // Calculate elapsed time for a team
     getElapsedTime(team) {
         if (!team.progress?.startTime) return 0;
@@ -78,7 +161,7 @@ class LeaderboardManager {
 
     // Render live leaderboard in the UI
     renderLiveLeaderboard() {
-        const container = document.getElementById('liveLeaderboardContent');
+        const container = document.getElementById('liveLeaderboardContent') || document.getElementById('leaderboardList');
         if (!container || !this.isLeaderboardVisible) return;
 
         let html = '';
@@ -95,13 +178,15 @@ class LeaderboardManager {
             else if (rank === 3) rankClass = 'third';
 
             const status = team.status === 'completed' ? '✅' : '🔄';
+            const isPlayer = team.id === 'player';
+            const teamDisplay = isPlayer ? `${team.name} (You)` : team.name;
             
             html += `
-                <div class="leaderboard-entry ${rankClass}">
+                <div class="leaderboard-entry ${rankClass} ${isPlayer ? 'player-team' : ''}">
                     <div class="rank">${this.getRankDisplay(rank)}</div>
                     <div class="team-info">
-                        <div class="team-name">${team.name} ${status}</div>
-                        <div class="team-progress">${sealsCompleted}/7 seals</div>
+                        <div class="team-name">${teamDisplay} ${status}</div>
+                        <div class="team-progress">${sealsCompleted}/7</div>
                     </div>
                     <div class="team-time">${timeDisplay}</div>
                 </div>

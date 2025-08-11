@@ -330,37 +330,58 @@ function showWelcomeMessage(ageGroup, playerName, difficulty) {
 }
 
 // Override the original completeSeal function to integrate with learning journey
-const originalCompleteSeal = window.completeSeal;
-window.completeSeal = async function(sealId) {
-    console.log(`🎯 Completing Seal ${sealId} with enhanced features...`);
+// Wait for gameController to be available before setting up override
+function setupSealCompletion() {
+    if (!window.gameController) {
+        setTimeout(setupSealCompletion, 100);
+        return;
+    }
     
-    // Record completion in learning journey
-    if (learningJourneyManager && learningJourneyManager.currentJourney) {
-        try {
-            await learningJourneyManager.completeSeal(sealId, {
-                performance: { /* performance data */ },
-                timeSpent: Date.now() - (window.sealStartTime || Date.now())
-            });
-            
-            // Update progress tracker
-            if (window.progressTracker) {
-                window.progressTracker.updateProgress(learningJourneyManager.currentJourney, sealId);
+    const originalCompleteSeal = window.completeSeal;
+    window.completeSeal = async function(sealId) {
+        console.log(`🎯 Completing Seal ${sealId} with enhanced features...`);
+        
+        // Record completion in learning journey
+        if (learningJourneyManager && learningJourneyManager.currentJourney) {
+            try {
+                await learningJourneyManager.completeSeal(sealId, {
+                    performance: { /* performance data */ },
+                    timeSpent: Date.now() - (window.sealStartTime || Date.now())
+                });
+                
+                // Update progress tracker
+                if (window.progressTracker) {
+                    window.progressTracker.updateProgress(learningJourneyManager.currentJourney, sealId);
+                }
+            } catch (error) {
+                console.error('Error in learning journey completion:', error);
             }
-        } catch (error) {
-            console.error('Error in learning journey completion:', error);
         }
-    }
-    
-    // Call original completion logic
-    if (originalCompleteSeal) {
-        originalCompleteSeal(sealId);
-    }
-    
-    // Check if journey is complete
-    if (sealId === 7 && learningJourneyManager) {
-        setTimeout(() => showJourneyCompleteModal(), 2000);
-    }
-};
+        
+        // Call the actual game controller completion logic
+        if (window.gameController && window.gameController.completeSeal) {
+            console.log('🎮 Calling gameController.completeSeal:', sealId);
+            await window.gameController.completeSeal(sealId);
+        } else if (originalCompleteSeal) {
+            console.log('🎮 Calling original completeSeal:', sealId);
+            originalCompleteSeal(sealId);
+        } else {
+            console.error('❌ No completion function available!');
+        }
+        
+        // Check if journey is complete
+        if (sealId === 7 && learningJourneyManager) {
+            setTimeout(() => showJourneyCompleteModal(), 2000);
+        }
+    };
+}
+
+// Setup seal completion after DOM loads
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupSealCompletion);
+} else {
+    setupSealCompletion();
+}
 
 function showJourneyCompleteModal() {
     const report = learningJourneyManager.generateProgressReport();

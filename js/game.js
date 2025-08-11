@@ -181,18 +181,8 @@ class GameController {
             
             // Initialize leaderboard for single player
             if (window.LeaderboardManager) {
-                const singlePlayerTeam = {
-                    id: 'single-player',
-                    name: this.gameState.teamName,
-                    status: 'playing',
-                    progress: this.gameState.progress
-                };
-                
-                window.LeaderboardManager.updateLiveLeaderboard({
-                    'single-player': singlePlayerTeam
-                });
-                
-                console.log('🏆 Initialized leaderboard for single player mode');
+                window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
+                console.log('🏆 Initialized single player leaderboard');
             }
             
             showNotification(`Welcome ${teamName}! Your quest begins now.`, 'success');
@@ -607,28 +597,9 @@ class GameController {
         
         // Update leaderboard for single player mode
         if (this.gameState.mode === 'single' && window.LeaderboardManager) {
-            // Create a fake team data structure for single player
-            const singlePlayerTeam = {
-                id: 'single-player',
-                name: this.gameState.teamName,
-                status: 'playing',
-                progress: this.gameState.progress
-            };
-            
-            // Update leaderboard with current progress
-            window.LeaderboardManager.updateLiveLeaderboard({
-                'single-player': singlePlayerTeam
-            });
-            
-            console.log('🏆 Updated leaderboard for single player:', singlePlayerTeam);
-            
-            // Force refresh the leaderboard display
-            setTimeout(() => {
-                if (window.LeaderboardManager.renderLiveLeaderboard) {
-                    window.LeaderboardManager.renderLiveLeaderboard();
-                    console.log('🔄 Forced leaderboard refresh');
-                }
-            }, 100);
+            // Use the new single player leaderboard method
+            window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
+            console.log('🏆 Updated single player leaderboard with progress:', this.gameState.completedSeals.length);
         }
         
         this.updateProgress();
