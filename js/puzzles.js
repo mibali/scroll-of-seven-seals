@@ -1424,27 +1424,45 @@ function isAnswerCorrect(userAnswer, correctAnswer) {
 }
 
 function checkBibleKnowledge() {
+    console.log('🔍 checkBibleKnowledge called');
     const variation = enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
-    if (!variation) return;
+    if (!variation) {
+        console.error('❌ No bibleKnowledge variation found!');
+        return;
+    }
+    
+    console.log('🔍 Found variation with', variation.questions.length, 'questions');
     
     let correctCount = 0;
     const results = [];
     
     variation.questions.forEach((question, index) => {
-        const userAnswer = document.getElementById(`knowledge${index + 1}`).value.trim();
+        const inputElement = document.getElementById(`knowledge${index + 1}`);
+        if (!inputElement) {
+            console.error(`❌ Input element knowledge${index + 1} not found!`);
+            return;
+        }
+        
+        const userAnswer = inputElement.value.trim();
         const correctAnswer = question.correctAnswer;
+        
+        console.log(`🔍 Q${index + 1}: User="${userAnswer}" vs Correct="${correctAnswer}"`);
         
         if (isAnswerCorrect(userAnswer, correctAnswer)) {
             results.push(`✅ Q${index + 1}: Correct!`);
             correctCount++;
+            console.log(`✅ Q${index + 1} CORRECT`);
         } else {
             results.push(`❌ Q${index + 1}: Try "${correctAnswer}"`);
+            console.log(`❌ Q${index + 1} WRONG`);
         }
     });
     
     // Make it beginner-friendly: only need 60% correct to pass
     const passThreshold = Math.ceil(variation.questions.length * 0.6);
     const allCorrect = correctCount >= passThreshold;
+    
+    console.log(`🔍 Final result: ${correctCount}/${variation.questions.length} correct, need ${passThreshold}, passed: ${allCorrect}`);
     
     const resultDiv = document.getElementById('bibleKnowledgeResult');
     if (allCorrect) {
