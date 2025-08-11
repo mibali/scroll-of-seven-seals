@@ -436,7 +436,14 @@ class GameController {
 
     // Show main game screen
     showGameScreen() {
-        this.showScreen('gameScreen');
+        // Force show the game container
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.style.display = 'block';
+            console.log('🔧 Forced gameContainer to be visible');
+        }
+        
+        this.showScreen('gameContainer');
         this.updatePageState('gameScreen');
         
         // team name display (make call safe - element may not exist)
@@ -506,6 +513,15 @@ class GameController {
         container.style.visibility = 'visible';
         container.style.minHeight = '200px';
         container.style.backgroundColor = 'rgba(255,0,0,0.1)'; // Red tint for debugging
+        
+        // Check parent element
+        const parent = container.parentElement;
+        console.log('🔧 Parent element:', parent, 'visible:', parent ? parent.offsetWidth + 'x' + parent.offsetHeight : 'none');
+        if (parent) {
+            console.log('🔧 Parent computed styles:', window.getComputedStyle(parent).display, window.getComputedStyle(parent).visibility);
+            parent.style.display = 'block';
+            parent.style.visibility = 'visible';
+        }
     }
 
     // Check if seal can be opened
