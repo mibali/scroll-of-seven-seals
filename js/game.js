@@ -595,6 +595,25 @@ class GameController {
             this.gameState.progress.keywords = [...this.gameState.keywords];
         }
 
+        // 🔥 AI MODE FIX: Also update the player team in gameState.teams array
+        if (this.gameState.mode === 'ai' && this.gameState.teams) {
+            const playerTeam = this.gameState.teams.find(team => !team.isAI);
+            if (playerTeam) {
+                playerTeam.completedSeals.push(sealId);
+                playerTeam.score = playerTeam.completedSeals.length; // Score = seals completed
+                console.log('🔥 AI MODE: Updated player team:', {
+                    completedSeals: playerTeam.completedSeals,
+                    score: playerTeam.score
+                });
+                
+                // Trigger the HTML leaderboard update for AI mode
+                if (typeof window.updateLeaderboard === 'function') {
+                    window.updateLeaderboard();
+                    console.log('🔥 AI MODE: Triggered HTML updateLeaderboard()');
+                }
+            }
+        }
+
         console.log('✅ Updated gameState.completedSeals to:', this.gameState.completedSeals);
 
         // 2. refresh UI
