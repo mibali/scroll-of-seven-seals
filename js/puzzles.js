@@ -167,9 +167,26 @@ class EnhancedPuzzleManager {
 
     // CHALLENGE 3: Team Communication - Coordinated Biblical Knowledge  
     generateTeamCommunicationContent(variation) {
+        console.log('🔧 DEBUG: Team Communication variation:', variation);
+        
         let challengesHtml = '';
         
-        variation.challenges.forEach((challenge, index) => {
+        // Ensure challenges exist, create default if missing
+        const challenges = variation.challenges || [
+            {
+                type: 'collaborative',
+                title: 'Unity Challenge: Biblical Fellowship',
+                description: 'Work together to unlock the keyword through coordinated Biblical knowledge',
+                completionRequirement: 'All team members must contribute their part',
+                parts: [
+                    { role: 'Leader', task: 'Name a book of the Bible about fellowship' },
+                    { role: 'Scholar', task: 'Quote a verse about unity (book:chapter)' },
+                    { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship' }
+                ]
+            }
+        ];
+        
+        challenges.forEach((challenge, index) => {
             if (challenge.type === 'collaborative') {
                 let partsHtml = '';
                 challenge.parts.forEach((part, partIndex) => {
@@ -783,13 +800,40 @@ class EnhancedPuzzleManager {
 
     // Reset a challenge to initial state
     async resetChallenge(challengeType) {
-        const challengeContent = document.getElementById('puzzleContent');
+        console.log('🔄 Resetting challenge:', challengeType);
+        
+        // Clear all inputs first
+        const inputs = document.querySelectorAll('#puzzleQuestion input, #puzzleQuestion select, #puzzleQuestion textarea');
+        inputs.forEach(input => {
+            if (input.type === 'checkbox' || input.type === 'radio') {
+                input.checked = false;
+            } else {
+                input.value = '';
+            }
+        });
+        
+        // Clear result messages
+        const resultDivs = document.querySelectorAll('[id$="Result"]');
+        resultDivs.forEach(div => {
+            div.innerHTML = '';
+        });
+        
+        // Reset drag and drop if present
+        if (this.resetDragAndDrop) {
+            this.resetDragAndDrop();
+        }
+        
+        // Regenerate content if needed
+        const challengeContent = document.getElementById('puzzleQuestion');
         if (challengeContent) {
-            const sealData = window.gameState.currentSeal;
+            const sealData = window.gameState?.currentSeal || window.gameController?.gameState?.currentSeal;
             if (sealData) {
-                challengeContent.innerHTML = await this.generatePuzzleContent(sealData.id, challengeType);
+                console.log('🔄 Regenerating content for seal:', sealData.id);
+                challengeContent.innerHTML = await this.generatePuzzleContent(sealData.id, sealData.puzzle);
             }
         }
+        
+        console.log('✅ Challenge reset completed');
     }
 
     // Get current puzzle variation for a type
