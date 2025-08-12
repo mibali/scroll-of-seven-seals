@@ -67,53 +67,10 @@ class LeaderboardManager {
 
     // Update live leaderboard for single player
     updateSinglePlayerProgress(gameState) {
-        if (!gameState) return;
-        
-        console.log('🏆 Updating single player leaderboard with gameState:', {
-            teamName: gameState.teamName,
-            completedSeals: gameState.completedSeals,
-            sealsLength: gameState.completedSeals?.length
-        });
-        
-        // Create single player team structure
-        const singlePlayerTeam = {
-            id: 'player',
-            name: gameState.teamName || 'Player',
-            status: 'playing',
-            progress: {
-                sealsCompleted: gameState.completedSeals || [],
-                startTime: gameState.startTime || Date.now(),
-                completionTime: null
-            }
-        };
-        
-        console.log('👤 Single player team:', singlePlayerTeam);
-        
-        // Add AI teams to create competitive atmosphere
-        const aiTeams = this.generateAITeams(singlePlayerTeam.progress.sealsCompleted.length);
-        
-        // Combine player and AI teams
-        const allTeams = [singlePlayerTeam, ...aiTeams];
-        
-        this.liveLeaderboard = allTeams.sort((a, b) => {
-            const aSeals = a.progress?.sealsCompleted?.length || 0;
-            const bSeals = b.progress?.sealsCompleted?.length || 0;
-            
-            if (aSeals !== bSeals) {
-                return bSeals - aSeals;
-            }
-            
-            const aElapsed = this.getElapsedTime(a);
-            const bElapsed = this.getElapsedTime(b);
-            return aElapsed - bElapsed;
-        });
-        
-        console.log('📊 Updated leaderboard:', this.liveLeaderboard.map(t => ({ 
-            name: t.name, 
-            seals: t.progress?.sealsCompleted?.length || 0 
-        })));
-        
-        this.renderLiveLeaderboard();
+        // CRITICAL: Don't show leaderboard in single-player mode
+        console.log('🚫 Single-player mode: Leaderboard disabled');
+        this.hideLeaderboard();
+        return;
     }
 
     // Generate AI teams for single player mode
@@ -157,6 +114,22 @@ class LeaderboardManager {
         }
         
         return Date.now() - team.progress.startTime;
+    }
+
+    // Hide leaderboard completely
+    hideLeaderboard() {
+        const container = document.getElementById('liveLeaderboardContent') || document.getElementById('leaderboardList');
+        const leaderboardElement = document.querySelector('.leaderboard');
+        
+        if (container) {
+            container.innerHTML = '';
+        }
+        if (leaderboardElement) {
+            leaderboardElement.style.display = 'none';
+        }
+        
+        this.isLeaderboardVisible = false;
+        this.liveLeaderboard = [];
     }
 
     // Render live leaderboard in the UI

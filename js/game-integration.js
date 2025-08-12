@@ -385,8 +385,8 @@ function setupSealCompletion() {
             }
         }
 
-        // update leaderboard after state mutation
-        if (window.gameController) {
+        // update leaderboard after state mutation (only for AI/multiplayer modes)
+        if (window.gameController && window.gameController.gameState?.mode !== 'single') {
             console.log('🏆 Forcing leaderboard update after seal completion');
             if (window.LeaderboardManager?.updateSinglePlayerProgress) {
                 window.LeaderboardManager.updateSinglePlayerProgress(window.gameController.gameState);

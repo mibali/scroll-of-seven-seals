@@ -182,10 +182,15 @@ class GameController {
             this.showGameScreen();
             this.startGameTimer();
             
-            // Initialize leaderboard for single player
-            if (window.LeaderboardManager) {
+            // CRITICAL: Don't initialize leaderboard for single player mode
+            if (window.LeaderboardManager && this.gameState?.mode !== 'single') {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
-                console.log('🏆 Initialized single player leaderboard');
+                console.log('🏆 Initialized leaderboard for non-single mode');
+            } else {
+                console.log('🚫 Single-player mode: Leaderboard disabled');
+                if (window.LeaderboardManager) {
+                    window.LeaderboardManager.hideLeaderboard();
+                }
             }
             
             showNotification(`Welcome ${teamName}! Your quest begins now.`, 'success');
@@ -651,10 +656,15 @@ class GameController {
         this.renderSeals();
 
         // 3. leaderboard / sync
-        if (this.gameState.mode === 'single' || this.gameState.mode === 'ai') {
-            console.log('🏆 Updating single player/AI leaderboard...');
+        if (this.gameState.mode === 'ai') {
+            console.log('🏆 Updating AI leaderboard...');
             if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
+            }
+        } else if (this.gameState.mode === 'single') {
+            console.log('🚫 Single-player mode: Leaderboard update skipped');
+            if (window.LeaderboardManager) {
+                window.LeaderboardManager.hideLeaderboard();
             }
         } else if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
             await window.MultiplayerManager.updateTeamProgress(
