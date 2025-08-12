@@ -516,8 +516,21 @@ window.checkChronologicalOrder = function() {
         return;
     }
     
-    // Get the correct order (assuming events with id 1-N should be in order)
-    const correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+    // Get the correct order from the puzzle variation
+    let correctOrder;
+    if (window.enhancedPuzzleManager) {
+        const variation = window.enhancedPuzzleManager.getPuzzleVariation('chronologicalOrder');
+        if (variation && variation.correctOrder) {
+            correctOrder = variation.correctOrder;
+            console.log('📅 Using variation correct order:', correctOrder);
+        } else {
+            console.log('📅 No variation found, using fallback');
+            correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+        }
+    } else {
+        console.log('📅 No enhancedPuzzleManager, using fallback');
+        correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+    }
     
     // Compare with placed order
     let correctCount = 0;

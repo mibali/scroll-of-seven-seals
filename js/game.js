@@ -539,7 +539,8 @@ class GameController {
             if (isCompleted) statusClass = 'completed';
             else if (isLocked) statusClass = 'locked';
             
-            console.log(`🔧 Processing seal ${seal.id}: completed=${isCompleted}, locked=${isLocked}`);
+            console.log(`🔧 Processing seal ${seal.id} (type: ${typeof seal.id}): completed=${isCompleted}, locked=${isLocked}`);
+            console.log(`🔧 completedSeals:`, this.gameState.completedSeals, 'types:', this.gameState.completedSeals.map(id => typeof id));
             
             html += `
                 <div class="seal ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}">
@@ -631,6 +632,7 @@ class GameController {
         }
 
         // 1. update local state
+        console.log(`🎯 Adding seal ${sealId} (type: ${typeof sealId}) to completedSeals`);
         this.gameState.completedSeals.push(sealId);
         this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
 
