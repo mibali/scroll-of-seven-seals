@@ -171,22 +171,28 @@ class EnhancedPuzzleManager {
         
         let challengesHtml = '';
         
-        // CRITICAL: Always provide default challenges for single-player mode
-        const challenges = [
-            {
-                type: 'collaborative',
-                title: 'Unity Challenge: Biblical Fellowship',
-                description: 'Complete all parts to unlock the fellowship keyword (single-player mode)',
-                completionRequirement: 'Fill in all three fellowship aspects',
-                parts: [
-                    { role: 'Leader', task: 'Name a book of the Bible about fellowship (e.g., Acts, 1 John, Philippians)' },
-                    { role: 'Scholar', task: 'Quote a verse about unity (format: Book Chapter:Verse, e.g., John 17:21)' },
-                    { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship (e.g., Paul, John, Barnabas)' }
-                ]
-            }
-        ];
-        
-        console.log('🔧 DEBUG: Using challenges:', challenges);
+        // Use actual variation challenges if available, otherwise provide fallback
+        let challenges;
+        if (variation && variation.challenges) {
+            challenges = variation.challenges;
+            console.log('🔧 DEBUG: Using variation challenges:', challenges);
+        } else {
+            // Fallback for when variation is not available
+            challenges = [
+                {
+                    type: 'collaborative',
+                    title: 'Unity Challenge: Biblical Fellowship',
+                    description: 'Complete all parts to unlock the fellowship keyword (single-player mode)',
+                    completionRequirement: 'Fill in all three fellowship aspects',
+                    parts: [
+                        { role: 'Leader', task: 'Name a book of the Bible about fellowship (e.g., Acts, 1 John, Philippians)' },
+                        { role: 'Scholar', task: 'Quote a verse about unity (format: Book Chapter:Verse, e.g., John 17:21)' },
+                        { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship (e.g., Paul, John, Barnabas)' }
+                    ]
+                }
+            ];
+            console.log('🔧 DEBUG: Using fallback challenges:', challenges);
+        }
         
         challenges.forEach((challenge, index) => {
             if (challenge.type === 'collaborative') {
@@ -1724,7 +1730,13 @@ function checkTeamCommunication() {
             });
         } else if (challenge.type === 'chain') {
             challenge.sequence.forEach((step, stepIndex) => {
-                const userAnswer = document.getElementById(`chain${challengeIndex}_step${stepIndex}`).value.trim();
+                const inputElement = document.getElementById(`chain${challengeIndex}_step${stepIndex}`);
+                if (!inputElement) {
+                    console.error(`❌ Chain input element not found: chain${challengeIndex}_step${stepIndex}`);
+                    allCorrect = false;
+                    return;
+                }
+                const userAnswer = inputElement.value.trim();
                 
                 let context = '';
                 if (step.clue.includes('Started with Adam')) context = 'creation_covenant';

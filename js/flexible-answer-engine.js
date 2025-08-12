@@ -467,12 +467,12 @@ function getAgeHintTitle(ageGroup) {
 window.checkChronologicalOrder = function() {
     console.log('📅 Checking Chronological Order...');
     
-    const dropZones = document.querySelectorAll('.chronological-drop');
+    const dropZones = document.querySelectorAll('.drop-zone[data-position]');
     
     // CRITICAL: Check if drop zones exist
     if (dropZones.length === 0) {
         console.error('❌ No chronological drop zones found! Looking for alternative selectors...');
-        const altDropZones = document.querySelectorAll('.drop-zone[data-position]');
+        const altDropZones = document.querySelectorAll('.chronological-drop');
         if (altDropZones.length > 0) {
             console.log('✅ Found alternative drop zones, redirecting to puzzles.js handler...');
             if (window.checkChronologicalOrder && window.checkChronologicalOrder !== arguments.callee) {

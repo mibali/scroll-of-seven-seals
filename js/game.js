@@ -1,7 +1,10 @@
 // Main Game Controller
 class GameController {
     constructor() {
-        this.gameState = {
+        // Try to load saved progress first
+        const savedState = this.loadSavedProgress();
+        
+        this.gameState = savedState || {
             mode: null, // 'single' or 'multiplayer'
             teamName: '',
             teamSize: 3,
@@ -20,6 +23,11 @@ class GameController {
                 hintsUsed: 0
             }
         };
+        
+        console.log('🎮 GameController initialized with state:', {
+            completedSeals: this.gameState.completedSeals,
+            fromSaved: !!savedState
+        });
         
         this.gameTimer = null;
         this.autoSaveInterval = null;
@@ -651,7 +659,10 @@ class GameController {
 
         console.log('✅ Updated gameState.completedSeals to:', this.gameState.completedSeals);
 
-        // 2. refresh UI
+        // 2. Save state to localStorage for persistence
+        this.saveProgress();
+
+        // 3. refresh UI
         this.updateProgress();
         this.renderSeals();
 
@@ -800,10 +811,20 @@ class GameController {
         }
     }
 
+    // Save progress to localStorage
+    saveProgress() {
+        try {
+            localStorage.setItem('scrollGameProgress', JSON.stringify(this.gameState));
+            console.log('💾 Progress saved to localStorage');
+        } catch (error) {
+            console.error('❌ Error saving progress:', error);
+        }
+    }
+
     // Auto-save progress
     autoSaveProgress() {
         if (this.gameState.isGameActive && this.gameState.mode === 'single') {
-            localStorage.setItem('scrollGameProgress', JSON.stringify(this.gameState));
+            this.saveProgress();
         }
     }
 
