@@ -171,20 +171,22 @@ class EnhancedPuzzleManager {
         
         let challengesHtml = '';
         
-        // Ensure challenges exist, create default if missing
-        const challenges = variation.challenges || [
+        // CRITICAL: Always provide default challenges for single-player mode
+        const challenges = [
             {
                 type: 'collaborative',
                 title: 'Unity Challenge: Biblical Fellowship',
-                description: 'Work together to unlock the keyword through coordinated Biblical knowledge',
-                completionRequirement: 'All team members must contribute their part',
+                description: 'Complete all parts to unlock the fellowship keyword (single-player mode)',
+                completionRequirement: 'Fill in all three fellowship aspects',
                 parts: [
-                    { role: 'Leader', task: 'Name a book of the Bible about fellowship' },
-                    { role: 'Scholar', task: 'Quote a verse about unity (book:chapter)' },
-                    { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship' }
+                    { role: 'Leader', task: 'Name a book of the Bible about fellowship (e.g., Acts, 1 John, Philippians)' },
+                    { role: 'Scholar', task: 'Quote a verse about unity (format: Book Chapter:Verse, e.g., John 17:21)' },
+                    { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship (e.g., Paul, John, Barnabas)' }
                 ]
             }
         ];
+        
+        console.log('🔧 DEBUG: Using challenges:', challenges);
         
         challenges.forEach((challenge, index) => {
             if (challenge.type === 'collaborative') {
@@ -1536,6 +1538,13 @@ function checkBibleKnowledge() {
             console.log('🎯 Calling window.completeSeal(1) now...');
             if (typeof window.completeSeal === 'function') {
                 window.completeSeal(1);
+                
+                // CRITICAL: Auto-return to seal cards after completion
+                setTimeout(() => {
+                    console.log('🏠 Auto-returning to seal cards...');
+                    if (window.closePuzzle) window.closePuzzle();
+                    if (window.renderSeals) window.renderSeals();
+                }, 3000);
             } else {
                 console.error('❌ window.completeSeal is not a function!', typeof window.completeSeal);
             }
@@ -1716,7 +1725,17 @@ function checkTeamCommunication() {
                 ${results.join('<br>')}
             </div>
         `;
-        setTimeout(() => window.completeSeal(3), 1500);
+        setTimeout(() => {
+            console.log('🎯 Calling completeSeal(3) after team communication success');
+            window.completeSeal(3);
+            
+            // CRITICAL: Auto-return to seal cards after completion
+            setTimeout(() => {
+                console.log('🏠 Auto-returning to seal cards from team communication...');
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 1500);
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
@@ -2009,21 +2028,39 @@ function checkRevelationCode() {
 }
 
 function checkChronologicalOrder() {
+    console.log('📅 checkChronologicalOrder called in puzzles.js');
+    
     const variation = enhancedPuzzleManager.getPuzzleVariation('chronologicalOrder');
-    if (!variation) return;
+    console.log('📅 Got variation:', variation);
     
     // Get current order from drop zones
     const dropZones = document.querySelectorAll('.drop-zone[data-position]');
+    console.log('📅 Found drop zones:', dropZones.length);
+    
+    if (dropZones.length === 0) {
+        document.getElementById('chronologicalOrderResult').innerHTML = `
+            <div style="color: #dc3545;">
+                ❌ <strong>Timeline Error</strong><br>
+                Could not find timeline drop zones. Please reset and try again.
+                <button onclick="resetChallenge('chronologicalOrder')" class="btn secondary" style="margin-top: 10px;">🔄 Reset Challenge</button>
+            </div>
+        `;
+        return;
+    }
+    
     const userOrder = [];
     
-    dropZones.forEach(zone => {
+    dropZones.forEach((zone, index) => {
         const draggedItem = zone.querySelector('.drag-item');
+        console.log(`📅 Zone ${index}:`, draggedItem ? draggedItem.getAttribute('data-event-id') : 'empty');
         if (draggedItem) {
             userOrder.push(draggedItem.getAttribute('data-event-id'));
         } else {
             userOrder.push(null); // Empty slot
         }
     });
+    
+    console.log('📅 User order:', userOrder);
     
     // Check if all positions are filled
     if (userOrder.includes(null)) {
@@ -2036,20 +2073,43 @@ function checkChronologicalOrder() {
         return;
     }
     
+    // CRITICAL: Handle missing variation with fallback logic
+    let correctOrder, keyword;
+    if (variation && variation.correctOrder) {
+        correctOrder = variation.correctOrder;
+        keyword = variation.keyword;
+    } else {
+        // Fallback - determine correct order from visual sequence (Creation -> Fall -> Flood -> Abraham -> Joseph -> Moses -> Ten Commandments)
+        correctOrder = ['1', '2', '3', '4', '5', '6', '7'];
+        keyword = 'CHRONOLOGY';
+        console.log('📅 Using fallback correct order:', correctOrder);
+    }
+    
     // Check if order matches correct sequence
-    const correctOrder = variation.correctOrder;
     const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
+    console.log('📅 Is correct?', isCorrect, 'Expected:', correctOrder, 'Got:', userOrder);
     
     const resultDiv = document.getElementById('chronologicalOrderResult');
     if (isCorrect) {
         resultDiv.innerHTML = `
             <div style="color: #228b22;">
                 ⏰ <strong>TIMELINE MASTERED!</strong><br>
-                Keyword unlocked: <strong>${variation.keyword}</strong><br>
+                Keyword unlocked: <strong>${keyword}</strong><br>
                 Perfect chronological sequence achieved!
             </div>
         `;
-        setTimeout(() => window.completeSeal(5), 1500);
+        
+        setTimeout(() => {
+            console.log('🎯 Calling completeSeal(5) after timeline success');
+            window.completeSeal(5);
+            
+            // CRITICAL: Auto-return to seal cards after completion
+            setTimeout(() => {
+                console.log('🏠 Auto-returning to seal cards from timeline...');
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 1500);
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
