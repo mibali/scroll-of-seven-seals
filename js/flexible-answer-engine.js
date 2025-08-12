@@ -454,6 +454,30 @@ window.checkChronologicalOrder = function() {
     console.log('📅 Checking Chronological Order...');
     
     const dropZones = document.querySelectorAll('.chronological-drop');
+    
+    // CRITICAL: Check if drop zones exist
+    if (dropZones.length === 0) {
+        console.error('❌ No chronological drop zones found! Looking for alternative selectors...');
+        const altDropZones = document.querySelectorAll('.drop-zone[data-position]');
+        if (altDropZones.length > 0) {
+            console.log('✅ Found alternative drop zones, redirecting to puzzles.js handler...');
+            if (window.checkChronologicalOrder && window.checkChronologicalOrder !== arguments.callee) {
+                return window.checkChronologicalOrder();
+            }
+        }
+        
+        const resultDiv = document.getElementById('chronologicalOrderResult');
+        if (resultDiv) {
+            resultDiv.innerHTML = `
+                <div class="error-message">
+                    <p>❌ Timeline interface not properly loaded. Please reset and try again.</p>
+                    <button onclick="resetChallenge('chronologicalOrder')" class="btn secondary">🔄 Reset Challenge</button>
+                </div>
+            `;
+        }
+        return;
+    }
+    
     const droppedEvents = [];
     
     // Collect all dropped events in order

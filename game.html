@@ -3288,13 +3288,11 @@
                 const completedSealNumber = gameState.currentPuzzle ? gameState.currentPuzzle.number : 'Unknown';
                 showAlert(`Seal ${completedSealNumber} opened!`, 'success');
                 
-                // CRITICAL: Auto-return to seal cards after completing seal one
-                if (completedSealNumber === 1) {
-                    setTimeout(() => {
-                        closePuzzle();
-                        renderSeals();
-                    }, 2000); // Wait 2 seconds to show completion message
-                }
+                // CRITICAL: Auto-return to seal cards after completing any seal
+                setTimeout(() => {
+                    closePuzzle();
+                    renderSeals();
+                }, 3000); // Wait 3 seconds to show completion message
 
                 // Enhanced check for 7-seal completion
                 console.log('🔍 CHECKING COMPLETION - Seals completed:', gameState.completedSeals.length, 'Total:', gameState.completedSeals);

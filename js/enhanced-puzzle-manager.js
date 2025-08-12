@@ -883,6 +883,87 @@ class AnswerValidationEngine {
         return typeEncouragements[Math.floor(Math.random() * typeEncouragements.length)];
     }
 
+    // SEAL 3: Team Communication - Unity Challenge for single-player mode
+    renderTeamCommunication(content, profile) {
+        const ageStyle = this.getAgeAppropriateStyles(profile.ageGroup);
+        
+        // Get challenges from content or create default single-player version
+        const challenges = content.challenges || [
+            {
+                type: 'collaborative',
+                title: 'Unity Challenge: Biblical Fellowship',
+                description: 'Complete all parts to unlock the fellowship keyword',
+                completionRequirement: 'Fill in all three fellowship aspects',
+                parts: [
+                    { role: 'Leader', task: 'Name a book of the Bible about fellowship (e.g., Acts, 1 John)' },
+                    { role: 'Scholar', task: 'Quote a verse about unity (format: Book Chapter:Verse)' },
+                    { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship (e.g., Paul, John)' }
+                ]
+            }
+        ];
+        
+        let challengesHtml = '';
+        challenges.forEach((challenge, index) => {
+            if (challenge.type === 'collaborative') {
+                let partsHtml = '';
+                challenge.parts.forEach((part, partIndex) => {
+                    partsHtml += `
+                        <div class="team-part ${ageStyle.inputGroup}">
+                            <div class="role-label ${ageStyle.roleLabel}">${part.role}:</div>
+                            <div class="task-description ${ageStyle.taskDesc}">${part.task}</div>
+                            <input type="text" 
+                                   id="team${index}_part${partIndex}" 
+                                   placeholder="Enter your answer here"
+                                   class="team-input ${ageStyle.inputClass}"
+                                   data-role="${part.role}">
+                        </div>
+                    `;
+                });
+                
+                challengesHtml += `
+                    <div class="collaborative-challenge ${ageStyle.challengeContainer}">
+                        <h4 class="${ageStyle.challengeTitle}">${challenge.title}</h4>
+                        <p class="challenge-description ${ageStyle.challengeDesc}">${challenge.description}</p>
+                        <div class="team-parts">
+                            ${partsHtml}
+                        </div>
+                        <div class="completion-note ${ageStyle.completionNote}">
+                            <em>${challenge.completionRequirement}</em>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        return `
+            <div class="team-communication-challenge ${ageStyle.containerClass}">
+                <h3 class="${ageStyle.titleClass}">🤝 Unity Communication Matrix</h3>
+                <div class="challenge-info ${ageStyle.infoClass}">
+                    <p><strong>${content.title || 'Team Unity Challenge'}</strong></p>
+                    <p>${content.description || 'Demonstrate unity by completing all fellowship requirements.'}</p>
+                    <p><strong>Target Keyword:</strong> <span class="keyword-target ${ageStyle.keywordClass}">${content.keyword || 'FELLOWSHIP'}</span></p>
+                    
+                    <div class="adaptive-hint ${ageStyle.adaptiveHintClass}">
+                        <strong>${this.getAgeIcon(profile.ageGroup)} Instructions:</strong> 
+                        <p>Fill in all three sections below. Each represents a different aspect of Biblical fellowship and unity.</p>
+                        ${profile.ageGroup === 'kids' ? `<p><em>🎯 Think about: Books, verses, and people in the Bible who show friendship and working together!</em></p>` : ''}
+                    </div>
+                </div>
+                
+                <div class="team-challenges">
+                    ${challengesHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary ${ageStyle.buttonClass}" onclick="checkTeamCommunication()">🔗 Verify Unity</button>
+                    <button class="btn secondary" onclick="resetChallenge('teamCommunication')">🔄 Reset</button>
+                </div>
+                
+                <div id="teamCommunicationResult" class="challenge-result"></div>
+            </div>
+        `;
+    }
+
     generateHint(correctAnswer, flexibility) {
         if (flexibility === 'exact') return null;
         
