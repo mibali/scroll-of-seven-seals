@@ -597,7 +597,25 @@ class GameController {
 
         // 🔥 UNIVERSAL FIX: Update player team score in ALL modes
         if (this.gameState.teams) {
-            const playerTeam = this.gameState.teams.find(team => !team.isAI && (team.name === this.gameState.currentTeam || team.name === this.gameState.teamName));
+            console.log('🔍 DEBUG: Looking for player team in:', this.gameState.teams);
+            console.log('🔍 DEBUG: currentTeam:', this.gameState.currentTeam);
+            console.log('🔍 DEBUG: teamName:', this.gameState.teamName);
+            
+            // Try multiple ways to find the player team
+            let playerTeam = this.gameState.teams.find(team => !team.isAI && (team.name === this.gameState.currentTeam || team.name === this.gameState.teamName));
+            
+            if (!playerTeam) {
+                // Fallback: find team that's not AI and matches typical player names
+                playerTeam = this.gameState.teams.find(team => !team.isAI);
+            }
+            
+            if (!playerTeam) {
+                // Last resort: find team named 'Player'
+                playerTeam = this.gameState.teams.find(team => team.name === 'Player');
+            }
+            
+            console.log('🔍 DEBUG: Found player team:', playerTeam);
+            
             if (playerTeam) {
                 // Ensure completedSeals array exists and is in sync
                 if (!playerTeam.completedSeals) {
