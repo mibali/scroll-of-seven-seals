@@ -1,10 +1,8 @@
 // Main Game Controller
 class GameController {
     constructor() {
-        // Try to load saved progress first
-        const savedState = this.loadSavedProgress();
-        
-        this.gameState = savedState || {
+        // Always start with fresh state - only load saved progress when explicitly resuming
+        this.gameState = {
             mode: null, // 'single' or 'multiplayer'
             teamName: '',
             teamSize: 3,
@@ -24,10 +22,7 @@ class GameController {
             }
         };
         
-        console.log('🎮 GameController initialized with state:', {
-            completedSeals: this.gameState.completedSeals,
-            fromSaved: !!savedState
-        });
+        console.log('🎮 GameController initialized with fresh state');
         
         this.gameTimer = null;
         this.autoSaveInterval = null;
@@ -80,6 +75,35 @@ class GameController {
     showMainMenu() {
         this.showScreen('mainMenu');
         this.updatePageState('mainMenu');
+        
+        // Check if there's a saved game and show resume option
+        this.checkForSavedGame();
+    }
+
+    // Check for saved game and show resume button if available
+    checkForSavedGame() {
+        const savedState = this.loadSavedProgress();
+        const resumeButton = document.getElementById('resumeGameBtn');
+        
+        if (savedState && resumeButton) {
+            resumeButton.style.display = 'block';
+            resumeButton.textContent = `Resume Game (${savedState.completedSeals.length}/7 seals)`;
+        } else if (resumeButton) {
+            resumeButton.style.display = 'none';
+        }
+    }
+
+    // Resume saved game
+    resumeGame() {
+        const savedState = this.loadSavedProgress();
+        if (savedState) {
+            this.gameState = savedState;
+            console.log('🔄 Resuming saved game with', savedState.completedSeals.length, 'completed seals');
+            this.showGameScreen();
+            this.startGameTimer();
+        } else {
+            showNotification('No saved game found', 'error');
+        }
     }
 
     // Show single player setup
@@ -177,12 +201,19 @@ class GameController {
                 return;
             }
 
+            // Clear any previous saved progress and start fresh
+            this.clearSavedProgress();
+            
             this.gameState.mode = 'single';
             this.gameState.teamName = teamName;
             this.gameState.teamSize = parseInt(teamSize);
             this.gameState.startTime = Date.now();
             this.gameState.isGameActive = true;
             this.gameState.gameId = `single_${Date.now()}`;
+            this.gameState.completedSeals = [];
+            this.gameState.keywords = [];
+            this.gameState.progress.sealsCompleted = [];
+            this.gameState.progress.keywords = [];
 
             // Generate random puzzle variations
             this.generatePuzzleVariations();
@@ -821,6 +852,16 @@ class GameController {
         }
     }
 
+    // Clear saved progress from localStorage
+    clearSavedProgress() {
+        try {
+            localStorage.removeItem('scrollGameProgress');
+            console.log('🗑️ Cleared saved progress from localStorage');
+        } catch (error) {
+            console.error('❌ Error clearing saved progress:', error);
+        }
+    }
+
     // Auto-save progress
     autoSaveProgress() {
         if (this.gameState.isGameActive && this.gameState.mode === 'single') {
@@ -834,8 +875,15 @@ class GameController {
             const saved = localStorage.getItem('scrollGameProgress');
             if (saved) {
                 const savedState = JSON.parse(saved);
-                if (savedState.mode === 'single' && savedState.isGameActive) {
+                // Only load if there's an active game in single player mode
+                if (savedState.mode === 'single' && savedState.isGameActive && savedState.startTime) {
+                    console.log('📁 Loading saved progress:', {
+                        seals: savedState.completedSeals.length,
+                        keywords: savedState.keywords.length
+                    });
                     return savedState;
+                } else {
+                    console.log('📁 Found saved data but not loading (inactive or no start time)');
                 }
             }
         } catch (error) {
@@ -991,6 +1039,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showMultiPlayerSetup = () => window.gameController.showMultiPlayerSetup();
     window.showCreateGame = () => window.gameController.showCreateGame();
     window.showLeaderboard = () => window.gameController.showLeaderboard();
+    window.resumeGame = () => window.gameController.resumeGame();
     
     window.startSinglePlayerGame = () => window.gameController.startSinglePlayerGame();
     window.createNewGame = () => window.gameController.createNewGame();
