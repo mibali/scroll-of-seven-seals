@@ -2654,8 +2654,8 @@
             gameState.teams = Object.values(roomData.teams || {});
             updateTeamsList();
             
-            // CRITICAL: Update leaderboard when teams change
-            if (gameState.isGameActive) {
+            // CRITICAL: Update leaderboard when teams change (multiplayer only)
+            if (gameState.isGameActive && gameState.mode === 'multiplayer') {
                 updateLeaderboard();
             }
 
@@ -2703,7 +2703,11 @@
                 return;
             }
 
-            // Start local game
+            // Start local game - CRITICAL: Set multiplayer mode and show leaderboard
+            gameState.mode = 'multiplayer';
+            const leaderboardContainer = document.querySelector('.leaderboard');
+            if (leaderboardContainer) leaderboardContainer.style.display = 'block';
+            
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'block';
 
@@ -2720,6 +2724,15 @@
         }
 
         function startSinglePlayerGame() {
+            // CRITICAL: Clear any stale data from previous modes
+            gameState.mode = 'single';
+            gameState.teams = [];
+            gameState.completedSeals = [];
+            
+            // Hide leaderboard immediately for single-player mode
+            const leaderboardContainer = document.querySelector('.leaderboard');
+            if (leaderboardContainer) leaderboardContainer.style.display = 'none';
+            
             // Initialize enhanced game system
             if (!initializeEnhancedGame()) {
                 console.warn('Enhanced features not available, using basic game mode');
@@ -2753,6 +2766,7 @@
             renderSeals();
             startTimer();
             updateProgress();
+            // NOTE: updateLeaderboard() will automatically hide itself in single mode
             updateLeaderboard();
         }
 
@@ -2809,13 +2823,17 @@
                 // Continue with basic game
             }
             
-            // Setup game state
+            // Setup game state - CRITICAL: Clear any previous mode state
             gameState.mode = 'ai';
             gameState.currentTeam = playerTeamName;
             gameState.aiDifficulty = aiDifficulty;
             gameState.completedSeals = [];
             gameState.aiTeams = [];
             gameState.aiTimers = [];
+            
+            // CRITICAL: Show leaderboard for AI mode
+            const leaderboardContainer = document.querySelector('.leaderboard');
+            if (leaderboardContainer) leaderboardContainer.style.display = 'block';
 
             // Create player team
             const playerTeam = { 
@@ -3407,20 +3425,24 @@
         }
 
         function updateLeaderboard() {
-            console.log('📊 updateLeaderboard() called');
-            console.log('📊 gameState.teams:', gameState.teams);
-            console.log('📊 gameState.completedSeals:', gameState.completedSeals);
-            console.log('📊 gameState.currentTeam:', gameState.currentTeam);
-            
+            const leaderboardContainer = document.querySelector('.leaderboard');
             const leaderboardList = document.getElementById('leaderboardList');
+            
+            // CRITICAL: Hide leaderboard completely in single-player mode
+            if (gameState.mode === 'single') {
+                if (leaderboardContainer) leaderboardContainer.style.display = 'none';
+                if (leaderboardList) leaderboardList.innerHTML = '';
+                return;
+            }
+            
+            // Show leaderboard for AI and multiplayer modes
+            if (leaderboardContainer) leaderboardContainer.style.display = 'block';
             if (!leaderboardList) return;
             
             leaderboardList.innerHTML = '';
 
             // Use teams directly - AI teams are already included in gameState.teams
             let allTeams = [...gameState.teams];
-
-            console.log('📊 All teams before sort:', allTeams);
 
             // Sort teams by score (descending)
             const sortedTeams = allTeams.sort((a, b) => b.score - a.score);
@@ -4036,6 +4058,10 @@
 
             // Show mode selection
             document.getElementById('modeSelection').style.display = 'grid';
+            
+            // CRITICAL: Hide leaderboard when returning to mode selection
+            const leaderboardContainer = document.querySelector('.leaderboard');
+            if (leaderboardContainer) leaderboardContainer.style.display = 'none';
 
             // Reset game state
             gameState = {
