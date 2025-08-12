@@ -2946,6 +2946,18 @@
 
             console.log(`🤖 ${aiTeam.name} completed seal ${sealNumber}!`);
 
+            // 🔥 SYNC FIX: Ensure player team score matches their actual progress
+            const playerTeam = gameState.teams.find(team => !team.isAI);
+            if (playerTeam && window.gameController) {
+                const actualSealsCompleted = window.gameController.gameState.completedSeals.length;
+                if (playerTeam.score !== actualSealsCompleted) {
+                    console.log(`🔥 SYNC: Player team score mismatch! UI shows ${playerTeam.score}, actual progress is ${actualSealsCompleted}`);
+                    playerTeam.score = actualSealsCompleted;
+                    playerTeam.completedSeals = [...window.gameController.gameState.completedSeals];
+                    console.log(`🔥 SYNC: Updated player team to match actual progress:`, playerTeam);
+                }
+            }
+            
             // Update UI only if game is still active
             if (gameState.isGameActive) {
                 updateLeaderboard();
