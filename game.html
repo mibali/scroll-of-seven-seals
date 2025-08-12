@@ -2653,6 +2653,11 @@
             // Update teams list
             gameState.teams = Object.values(roomData.teams || {});
             updateTeamsList();
+            
+            // CRITICAL: Update leaderboard when teams change
+            if (gameState.isGameActive) {
+                updateLeaderboard();
+            }
 
             // Update start button for host
             if (gameState.isHost) {
@@ -3246,6 +3251,14 @@
                 if (gameState.roomCode && gameState.currentTeam) {
                     console.log('🔥 UPDATING FIREBASE - Seal completed:', gameState.currentPuzzle.number);
                     console.log('🔥 Total seals completed:', gameState.completedSeals.length);
+                    
+                    // CRITICAL: Update local team score immediately for multiplayer
+                    const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+                    if (currentTeam) {
+                        currentTeam.score = gameState.completedSeals.length;
+                        currentTeam.completedSeals = [...gameState.completedSeals];
+                    }
+                    
                     updateTeamProgressInFirebase();
                 }
 
@@ -3343,6 +3356,39 @@
                 }
             } catch (error) {
                 console.error('❌ FIREBASE UPDATE: Failed to update team progress:', error);
+            }
+        }
+
+        async function resetMultiplayerRoom() {
+            if (!gameState.roomCode || !gameState.currentTeam) return;
+
+            try {
+                // Reset current team's progress
+                const teamData = {
+                    score: 0,
+                    completedSeals: [],
+                    lastUpdate: firebase.database.ServerValue.TIMESTAMP,
+                    lastSealTime: null
+                };
+
+                await database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData);
+                console.log('✅ FIREBASE RESET: Team progress reset successfully');
+                
+                // Reset room status if this team is the host
+                const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+                if (currentTeam && currentTeam.isHost) {
+                    await database.ref(`rooms/${gameState.roomCode}`).update({
+                        status: 'waiting',
+                        gameStarted: false,
+                        gameActive: false,
+                        winner: null,
+                        finalRankings: null,
+                        completionTime: null
+                    });
+                    console.log('✅ FIREBASE RESET: Room status reset successfully');
+                }
+            } catch (error) {
+                console.error('❌ FIREBASE RESET: Failed to reset multiplayer room:', error);
             }
         }
 
@@ -3960,9 +4006,9 @@
             updateProgress();
             updateLeaderboard();
 
-            // CRITICAL: Update Firebase for multiplayer reset
+            // CRITICAL: Reset Firebase room state for multiplayer
             if (gameState.roomCode && gameState.currentTeam) {
-                updateTeamProgressInFirebase();
+                resetMultiplayerRoom();
             }
 
             document.getElementById('timer').textContent = '00:00';
