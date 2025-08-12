@@ -3121,7 +3121,8 @@
             const seals = getSeals();
             seals.forEach(seal => {
                 const sealElement = document.createElement('div');
-                sealElement.className = `seal ${gameState.completedSeals.includes(seal.id) ? 'opened' : ''}`;
+                const isCompleted = gameState.completedSeals.includes(seal.id);
+                sealElement.className = `seal ${isCompleted ? 'opened' : ''}`;
                 sealElement.setAttribute('data-challenge-type', seal.challengeType);
                 sealElement.setAttribute('data-seal-id', seal.id);
                 sealElement.onclick = () => openSeal(seal.id);
@@ -3131,6 +3132,7 @@
                     <div class="seal-title">${seal.title}</div>
                     <div class="seal-theme">${seal.theme}</div>
                     <div class="challenge-type-indicator">${seal.challengeType}</div>
+                    ${isCompleted ? '<div class="completed-badge">✅ Completed</div>' : ''}
                 `;
 
                 sealsGrid.appendChild(sealElement);

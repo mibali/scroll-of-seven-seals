@@ -596,8 +596,24 @@ class EnhancedPuzzleManager {
 
     // CHALLENGE 5: Chronological Order - Biblical Timeline
     generateChronologicalOrderContent(variation) {
+        console.log('📅 generateChronologicalOrderContent called with variation:', variation);
+        
+        // CRITICAL: Ensure events exist, create fallback if missing
+        const defaultEvents = [
+            { id: '1', text: 'God creates the world and Adam & Eve', period: 'Beginning' },
+            { id: '2', text: 'The Fall of Man in the Garden of Eden', period: 'Beginning' },
+            { id: '3', text: "Noah's Flood destroys the earth", period: 'Early History' },
+            { id: '4', text: 'God calls Abraham to leave his homeland', period: 'Patriarchs' },
+            { id: '5', text: 'Joseph sold into slavery, family moves to Egypt', period: 'Patriarchs' },
+            { id: '6', text: 'Moses leads Israelites out of Egypt', period: 'Exodus' },
+            { id: '7', text: 'God gives the Ten Commandments at Mount Sinai', period: 'Exodus' }
+        ];
+        
+        const events = (variation && variation.events) ? variation.events : defaultEvents;
+        console.log('📅 Using events:', events);
+        
         // Shuffle events for display
-        const shuffledEvents = [...variation.events].sort(() => Math.random() - 0.5);
+        const shuffledEvents = [...events].sort(() => Math.random() - 0.5);
         
         let eventsHtml = '';
         shuffledEvents.forEach((event, index) => {
@@ -612,7 +628,7 @@ class EnhancedPuzzleManager {
         });
 
         let timelineHtml = '';
-        for (let i = 0; i < variation.events.length; i++) {
+        for (let i = 0; i < events.length; i++) {
             timelineHtml += `
                 <div class="drop-zone" data-position="${i}">
                     Drop event ${i + 1} here
@@ -626,7 +642,7 @@ class EnhancedPuzzleManager {
                 <div class="challenge-warning">
                     <p><strong>⚠️ ARRANGE IN CORRECT ORDER</strong></p>
                     <p>Drag and drop the biblical events into their correct chronological sequence.</p>
-                    <p><strong>Timeline:</strong> <span class="keyword-target">${variation.timeline}</span></p>
+                    <p><strong>Timeline:</strong> <span class="keyword-target">${variation?.timeline || 'Biblical History'}</span></p>
                 </div>
                 
                 <div class="items-pool">
@@ -1618,6 +1634,12 @@ function checkLogicalReasoning() {
             console.log('🎯 Calling window.completeSeal(2) now...');
             if (typeof window.completeSeal === 'function') {
                 window.completeSeal(2);
+                // Auto-return to seal cards
+                setTimeout(() => {
+                    console.log('🏠 Auto-returning to seal cards from seal 2...');
+                    if (window.closePuzzle) window.closePuzzle();
+                    if (window.renderSeals) window.renderSeals();
+                }, 3000);
             } else {
                 console.error('❌ window.completeSeal is not a function!', typeof window.completeSeal);
             }
@@ -1791,7 +1813,15 @@ function checkCodeBreaking() {
                 ${results.join('<br>')}
             </div>
         `;
-        setTimeout(() => window.completeSeal(4), 1500);
+        setTimeout(() => {
+            window.completeSeal(4);
+            // Auto-return to seal cards
+            setTimeout(() => {
+                console.log('🏠 Auto-returning to seal cards from seal 4...');
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 1500);
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
@@ -1968,7 +1998,15 @@ function checkProphethicLogic() {
                 ${results.join('<br>')}
             </div>
         `;
-        setTimeout(() => window.completeSeal(6), 1500);
+        setTimeout(() => {
+            window.completeSeal(6);
+            // Auto-return to seal cards
+            setTimeout(() => {
+                console.log('🏠 Auto-returning to seal cards from seal 6 (prophetic logic)...');
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 1500);
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">
@@ -2163,7 +2201,15 @@ function checkScriptureTopics() {
                 ${results.join('<br>')}
             </div>
         `;
-        setTimeout(() => window.completeSeal(6), 1500);
+        setTimeout(() => {
+            window.completeSeal(6);
+            // Auto-return to seal cards
+            setTimeout(() => {
+                console.log('🏠 Auto-returning to seal cards from seal 6 (scripture topics)...');
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 1500);
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">

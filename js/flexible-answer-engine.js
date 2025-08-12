@@ -101,7 +101,14 @@ window.checkBibleKnowledgeFlexible = function() {
         audio.playFeedbackSound('encouragement', averageConfidence);
         
         // Delay seal completion for celebration
-        setTimeout(() => window.completeSeal(1), 2000);
+        setTimeout(() => {
+                window.completeSeal(1);
+                // Auto-return to seal cards
+                setTimeout(() => {
+                    if (window.closePuzzle) window.closePuzzle();
+                    if (window.renderSeals) window.renderSeals();
+                }, 3000);
+            }, 2000);
     } else {
         const encouragementMessage = getAgeAppropriateEncouragementMessage(profile.ageGroup);
         
@@ -204,7 +211,14 @@ window.checkCodeBreakingFlexible = function() {
             </div>
         `;
         
-        setTimeout(() => window.completeSeal(4), 2000);
+        setTimeout(() => {
+                window.completeSeal(4);
+                // Auto-return to seal cards
+                setTimeout(() => {
+                    if (window.closePuzzle) window.closePuzzle();
+                    if (window.renderSeals) window.renderSeals();
+                }, 3000);
+            }, 2000);
     } else {
         audio.playFeedbackSound('error');
         
@@ -535,6 +549,11 @@ window.checkChronologicalOrder = function() {
             setTimeout(() => {
                 if (window.completeSeal) {
                     window.completeSeal(5);
+                    // Auto-return to seal cards
+                    setTimeout(() => {
+                        if (window.closePuzzle) window.closePuzzle();
+                        if (window.renderSeals) window.renderSeals();
+                    }, 3000);
                 }
             }, 2000);
         } else if (percentage >= 70) {
@@ -602,10 +621,15 @@ window.checkScriptureTopics = function() {
             
             // Trigger completion
             setTimeout(() => {
-                if (window.completeSeal) {
-                    window.completeSeal(6);
-                }
-            }, 2000);
+            if (window.completeSeal) {
+            window.completeSeal(6);
+                // Auto-return to seal cards
+                    setTimeout(() => {
+                    if (window.closePuzzle) window.closePuzzle();
+                    if (window.renderSeals) window.renderSeals();
+                }, 3000);
+            }
+        }, 2000);
         } else if (percentage >= 50) {
             resultDiv.innerHTML = `
                 <div class="partial-success">
