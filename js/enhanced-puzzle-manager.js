@@ -1,6 +1,7 @@
 // ENHANCED PUZZLE MANAGER WITH ANSWER FLEXIBILITY & AGE ADAPTATION
 // Integrates with UniqueContentEngine for zero content repetition
 
+if (typeof EnhancedPuzzleManager === 'undefined') {
 class EnhancedPuzzleManager {
     constructor() {
         this.currentGameContent = null;
@@ -1124,6 +1125,7 @@ class AudioFeedbackEngine {
 
 // Export the enhanced manager
 window.EnhancedPuzzleManager = EnhancedPuzzleManager;
+} // End of conditional declaration
 window.AnswerValidationEngine = AnswerValidationEngine;
 window.VisualEffectsEngine = VisualEffectsEngine;
 window.AudioFeedbackEngine = AudioFeedbackEngine;

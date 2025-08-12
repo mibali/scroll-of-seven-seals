@@ -1,8 +1,12 @@
 // GAME INTEGRATION SCRIPT - Connects all enhanced features
 // Ensures seamless integration between unique content, age adaptation, and learning journey
 
-let enhancedPuzzleManager = null;
-let learningJourneyManager = null;
+if (typeof enhancedPuzzleManager === 'undefined') {
+    var enhancedPuzzleManager = null;
+}
+if (typeof learningJourneyManager === 'undefined') {
+    var learningJourneyManager = null;
+}
 let currentGameDifficulty = 'beginner';
 let currentPlayerAge = null;
 

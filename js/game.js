@@ -602,12 +602,12 @@ class GameController {
         this.renderSeals();
 
         // 3. leaderboard / sync
-        if (this.gameState.mode === 'single') {
-            console.log('🏆 Updating single player leaderboard...');
+        if (this.gameState.mode === 'single' || this.gameState.mode === 'ai') {
+            console.log('🏆 Updating single player/AI leaderboard...');
             if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
             }
-        } else {
+        } else if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
             await window.MultiplayerManager.updateTeamProgress(
                 this.gameState.gameId,
                 window.MultiplayerManager.currentTeam.id,
