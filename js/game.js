@@ -595,22 +595,34 @@ class GameController {
             this.gameState.progress.keywords = [...this.gameState.keywords];
         }
 
-        // 🔥 AI MODE FIX: Also update the player team in gameState.teams array
-        if (this.gameState.mode === 'ai' && this.gameState.teams) {
-            const playerTeam = this.gameState.teams.find(team => !team.isAI);
+        // 🔥 UNIVERSAL FIX: Update player team score in ALL modes
+        if (this.gameState.teams) {
+            const playerTeam = this.gameState.teams.find(team => !team.isAI && (team.name === this.gameState.currentTeam || team.name === this.gameState.teamName));
             if (playerTeam) {
-                playerTeam.completedSeals.push(sealId);
+                // Ensure completedSeals array exists and is in sync
+                if (!playerTeam.completedSeals) {
+                    playerTeam.completedSeals = [];
+                }
+                if (!playerTeam.completedSeals.includes(sealId)) {
+                    playerTeam.completedSeals.push(sealId);
+                }
                 playerTeam.score = playerTeam.completedSeals.length; // Score = seals completed
-                console.log('🔥 AI MODE: Updated player team:', {
+                console.log('🔥 UNIVERSAL: Updated player team:', {
+                    name: playerTeam.name,
                     completedSeals: playerTeam.completedSeals,
-                    score: playerTeam.score
+                    score: playerTeam.score,
+                    mode: this.gameState.mode
                 });
                 
-                // Trigger the HTML leaderboard update for AI mode
+                // Trigger the HTML leaderboard update
                 if (typeof window.updateLeaderboard === 'function') {
-                    window.updateLeaderboard();
-                    console.log('🔥 AI MODE: Triggered HTML updateLeaderboard()');
+                    setTimeout(() => {
+                        window.updateLeaderboard();
+                        console.log('🔥 UNIVERSAL: Triggered HTML updateLeaderboard()');
+                    }, 100);
                 }
+            } else {
+                console.log('🔥 WARNING: Could not find player team in teams array:', this.gameState.teams);
             }
         }
 
@@ -990,6 +1002,24 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typeof window.updateLeaderboard === 'function') {
                 window.updateLeaderboard();
             }
+        }
+    };
+    
+    // 🔥 DEBUG FUNCTION - Check teams array
+    window.debugTeams = () => {
+        const controller = window.gameController || window.GameController;
+        if (controller && controller.gameState.teams) {
+            console.log('🔥 DEBUG TEAMS:');
+            controller.gameState.teams.forEach((team, index) => {
+                console.log(`Team ${index}:`, {
+                    name: team.name,
+                    score: team.score,
+                    completedSeals: team.completedSeals,
+                    isAI: team.isAI
+                });
+            });
+        } else {
+            console.log('🔥 DEBUG: No teams found');
         }
     };
     
