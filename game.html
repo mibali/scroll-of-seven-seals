@@ -1008,13 +1008,27 @@
             opacity: 1;
         }
 
-        .seal.completed {
+        .seal.completed, .seal.opened {
             border-color: #d4af37;
             background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(0, 0, 0, 0.3) 50%, rgba(212, 175, 55, 0.15) 100%);
             box-shadow: 
                 0 10px 30px rgba(212, 175, 55, 0.2),
                 0 1px 8px rgba(212, 175, 55, 0.1),
                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .completed-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #228b22;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            z-index: 10;
         }
 
         .seal.locked {
@@ -3148,6 +3162,7 @@
             if (!gameState.completedSeals.includes(sealId)) {
                 gameState.completedSeals.push(sealId);
                 console.log('✅ Seal completed, total seals:', gameState.completedSeals.length);
+                console.log('🔓 Current completed seals:', gameState.completedSeals);
                 
                 // Update player team score in AI mode
                 if (gameState.mode === 'ai') {
@@ -3163,9 +3178,10 @@
                     updateLeaderboard();
                 }
                 
-                // Update progress
+                // CRITICAL: Update UI immediately with completed status
                 updateProgress();
                 renderSeals();
+                console.log('🎨 Re-rendered seals with completed status');
                 
                 // Close the modal
                 document.getElementById('puzzleModal').style.display = 'none';

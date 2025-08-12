@@ -1657,7 +1657,12 @@ function checkLogicalReasoning() {
 
 function checkTeamCommunication() {
     const variation = enhancedPuzzleManager.getPuzzleVariation('teamCommunication');
-    if (!variation) return;
+    
+    // CRITICAL: Handle missing variation with fallback logic
+    if (!variation || !variation.challenges) {
+        console.log('🔧 Using fallback team communication validation...');
+        return checkTeamCommunicationFallback();
+    }
     
     let allCorrect = true;
     const results = [];
@@ -2059,6 +2064,91 @@ function checkRevelationCode() {
             <div style="color: #dc3545;">
                 🔥 <strong>Mystery Remains</strong><br>
                 The ultimate codes resist your attempts. Greater wisdom is needed.<br>
+                ${results.join('<br>')}
+            </div>
+        `;
+    }
+}
+
+function checkTeamCommunicationFallback() {
+    console.log('🔧 Running fallback team communication check...');
+    
+    // Check the three input fields from our simplified interface
+    const leaderInput = document.getElementById('team0_part0');
+    const scholarInput = document.getElementById('team0_part1');
+    const teacherInput = document.getElementById('team0_part2');
+    
+    if (!leaderInput || !scholarInput || !teacherInput) {
+        console.error('❌ Team communication input fields not found!');
+        return;
+    }
+    
+    const leaderAnswer = leaderInput.value.trim().toUpperCase();
+    const scholarAnswer = scholarInput.value.trim().toUpperCase();
+    const teacherAnswer = teacherInput.value.trim().toUpperCase();
+    
+    console.log('📝 Answers:', { leader: leaderAnswer, scholar: scholarAnswer, teacher: teacherAnswer });
+    
+    let allCorrect = true;
+    const results = [];
+    
+    // Check Leader answer (Biblical book about fellowship)
+    if (leaderAnswer.includes('ACTS') || leaderAnswer.includes('JOHN') || 
+        leaderAnswer.includes('PHILIPPIANS') || leaderAnswer.includes('CORINTHIANS') ||
+        leaderAnswer.includes('EPHESIANS') || leaderAnswer.includes('HEBREWS')) {
+        results.push('✅ Leader: Biblical fellowship book identified');
+    } else {
+        results.push('❌ Leader: Need a book about fellowship (e.g., Acts, 1 John, Philippians)');
+        allCorrect = false;
+    }
+    
+    // Check Scholar answer (Unity verse)
+    if (scholarAnswer.includes('JOHN') && (scholarAnswer.includes('17') || scholarAnswer.includes('UNITY') || scholarAnswer.includes('ONE')) ||
+        scholarAnswer.includes('EPHESIANS') && scholarAnswer.includes('4') ||
+        scholarAnswer.includes('CORINTHIANS') && scholarAnswer.includes('12') ||
+        scholarAnswer.includes('PSALM') && scholarAnswer.includes('133')) {
+        results.push('✅ Scholar: Unity verse quoted');
+    } else {
+        results.push('❌ Scholar: Need a verse about unity (e.g., John 17:21, Ephesians 4:3)');
+        allCorrect = false;
+    }
+    
+    // Check Teacher answer (Biblical figure promoting fellowship)
+    if (teacherAnswer.includes('PAUL') || teacherAnswer.includes('JOHN') || 
+        teacherAnswer.includes('BARNABAS') || teacherAnswer.includes('PETER') ||
+        teacherAnswer.includes('JESUS') || teacherAnswer.includes('DAVID')) {
+        results.push('✅ Teacher: Fellowship promoter identified');
+    } else {
+        results.push('❌ Teacher: Need a Biblical figure who promoted fellowship (e.g., Paul, John, Barnabas)');
+        allCorrect = false;
+    }
+    
+    const resultDiv = document.getElementById('teamCommunicationResult');
+    if (allCorrect) {
+        resultDiv.innerHTML = `
+            <div style="color: #228b22;">
+                🤝 <strong>UNITY ACHIEVED!</strong><br>
+                Keyword unlocked: <strong>FELLOWSHIP</strong><br>
+                Team coordination successful!<br>
+                ${results.join('<br>')}
+            </div>
+        `;
+        setTimeout(() => {
+            console.log('🎯 Calling completeSeal(3) after team communication success');
+            window.completeSeal(3);
+            
+            // CRITICAL: Auto-return to seal cards after completion
+            setTimeout(() => {
+                console.log('🏠 Auto-returning to seal cards from team communication...');
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 1500);
+    } else {
+        resultDiv.innerHTML = `
+            <div style="color: #dc3545;">
+                💔 <strong>Team Disunity</strong><br>
+                Coordination required. Work together to unlock the truth.<br>
                 ${results.join('<br>')}
             </div>
         `;
