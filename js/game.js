@@ -944,15 +944,54 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openSeal = (sealId) => window.gameController.openSeal(sealId);
     window.closePuzzle = () => window.gameController.closePuzzle();
     window.completeSeal = (sealId) => {
-    console.log('🚀 completeSeal called with sealId:', sealId);
-    if (!window.gameController) {
-        console.error('❌ gameController not available!');
+    console.log('🚀 GAME.JS completeSeal called with sealId:', sealId);
+    console.log('🔍 gameController exists:', !!window.gameController);
+    console.log('🔍 GameController exists:', !!window.GameController);
+    
+    if (!window.gameController && !window.GameController) {
+        console.error('❌ Neither gameController nor GameController available!');
         return;
     }
-    return window.gameController.completeSeal(sealId);
+    
+    // Try both controller references
+    const controller = window.gameController || window.GameController;
+    if (controller && controller.completeSeal) {
+        console.log('✅ Calling controller.completeSeal...');
+        return controller.completeSeal(sealId);
+    } else {
+        console.error('❌ Controller has no completeSeal method!');
+    }
 };
     window.checkFinalAnswer = () => window.gameController.checkFinalAnswer();
     window.newGame = () => window.gameController.newGame();
+    
+    // 🔥 DEBUG FUNCTION - Manual seal completion for testing
+    window.debugCompleteSeal = (sealId) => {
+        console.log('🔥 DEBUG: Manually completing seal', sealId);
+        const controller = window.gameController || window.GameController;
+        if (controller) {
+            console.log('🔥 DEBUG: Current gameState.completedSeals before:', controller.gameState.completedSeals);
+            controller.gameState.completedSeals.push(sealId);
+            console.log('🔥 DEBUG: Current gameState.completedSeals after:', controller.gameState.completedSeals);
+            
+            // Update AI mode player team
+            if (controller.gameState.mode === 'ai' && controller.gameState.teams) {
+                const playerTeam = controller.gameState.teams.find(team => !team.isAI);
+                if (playerTeam) {
+                    playerTeam.completedSeals.push(sealId);
+                    playerTeam.score = playerTeam.completedSeals.length;
+                    console.log('🔥 DEBUG: Updated player team:', playerTeam);
+                }
+            }
+            
+            // Force updates
+            controller.updateProgress();
+            controller.renderSeals();
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+            }
+        }
+    };
     
     window.toggleLeaderboard = () => window.gameController.toggleLeaderboard();
     window.showGlobalLeaderboard = () => window.gameController.showGlobalLeaderboard();
