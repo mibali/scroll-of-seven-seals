@@ -2509,7 +2509,6 @@
             // DEBUG: Add extensive logging
             console.log('🚪 JOINING ROOM - Room code:', roomCode);
             console.log('🔥 Firebase ready?', isFirebaseReady);
-            console.log('📡 Database object:', database);
 
             try {
                 // Ensure Firebase is ready before proceeding
@@ -2531,13 +2530,7 @@
                 const snapshot = await database.ref(`rooms/${roomCode}`).once('value');
                 const roomData = snapshot.val();
                 
-                console.log('📊 Room data found:', roomData);
                 console.log('📊 Snapshot exists:', snapshot.exists());
-                
-                // DEBUG: List all rooms to see what's in the database
-                const allRoomsSnapshot = await database.ref('rooms').once('value');
-                const allRooms = allRoomsSnapshot.val();
-                console.log('📋 All rooms in database:', allRooms);
 
                 if (!roomData) {
                     console.log('❌ Room not found for code:', roomCode);
@@ -2600,7 +2593,11 @@
 
                     // CRITICAL: Update leaderboard with live Firebase data during gameplay
                     if (gameState.isGameActive && roomData.teams) {
-                        console.log('📊 ROOM LISTENER: Updating leaderboard with live data');
+                        updateLeaderboardFromFirebase(roomData.teams);
+                    }
+                    
+                    // CRITICAL: Also update when game is reset or restarted
+                    if (!gameState.isGameActive && roomData.teams) {
                         updateLeaderboardFromFirebase(roomData.teams);
                     }
 
@@ -3257,7 +3254,16 @@
                 updateProgress();
                 updateLeaderboard();
 
-                showAlert(`Seal ${gameState.currentPuzzle ? gameState.currentPuzzle.number : 'Unknown'} opened!`, 'success');
+                const completedSealNumber = gameState.currentPuzzle ? gameState.currentPuzzle.number : 'Unknown';
+                showAlert(`Seal ${completedSealNumber} opened!`, 'success');
+                
+                // CRITICAL: Auto-return to seal cards after completing seal one
+                if (completedSealNumber === 1) {
+                    setTimeout(() => {
+                        closePuzzle();
+                        renderSeals();
+                    }, 2000); // Wait 2 seconds to show completion message
+                }
 
                 // Enhanced check for 7-seal completion
                 console.log('🔍 CHECKING COMPLETION - Seals completed:', gameState.completedSeals.length, 'Total:', gameState.completedSeals);
@@ -3389,11 +3395,8 @@
 
         // CRITICAL: Update leaderboard with LIVE Firebase data for real-time sync
         function updateLeaderboardFromFirebase(firebaseTeams) {
-            console.log('📊 FIREBASE LEADERBOARD: Updating with live data', firebaseTeams);
-            
             const leaderboardList = document.getElementById('leaderboardList');
             if (!leaderboardList) {
-                console.log('📊 FIREBASE LEADERBOARD: Leaderboard element not found');
                 return;
             }
             
@@ -3410,8 +3413,6 @@
 
             // Sort by score (descending)
             const sortedTeams = teamsArray.sort((a, b) => b.score - a.score);
-            
-            console.log('📊 FIREBASE LEADERBOARD: Sorted teams:', sortedTeams);
 
             sortedTeams.forEach((team, index) => {
                 const item = document.createElement('div');
@@ -3424,8 +3425,6 @@
                 `;
                 leaderboardList.appendChild(item);
             });
-            
-            console.log('📊 FIREBASE LEADERBOARD: Leaderboard updated successfully');
         }
 
         function startTimer() {
@@ -3960,6 +3959,11 @@
             renderSeals();
             updateProgress();
             updateLeaderboard();
+
+            // CRITICAL: Update Firebase for multiplayer reset
+            if (gameState.roomCode && gameState.currentTeam) {
+                updateTeamProgressInFirebase();
+            }
 
             document.getElementById('timer').textContent = '00:00';
             showAlert('Game reset! Fresh challenges await!', 'success');
