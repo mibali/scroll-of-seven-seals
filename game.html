@@ -4558,7 +4558,7 @@
         function initializeDragAndDrop() {
             // Enable drag and drop for all draggable items
             document.addEventListener('dragstart', function(e) {
-                if (e.target.classList.contains('draggable-item') || e.target.classList.contains('drag-item')) {
+                if (e.target && e.target.classList && (e.target.classList.contains('draggable-item') || e.target.classList.contains('drag-item'))) {
                     e.target.classList.add('dragging');
                     e.dataTransfer.setData('text/plain', '');
                     e.dataTransfer.effectAllowed = 'move';
@@ -4566,7 +4566,7 @@
             });
 
             document.addEventListener('dragend', function(e) {
-                if (e.target.classList.contains('draggable-item') || e.target.classList.contains('drag-item')) {
+                if (e.target && e.target.classList && (e.target.classList.contains('draggable-item') || e.target.classList.contains('drag-item'))) {
                     e.target.classList.remove('dragging');
                 }
             });
@@ -4577,9 +4577,9 @@
                 
                 // Find the drop zone
                 let dropZone = null;
-                if (e.target.classList.contains('category-drop-zone') || e.target.classList.contains('drop-zone')) {
+                if (e.target && e.target.classList && (e.target.classList.contains('category-drop-zone') || e.target.classList.contains('drop-zone'))) {
                     dropZone = e.target;
-                } else {
+                } else if (e.target && e.target.closest) {
                     dropZone = e.target.closest('.category-drop-zone') || e.target.closest('.drop-zone');
                 }
                 

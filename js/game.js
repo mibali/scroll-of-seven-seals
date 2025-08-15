@@ -602,7 +602,20 @@ class GameController {
             titleEl.textContent = `Seal ${seal.id}: ${seal.title}`;
         }
         if (questionEl) {
-            questionEl.innerHTML = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+            try {
+                console.log(`🎯 Generating puzzle content for seal ${seal.id}, puzzle type: ${seal.puzzle}`);
+                if (!window.PuzzleManager || !window.PuzzleManager.generatePuzzleContent) {
+                    console.error('❌ PuzzleManager or generatePuzzleContent not available');
+                    questionEl.innerHTML = '<p style="color: red; padding: 20px;">Puzzle system not available. Please refresh the page.</p>';
+                    return;
+                }
+                const puzzleContent = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+                console.log(`✅ Generated puzzle content length:`, puzzleContent?.length || 0);
+                questionEl.innerHTML = puzzleContent || '<p style="color: red; padding: 20px;">Failed to generate puzzle content.</p>';
+            } catch (error) {
+                console.error('❌ Error generating puzzle content:', error);
+                questionEl.innerHTML = `<p style="color: red; padding: 20px;">Error loading puzzle: ${error.message}</p>`;
+            }
         }
         if (modalEl) {
             modalEl.style.display = 'block';
@@ -1046,13 +1059,32 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showLeaderboard = () => window.gameController.showLeaderboard();
     window.resumeGame = () => window.gameController.resumeGame();
     
-    // CRITICAL: Override the HTML renderSeals with the GameController version
+    // CRITICAL: Create hybrid renderSeals that preserves HTML functionality but uses correct state
+    const originalRenderSeals = window.renderSeals;
     window.renderSeals = () => {
-        console.log('🎯 Global renderSeals called - delegating to GameController');
-        if (window.gameController && window.gameController.renderSeals) {
+        console.log('🎯 Hybrid renderSeals called');
+        
+        // If GameController is available and we have a sealsGrid, use GameController for the grid
+        if (window.gameController && document.getElementById('sealsGrid')) {
+            console.log('🎯 Using GameController.renderSeals for seal grid');
             return window.gameController.renderSeals();
+        } 
+        // Otherwise, fall back to original HTML version but sync the state first
+        else if (originalRenderSeals) {
+            console.log('🎯 Using original renderSeals with synced state');
+            // Sync global gameState with GameController state if available
+            if (window.gameController && window.gameController.gameState) {
+                const controllerState = window.gameController.gameState;
+                if (window.gameState) {
+                    window.gameState.completedSeals = [...controllerState.completedSeals];
+                    window.gameState.mode = controllerState.mode;
+                    window.gameState.teamName = controllerState.teamName;
+                    console.log('🔄 Synced global gameState with controller state');
+                }
+            }
+            return originalRenderSeals();
         } else {
-            console.error('❌ GameController not available for renderSeals');
+            console.error('❌ No renderSeals function available');
         }
     };
     
