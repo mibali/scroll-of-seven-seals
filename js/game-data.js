@@ -281,33 +281,32 @@ const puzzleVariations = {
     scriptureTopics: [
         {
             keyword: "ORGANIZATION",
-            topicName: "Health and Healing",
+            topicName: "Biblical Wisdom",
             topics: [
                 {
-                    name: "Physical Healing",
-                    description: "Scriptures about bodily health and healing",
+                    name: "God's Promises",
+                    description: "Verses about God's faithful promises",
                     correctVerses: [
-                        "By his wounds we are healed - Isaiah 53:5",
-                        "I am the Lord who heals you - Exodus 15:26",
-                        "He sent his word and healed them - Psalm 107:20"
+                        "I will never leave you nor forsake you - Hebrews 13:5",
+                        "All things work together for good - Romans 8:28",
+                        "He will supply all your needs - Philippians 4:19",
+                        "Cast your cares on him, for he cares for you - 1 Peter 5:7"
                     ]
                 },
                 {
-                    name: "Spiritual Health",
-                    description: "Verses about spiritual wellness and growth",
+                    name: "Christian Living",
+                    description: "Verses about how to live as a Christian",
                     correctVerses: [
-                        "He restores my soul - Psalm 23:3",
-                        "Create in me a clean heart, O God - Psalm 51:10",
-                        "Beloved, I pray that you may prosper and be in health - 3 John 1:2"
+                        "Love your neighbor as yourself - Matthew 22:39",
+                        "Trust in the Lord with all your heart - Proverbs 3:5",
+                        "Be kind to one another - Ephesians 4:32",
+                        "Walk by faith, not by sight - 2 Corinthians 5:7"
                     ]
-                },
-
+                }
             ],
             distractorVerses: [
                 "In the beginning was the Word - John 1:1",
-                "For God so loved the world - John 3:16",
-                "Love your neighbor as yourself - Matthew 22:39",
-                "Trust in the Lord with all your heart - Proverbs 3:5"
+                "For God so loved the world - John 3:16"
             ]
         },
         {
