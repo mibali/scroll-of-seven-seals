@@ -380,7 +380,17 @@ const puzzleVariations = {
                     type: "application",
                     question: "What is the greatest commandment according to Jesus?",
                     answer: "LOVE GOD",
-                    alternates: ["LOVE THE LORD", "LOVE GOD WITH ALL YOUR HEART"],
+                    alternates: [
+                        "LOVE THE LORD", 
+                        "LOVE GOD WITH ALL YOUR HEART", 
+                        "LOVE",
+                        "YOU SHALL LOVE THE LORD YOUR GOD",
+                        "YOU SHALL LOVE THE LORD YOUR GOD WITH ALL YOUR HEART",
+                        "LOVE THE LORD YOUR GOD",
+                        "LOVE THE LORD YOUR GOD WITH ALL YOUR HEART",
+                        "LOVE GOD WITH ALL YOUR HEART SOUL AND MIND",
+                        "LOVE THE LORD WITH ALL YOUR HEART SOUL AND MIND"
+                    ],
                     reference: "Matthew 22:37-39",
                     explanation: "Love God with all your heart, soul, and mind - and love your neighbor as yourself"
                 }
