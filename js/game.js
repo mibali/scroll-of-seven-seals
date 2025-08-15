@@ -739,7 +739,13 @@ class GameController {
 
         // 5. final challenge?
         if (this.gameState.completedSeals.length === 7) {
-            this.showFinalChallenge();
+            // Small delay to ensure all state updates, UI refreshes, and async operations complete
+            setTimeout(() => {
+                console.log('🎉 All 7 seals completed! Final state check before celebration:');
+                console.log('📊 Completed Seals:', this.gameState.completedSeals.length);
+                console.log('🔑 Keywords:', this.gameState.keywords.length);
+                this.showFinalChallenge();
+            }, 200); // Slightly longer delay to ensure all updates complete
         }
     }
 
@@ -792,17 +798,38 @@ class GameController {
         `;
 
         const now = Date.now();
-        const startTime = this.gameState.startTime || now; // Fallback if startTime is missing
-        const completionTime = now - startTime;
+        const startTime = this.gameState.startTime;
         
-        // Validate completion time to prevent display issues  
-        // Ensure it's positive and reasonable (max 24 hours)
-        const validCompletionTime = Math.max(0, Math.min(Math.abs(completionTime), 86400000));
-        const timeString = this.formatTime(validCompletionTime);
-        
-        console.log('⏰ Completion time calculation:', {
-            now, startTime, completionTime, validCompletionTime, timeString
+        console.log('⏰ Completion time debug:', { 
+            now, 
+            startTime, 
+            gameState: this.gameState 
         });
+        
+        let completionTime;
+        
+        // Validate that we have a proper startTime
+        if (!startTime || typeof startTime !== 'number' || startTime <= 0) {
+            console.error('❌ Invalid or missing startTime:', startTime);
+            // Use a reasonable fallback - estimate based on typical gameplay
+            completionTime = 300000; // 5 minutes fallback
+            console.warn('⚠️ Using 5-minute fallback completion time');
+        } else {
+            completionTime = now - startTime;
+            
+            // Validate completion time is reasonable
+            if (completionTime < 0) {
+                console.error('❌ Negative completion time detected:', completionTime);
+                completionTime = Math.abs(completionTime);
+            } else if (completionTime > 86400000) { // > 24 hours
+                console.warn('⚠️ Very long completion time:', completionTime, 'ms');
+                completionTime = Math.min(completionTime, 3600000); // Cap at 1 hour
+            }
+            
+            console.log('✅ Final completion time:', completionTime, 'ms');
+        }
+        
+        const timeString = this.formatTime(completionTime);
 
         content.innerHTML = `
             <div style="font-size: 4em; margin-bottom: 20px;">🏆</div>
