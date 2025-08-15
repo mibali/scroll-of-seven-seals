@@ -791,10 +791,18 @@ class GameController {
             animation: slideIn 0.5s ease-out;
         `;
 
-        const completionTime = Date.now() - this.gameState.startTime;
-        // Validate completion time to prevent display issues
-        const validCompletionTime = Math.max(0, Math.min(completionTime, 86400000)); // Cap at 24 hours
+        const now = Date.now();
+        const startTime = this.gameState.startTime || now; // Fallback if startTime is missing
+        const completionTime = now - startTime;
+        
+        // Validate completion time to prevent display issues  
+        // Ensure it's positive and reasonable (max 24 hours)
+        const validCompletionTime = Math.max(0, Math.min(Math.abs(completionTime), 86400000));
         const timeString = this.formatTime(validCompletionTime);
+        
+        console.log('⏰ Completion time calculation:', {
+            now, startTime, completionTime, validCompletionTime, timeString
+        });
 
         content.innerHTML = `
             <div style="font-size: 4em; margin-bottom: 20px;">🏆</div>

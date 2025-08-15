@@ -188,9 +188,11 @@ const FirebaseUtils = {
         return Math.random().toString(36).substring(2, 8).toUpperCase();
     },
     
-    // Get current timestamp
+    // Get current timestamp - always use client-side timestamp for consistency
     timestamp: () => {
-        return firebase?.database?.ServerValue?.TIMESTAMP || Date.now();
+        // Always use Date.now() to avoid Firebase server timestamp complications
+        // Firebase ServerValue.TIMESTAMP can cause timing calculation issues
+        return Date.now();
     },
     
     // Validate room code format
