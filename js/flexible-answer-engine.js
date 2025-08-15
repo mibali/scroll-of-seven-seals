@@ -499,8 +499,13 @@ window.checkChronologicalOrder = function() {
         const droppedItem = zone.querySelector('.drag-item');
         if (droppedItem) {
             droppedEvents[index] = droppedItem.dataset.eventId;
+            console.log(`📅 Zone ${index}: found item with eventId="${droppedItem.dataset.eventId}"`);
+        } else {
+            console.log(`📅 Zone ${index}: empty`);
         }
     });
+    
+    console.log('📅 Collected droppedEvents:', droppedEvents);
     
     // Check if we have all events placed
     if (droppedEvents.length !== dropZones.length || droppedEvents.includes(undefined)) {
@@ -534,8 +539,12 @@ window.checkChronologicalOrder = function() {
     
     // Compare with placed order
     let correctCount = 0;
+    console.log('📅 Comparing droppedEvents vs correctOrder:');
     droppedEvents.forEach((eventId, index) => {
-        if (eventId === correctOrder[index]) {
+        const expected = correctOrder[index];
+        const matches = eventId === expected;
+        console.log(`📅 Position ${index}: got "${eventId}" vs expected "${expected}" = ${matches}`);
+        if (matches) {
             correctCount++;
             // Highlight correct placements
             dropZones[index].style.backgroundColor = '#4ade80';
@@ -544,6 +553,8 @@ window.checkChronologicalOrder = function() {
             dropZones[index].style.backgroundColor = '#f87171';
         }
     });
+    
+    console.log(`📅 Final result: ${correctCount}/${droppedEvents.length} correct`);
     
     const resultDiv = document.getElementById('chronologicalOrderResult');
     if (resultDiv) {

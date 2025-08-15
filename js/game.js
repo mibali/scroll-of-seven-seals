@@ -529,6 +529,7 @@ class GameController {
         }
         
         console.log('🎯 Rendering seals. GameData.seals:', window.GameData.seals.length);
+        console.log('🎯 Current completedSeals:', this.gameState.completedSeals);
         let html = '';
         
         window.GameData.seals.forEach(seal => {
@@ -539,8 +540,10 @@ class GameController {
             if (isCompleted) statusClass = 'completed';
             else if (isLocked) statusClass = 'locked';
             
-            console.log(`🔧 Processing seal ${seal.id} (type: ${typeof seal.id}): completed=${isCompleted}, locked=${isLocked}`);
-            console.log(`🔧 completedSeals:`, this.gameState.completedSeals, 'types:', this.gameState.completedSeals.map(id => typeof id));
+            console.log(`🔧 Seal ${seal.id} (type: ${typeof seal.id}): completed=${isCompleted}, locked=${isLocked}`);
+            if (seal.id <= 4) { // Only log for first 4 seals to avoid spam
+                console.log(`🔧 Checking if ${seal.id} in [${this.gameState.completedSeals}] = ${this.gameState.completedSeals.includes(seal.id)}`);
+            }
             
             html += `
                 <div class="seal ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}">
