@@ -734,6 +734,16 @@ class GameController {
                 window.LeaderboardManager.hideLeaderboard();
             }
         } else if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
+            // CRITICAL: Ensure progress is fully updated before syncing to Firebase
+            this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
+            this.gameState.progress.keywords = [...this.gameState.keywords];
+            this.gameState.progress.lastUpdated = Date.now();
+            
+            console.log('🔥 Syncing multiplayer progress:', {
+                sealsCompleted: this.gameState.progress.sealsCompleted.length,
+                teamId: window.MultiplayerManager.currentTeam.id
+            });
+            
             await window.MultiplayerManager.updateTeamProgress(
                 this.gameState.gameId,
                 window.MultiplayerManager.currentTeam.id,
@@ -805,14 +815,25 @@ class GameController {
         `;
 
         const now = Date.now();
-        // FIX: Handle both single-player (this.gameState) and AI mode (global gameState) 
-        const startTime = this.gameState.startTime || (window.gameState && window.gameState.startTime);
+        // FIX: Handle ALL modes - single-player, AI, and multiplayer
+        let startTime = this.gameState.startTime || (window.gameState && window.gameState.startTime);
+        
+        // For multiplayer, also check if we have Firebase team data with startTime
+        if (!startTime && this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
+            // Try to get startTime from Firebase data if available
+            if (window.MultiplayerManager.currentTeamData?.progress?.startTime) {
+                startTime = window.MultiplayerManager.currentTeamData.progress.startTime;
+                console.log('🔥 Using Firebase team startTime for multiplayer');
+            }
+        }
         
         console.log('⏰ Completion time debug:', { 
             now, 
             startTime,
+            mode: this.gameState.mode,
             controllerStartTime: this.gameState.startTime,
             globalStartTime: window.gameState?.startTime,
+            firebaseStartTime: window.MultiplayerManager?.currentTeamData?.progress?.startTime,
             gameState: this.gameState 
         });
         
