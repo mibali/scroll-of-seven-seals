@@ -792,7 +792,9 @@ class GameController {
         `;
 
         const completionTime = Date.now() - this.gameState.startTime;
-        const timeString = this.formatTime(completionTime);
+        // Validate completion time to prevent display issues
+        const validCompletionTime = Math.max(0, Math.min(completionTime, 86400000)); // Cap at 24 hours
+        const timeString = this.formatTime(validCompletionTime);
 
         content.innerHTML = `
             <div style="font-size: 4em; margin-bottom: 20px;">🏆</div>
