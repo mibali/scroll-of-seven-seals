@@ -1046,6 +1046,16 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showLeaderboard = () => window.gameController.showLeaderboard();
     window.resumeGame = () => window.gameController.resumeGame();
     
+    // CRITICAL: Override the HTML renderSeals with the GameController version
+    window.renderSeals = () => {
+        console.log('🎯 Global renderSeals called - delegating to GameController');
+        if (window.gameController && window.gameController.renderSeals) {
+            return window.gameController.renderSeals();
+        } else {
+            console.error('❌ GameController not available for renderSeals');
+        }
+    };
+    
     window.startSinglePlayerGame = () => window.gameController.startSinglePlayerGame();
     window.createNewGame = () => window.gameController.createNewGame();
     window.joinGame = () => window.gameController.joinGame();

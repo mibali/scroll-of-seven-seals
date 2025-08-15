@@ -523,18 +523,41 @@ window.checkChronologicalOrder = function() {
     
     // Get the correct order from the puzzle variation
     let correctOrder;
-    if (window.enhancedPuzzleManager) {
-        const variation = window.enhancedPuzzleManager.getPuzzleVariation('chronologicalOrder');
-        if (variation && variation.correctOrder) {
-            correctOrder = variation.correctOrder;
-            console.log('📅 Using variation correct order:', correctOrder);
-        } else {
-            console.log('📅 No variation found, using fallback');
-            correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
-        }
+    let variation = null;
+    
+    // Try multiple ways to get the puzzle manager
+    const puzzleManager = window.enhancedPuzzleManager || window.PuzzleManager;
+    
+    if (puzzleManager && puzzleManager.getPuzzleVariation) {
+        variation = puzzleManager.getPuzzleVariation('chronologicalOrder');
+        console.log('📅 Found puzzle manager, variation:', variation);
+    }
+    
+    if (variation && variation.correctOrder) {
+        correctOrder = variation.correctOrder;
+        console.log('📅 Using variation correct order:', correctOrder);
     } else {
-        console.log('📅 No enhancedPuzzleManager, using fallback');
-        correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+        // Smart fallback: detect event IDs from actual dragged items
+        const sampleItem = document.querySelector('.drag-item[data-event-id]');
+        if (sampleItem && sampleItem.dataset.eventId) {
+            const sampleId = sampleItem.dataset.eventId;
+            console.log('📅 Sample event ID detected:', sampleId);
+            
+            // If it's semantic IDs like "creation", "fall", etc., use the biblical timeline order
+            if (['creation', 'fall', 'flood', 'abraham', 'egypt', 'exodus', 'sinai', 'promised'].includes(sampleId)) {
+                correctOrder = ['creation', 'fall', 'flood', 'abraham', 'egypt', 'exodus', 'sinai', 'promised'];
+                console.log('📅 Using Old Testament timeline order');
+            } else if (['saul', 'david', 'solomon', 'divided', 'assyria', 'babylon', 'return', 'temple2'].includes(sampleId)) {
+                correctOrder = ['saul', 'david', 'solomon', 'divided', 'assyria', 'babylon', 'return', 'temple2'];
+                console.log('📅 Using Kings and Prophets timeline order');
+            } else {
+                correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+                console.log('📅 Using numeric fallback order');
+            }
+        } else {
+            correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+            console.log('📅 No event IDs found, using numeric fallback');
+        }
     }
     
     // Compare with placed order
@@ -571,12 +594,16 @@ window.checkChronologicalOrder = function() {
             
             // Trigger completion
             setTimeout(() => {
+                console.log('🎯 Triggering completeSeal(5) for chronological order');
                 if (window.completeSeal) {
-                    window.completeSeal(5);
+                    window.completeSeal(5, variation ? variation.keyword : 'CHRONOLOGY');
                     // Auto-return to seal cards
                     setTimeout(() => {
                         if (window.closePuzzle) window.closePuzzle();
-                        if (window.renderSeals) window.renderSeals();
+                        if (window.renderSeals) {
+                            console.log('🔄 Calling renderSeals after completion');
+                            window.renderSeals();
+                        }
                     }, 3000);
                 }
             }, 2000);
