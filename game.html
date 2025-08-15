@@ -1606,21 +1606,35 @@
             line-height: 1.6;
         }
 
-        .puzzle-input {
+        .puzzle-input, 
+        input[type="text"],
+        input[type="password"],
+        input[type="email"] {
             width: 100%;
             padding: 15px;
             font-size: 1.1em;
             border: 2px solid #6b4d37;
             border-radius: 10px;
-            background: rgba(0, 0, 0, 0.3);
-            color: #f4f1e8;
+            background: rgba(0, 0, 0, 0.3) !important;
+            color: #f4f1e8 !important;
             font-family: inherit;
             margin-bottom: 20px;
         }
 
-        .puzzle-input:focus {
+        .puzzle-input:focus,
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="email"]:focus {
             outline: none;
-            border-color: #d4af37;
+            border-color: #d4af37 !important;
+            background: rgba(0, 0, 0, 0.4) !important;
+            color: #ffffff !important;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+        }
+
+        .puzzle-input::placeholder,
+        input[type="text"]::placeholder {
+            color: rgba(244, 241, 232, 0.6) !important;
         }
 
         .puzzle-buttons {

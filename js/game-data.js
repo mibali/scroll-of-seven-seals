@@ -338,15 +338,16 @@ const puzzleVariations = {
                     correctVerses: [
                         "If we confess our sins, he is faithful - 1 John 1:9",
                         "As far as the east is from the west - Psalm 103:12",
-                        "Father, forgive them - Luke 23:34"
+                        "Father, forgive them - Luke 23:34",
+                        "Forgive us our debts, as we forgive our debtors - Matthew 6:12"
                     ]
                 }
             ],
             distractorVerses: [
                 "Be strong and courageous - Joshua 1:9",
-                "Seek first the kingdom of God - Matthew 6:33",
-                "Honor your father and mother - Ephesians 6:2",
-                "Iron sharpens iron - Proverbs 27:17"
+                "Love your neighbor as yourself - Matthew 22:39",
+                "Trust in the Lord with all your heart - Proverbs 3:5",
+                "I can do all things through Christ - Philippians 4:13"
             ]
         }
     ],
