@@ -753,11 +753,193 @@ class GameController {
             `${this.gameState.completedSeals.length}/7 Seals Broken`;
     }
 
-    // Show final challenge
+    // Show final challenge - Completion celebration
     showFinalChallenge() {
-        document.getElementById('finalChallenge').style.display = 'block';
-        document.getElementById('collectedKeywords').innerHTML = 
-            '<h3>🗝️ Collected Keywords:</h3><p>' + this.gameState.keywords.join(', ') + '</p>';
+        console.log('🎉 All 7 seals completed! Showing completion celebration');
+        
+        // Create completion modal
+        this.showCompletionCelebration();
+    }
+
+    // Show completion celebration modal
+    showCompletionCelebration() {
+        const modal = document.createElement('div');
+        modal.id = 'completionModal';
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            animation: fadeIn 0.5s ease-in;
+        `;
+
+        const content = document.createElement('div');
+        content.style.cssText = `
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border: 3px solid #d4af37;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+            animation: slideIn 0.5s ease-out;
+        `;
+
+        const completionTime = Date.now() - this.gameState.startTime;
+        const timeString = this.formatTime(completionTime);
+
+        content.innerHTML = `
+            <div style="font-size: 4em; margin-bottom: 20px;">🏆</div>
+            <h1 style="color: #f4d03f; font-size: 2.5em; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                SCROLL OF SEVEN SEALS
+            </h1>
+            <h2 style="color: #f4d03f; font-size: 2em; margin-bottom: 30px;">
+                MASTERY ACHIEVED!
+            </h2>
+            <div style="color: #ffffff; font-size: 1.3em; line-height: 1.6; margin-bottom: 30px;">
+                <p><strong>🎉 Congratulations!</strong></p>
+                <p>You have successfully broken all 7 seals and demonstrated mastery of biblical wisdom!</p>
+                <p><strong>⏱️ Completion Time:</strong> ${timeString}</p>
+                <p><strong>🗝️ Keywords Collected:</strong> ${this.gameState.keywords.length}</p>
+            </div>
+            <div style="background: rgba(212, 175, 55, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                <h3 style="color: #d4af37; margin-bottom: 15px;">🗝️ Your Keywords:</h3>
+                <p style="color: #f4f1e8; font-size: 1.1em; font-weight: bold;">${this.gameState.keywords.join(' • ')}</p>
+            </div>
+            <div style="color: #b8a082; font-style: italic; margin-bottom: 30px;">
+                "Well done, good and faithful servant!" - Matthew 25:23
+            </div>
+            <button id="returnToSealsBtn" style="
+                background: linear-gradient(135deg, #d4af37, #f4d03f);
+                border: none;
+                color: #1a1a1a;
+                font-size: 1.2em;
+                font-weight: bold;
+                padding: 15px 30px;
+                border-radius: 10px;
+                cursor: pointer;
+                box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+                transition: all 0.3s ease;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(212, 175, 55, 0.4)'"
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 10px rgba(212, 175, 55, 0.3)'">
+                🏠 Return to Seals
+            </button>
+        `;
+
+        // Add animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes slideIn {
+                from { transform: translateY(-50px) scale(0.9); opacity: 0; }
+                to { transform: translateY(0) scale(1); opacity: 1; }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+            @keyframes slideInRight {
+                from { transform: translateX(100px); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+
+        // Add click handler for return button
+        document.getElementById('returnToSealsBtn').addEventListener('click', () => {
+            this.hideCompletionModal();
+            this.returnToSealsAfterCompletion();
+        });
+
+        // Auto-return after 10 seconds
+        setTimeout(() => {
+            if (document.getElementById('completionModal')) {
+                this.hideCompletionModal();
+                this.returnToSealsAfterCompletion();
+            }
+        }, 10000);
+    }
+
+    // Hide completion modal
+    hideCompletionModal() {
+        const modal = document.getElementById('completionModal');
+        if (modal) {
+            modal.style.animation = 'fadeOut 0.3s ease-out';
+            setTimeout(() => {
+                modal.remove();
+            }, 300);
+        }
+    }
+
+    // Return to seals after completion
+    returnToSealsAfterCompletion() {
+        console.log('🔄 Returning to seals after completion');
+        
+        // Close any open puzzle modal
+        const puzzleModal = document.getElementById('puzzleModal');
+        if (puzzleModal) {
+            puzzleModal.style.display = 'none';
+        }
+
+        // Show the game screen
+        this.showGameScreen();
+        
+        // Render seals to show completion badges
+        this.renderSeals();
+        
+        // Show a brief success message
+        setTimeout(() => {
+            this.showBriefSuccessMessage();
+        }, 500);
+    }
+
+    // Show brief success message
+    showBriefSuccessMessage() {
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #228b22, #32cd32);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(34, 139, 34, 0.3);
+            z-index: 9999;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        message.textContent = '🎉 All seals mastered! Well done!';
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            message.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => message.remove(), 300);
+        }, 3000);
+    }
+
+    // Format time helper
+    formatTime(milliseconds) {
+        const minutes = Math.floor(milliseconds / 60000);
+        const seconds = Math.floor((milliseconds % 60000) / 1000);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
     // Check final answer
