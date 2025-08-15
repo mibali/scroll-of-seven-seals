@@ -304,10 +304,7 @@ const puzzleVariations = {
                     ]
                 }
             ],
-            distractorVerses: [
-                "In the beginning was the Word - John 1:1",
-                "For God so loved the world - John 3:16"
-            ]
+            distractorVerses: []
         },
         {
             keyword: "CATEGORIES",
@@ -342,12 +339,7 @@ const puzzleVariations = {
                     ]
                 }
             ],
-            distractorVerses: [
-                "Be strong and courageous - Joshua 1:9",
-                "Love your neighbor as yourself - Matthew 22:39",
-                "Trust in the Lord with all your heart - Proverbs 3:5",
-                "I can do all things through Christ - Philippians 4:13"
-            ]
+            distractorVerses: []
         }
     ],
 

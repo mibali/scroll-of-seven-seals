@@ -250,13 +250,15 @@ class EnhancedPuzzleManager {
             }
         });
 
+        const keyword = (variation && variation.keyword) ? variation.keyword : 'FELLOWSHIP';
+        
         return `
             <div class="team-communication-challenge">
                 <h3>🤝 TEAM COORDINATION TRIAL</h3>
                 <div class="challenge-warning">
                     <p><strong>⚠️ REQUIRES TEAM COLLABORATION</strong></p>
                     <p>Each team member must contribute. Coordinate to unlock the keyword!</p>
-                    <p><strong>Target Keyword:</strong> <span class="keyword-target">${variation.keyword}</span></p>
+                    <p><strong>Target Keyword:</strong> <span class="keyword-target">${keyword}</span></p>
                 </div>
                 
                 <div class="team-challenges">
