@@ -195,7 +195,7 @@ class EnhancedPuzzleManager {
         }
         
         challenges.forEach((challenge, index) => {
-            if (challenge.type === 'collaborative') {
+            if (challenge.type === 'collaborative' || challenge.type === 'division') {
                 let partsHtml = '';
                 challenge.parts.forEach((part, partIndex) => {
                     partsHtml += `
@@ -219,7 +219,7 @@ class EnhancedPuzzleManager {
                             ${partsHtml}
                         </div>
                         <div class="completion-note">
-                            <em>${challenge.completionRequirement}</em>
+                            <em>${challenge.completionRequirement || 'Complete all parts to proceed'}</em>
                         </div>
                     </div>
                 `;
@@ -1709,19 +1709,32 @@ function checkTeamCommunication() {
                    user.includes('REDEMPTION') || user.includes('GRACE');
         }
         
+        // Context-specific matching for apostle network (division type)
+        if (context === 'peter') {
+            return user.includes('PETER') || user.includes('SIMON') || user.includes('CEPHAS');
+        } else if (context === 'paul') {
+            return user.includes('PAUL') || user.includes('SAUL');
+        } else if (context === 'john') {
+            return user.includes('JOHN') || user.includes('BELOVED');
+        }
+        
         return false;
     }
     
     // Check collaborative challenges
     variation.challenges.forEach((challenge, challengeIndex) => {
-        if (challenge.type === 'collaborative') {
+        if (challenge.type === 'collaborative' || challenge.type === 'division') {
             challenge.parts.forEach((part, partIndex) => {
                 const userAnswer = document.getElementById(`team${challengeIndex}_part${partIndex}`).value.trim();
                 
                 let context = '';
+                // Handle different challenge contexts
                 if (part.task.includes("Father's primary attribute")) context = 'father_attribute';
                 else if (part.task.includes("Son's earthly mission")) context = 'son_mission';
                 else if (part.task.includes("Spirit's current work")) context = 'spirit_work';
+                else if (part.task.includes("rock of the church")) context = 'peter';
+                else if (part.task.includes("apostle to the Gentiles")) context = 'paul'; 
+                else if (part.task.includes("beloved disciple")) context = 'john';
                 
                 if (isAcceptableAnswer(userAnswer, part.answer, context)) {
                     results.push(`✅ ${part.role}: United`);
