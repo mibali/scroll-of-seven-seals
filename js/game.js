@@ -250,6 +250,13 @@ class GameController {
             this.gameState.mode = 'single';
             this.gameState.teams = [{ name: teamName, score: 0, completedSeals: [] }];
             
+            // FIX: Ensure startTime is set for accurate completion time tracking
+            if (!this.gameState.startTime) {
+                this.gameState.startTime = Date.now();
+                this.gameState.isGameActive = true;
+                console.log('✅ Game timer started at:', new Date(this.gameState.startTime).toLocaleTimeString());
+            }
+            
             // Hide setup and start game
             const modeSelection = document.getElementById('modeSelection');
             if (modeSelection) modeSelection.style.display = 'none';
@@ -798,11 +805,14 @@ class GameController {
         `;
 
         const now = Date.now();
-        const startTime = this.gameState.startTime;
+        // FIX: Handle both single-player (this.gameState) and AI mode (global gameState) 
+        const startTime = this.gameState.startTime || (window.gameState && window.gameState.startTime);
         
         console.log('⏰ Completion time debug:', { 
             now, 
-            startTime, 
+            startTime,
+            controllerStartTime: this.gameState.startTime,
+            globalStartTime: window.gameState?.startTime,
             gameState: this.gameState 
         });
         
