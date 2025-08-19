@@ -1558,9 +1558,11 @@ function checkBibleKnowledge() {
         }
         
         console.log('🎯 Bible Knowledge passed! About to call completeSeal(1)');
-        setTimeout(() => {
-            console.log('🎯 Calling window.completeSeal(1) now...');
+        
+        // Robust completion handler with fallback waiting
+        const attemptCompletion = (attempts = 0, maxAttempts = 10) => {
             if (typeof window.completeSeal === 'function') {
+                console.log('🎯 Calling window.completeSeal(1) now...');
                 window.completeSeal(1);
                 
                 // CRITICAL: Auto-return to seal cards after completion
@@ -1569,10 +1571,20 @@ function checkBibleKnowledge() {
                     if (window.closePuzzle) window.closePuzzle();
                     if (window.renderSeals) window.renderSeals();
                 }, 3000);
+            } else if (attempts < maxAttempts) {
+                console.log(`⏳ completeSeal not ready, waiting... (${attempts + 1}/${maxAttempts})`);
+                setTimeout(() => attemptCompletion(attempts + 1, maxAttempts), 500);
             } else {
-                console.error('❌ window.completeSeal is not a function!', typeof window.completeSeal);
+                console.error('❌ window.completeSeal never became available!', typeof window.completeSeal);
+                // Fallback: manually update progress if possible
+                if (window.gameController && window.gameController.completeSeal) {
+                    console.log('🔄 Falling back to gameController.completeSeal...');
+                    window.gameController.completeSeal(1);
+                }
             }
-        }, 1500);
+        };
+        
+        setTimeout(() => attemptCompletion(), 1500);
     } else {
         // Record attempt for learning
         window.PuzzleManager.recordSealAttempt('bibleKnowledge', variation, 1, false);
@@ -1638,20 +1650,33 @@ function checkLogicalReasoning() {
             </div>
         `;
         console.log('🎯 Logical Reasoning passed! About to call completeSeal(2)');
-        setTimeout(() => {
-            console.log('🎯 Calling window.completeSeal(2) now...');
+        
+        // Robust completion handler with fallback waiting
+        const attemptCompletion = (attempts = 0, maxAttempts = 10) => {
             if (typeof window.completeSeal === 'function') {
+                console.log('🎯 Calling window.completeSeal(2) now...');
                 window.completeSeal(2);
+                
                 // Auto-return to seal cards
                 setTimeout(() => {
                     console.log('🏠 Auto-returning to seal cards from seal 2...');
                     if (window.closePuzzle) window.closePuzzle();
                     if (window.renderSeals) window.renderSeals();
                 }, 3000);
+            } else if (attempts < maxAttempts) {
+                console.log(`⏳ completeSeal not ready for seal 2, waiting... (${attempts + 1}/${maxAttempts})`);
+                setTimeout(() => attemptCompletion(attempts + 1, maxAttempts), 500);
             } else {
-                console.error('❌ window.completeSeal is not a function!', typeof window.completeSeal);
+                console.error('❌ window.completeSeal never became available for seal 2!', typeof window.completeSeal);
+                // Fallback: manually update progress if possible
+                if (window.gameController && window.gameController.completeSeal) {
+                    console.log('🔄 Falling back to gameController.completeSeal for seal 2...');
+                    window.gameController.completeSeal(2);
+                }
             }
-        }, 1500);
+        };
+        
+        setTimeout(() => attemptCompletion(), 1500);
     } else {
         resultDiv.innerHTML = `
             <div style="color: #dc3545;">

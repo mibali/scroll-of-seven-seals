@@ -771,9 +771,24 @@ class GameController {
     // Update progress bar
     updateProgress() {
         const progress = (this.gameState.completedSeals.length / 7) * 100;
-        document.getElementById('progressFill').style.width = progress + '%';
-        document.getElementById('progressText').textContent = 
-            `${this.gameState.completedSeals.length}/7 Seals Broken`;
+        
+        // Update progress bar with safety checks
+        const progressFill = document.getElementById('progressFill');
+        if (progressFill) {
+            progressFill.style.width = progress + '%';
+        } else {
+            console.warn('⚠️ Progress bar element not found');
+        }
+        
+        // Update progress text with safety checks
+        const progressText = document.getElementById('progressText');
+        if (progressText) {
+            progressText.textContent = `${this.gameState.completedSeals.length}/7 Seals Broken`;
+        } else {
+            console.warn('⚠️ Progress text element not found');
+        }
+        
+        console.log(`📊 Progress updated: ${this.gameState.completedSeals.length}/7 seals (${progress.toFixed(1)}%)`);
     }
 
     // Show final challenge - Completion celebration
@@ -1080,7 +1095,7 @@ class GameController {
         const minutes = Math.floor(elapsed / 60000);
         const seconds = Math.floor((elapsed % 60000) / 1000);
         
-        const timerDisplay = document.getElementById('gameTimer');
+        const timerDisplay = document.getElementById('timer');
         if (timerDisplay) {
             timerDisplay.textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
