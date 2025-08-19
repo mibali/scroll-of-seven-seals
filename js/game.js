@@ -662,6 +662,83 @@ class GameController {
             this.gameState.progress.keywords = [...this.gameState.keywords];
         }
 
+        // 🔥 CRITICAL: Update player team score IMMEDIATELY after state update
+        this.updatePlayerTeamScore(sealId);
+
+        console.log('✅ Updated gameState.completedSeals to:', this.gameState.completedSeals);
+
+        // 2. CRITICAL: Update HTML leaderboard IMMEDIATELY for ALL modes
+        console.log('🚀 FORCING immediate HTML leaderboard update after seal completion');
+        if (typeof window.updateLeaderboard === 'function') {
+            window.updateLeaderboard();
+            console.log('🚀 IMMEDIATE HTML updateLeaderboard triggered after seal completion');
+        }
+
+        // 3. LeaderboardManager update (secondary system)
+        if (this.gameState.mode === 'ai') {
+            console.log('🏆 Updating AI leaderboard immediately...');
+            if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
+                window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
+            }
+            // CRITICAL: Also trigger HTML leaderboard update for AI mode
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+                console.log('🔥 CRITICAL: Triggered HTML updateLeaderboard() for AI mode');
+            }
+        } else if (this.gameState.mode === 'single') {
+            console.log('📊 Single-player mode: Updating leaderboard with AI teams immediately...');
+            if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
+                window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
+            }
+            // CRITICAL: Also trigger HTML leaderboard update for single mode
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+                console.log('🔥 CRITICAL: Triggered HTML updateLeaderboard() for single mode');
+            }
+        }
+
+        // 4. Save state to localStorage for persistence
+        this.saveProgress();
+
+        // 5. refresh UI
+        this.updateProgress();
+        this.renderSeals();
+
+        // 6. multiplayer sync
+        if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
+            // CRITICAL: Ensure progress is fully updated before syncing to Firebase
+            this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
+            this.gameState.progress.keywords = [...this.gameState.keywords];
+            this.gameState.progress.lastUpdated = Date.now();
+            
+            console.log('🔥 Syncing multiplayer progress:', {
+                sealsCompleted: this.gameState.progress.sealsCompleted.length,
+                teamId: window.MultiplayerManager.currentTeam.id
+            });
+            
+            await window.MultiplayerManager.updateTeamProgress(
+                this.gameState.gameId,
+                window.MultiplayerManager.currentTeam.id,
+                this.gameState.progress
+            );
+        }
+
+        // 7. notifications
+        showNotification(`🎉 Seal ${sealId} broken! Keyword: ${keyword}`, 'success');
+
+        // 8. Check for game completion
+        if (this.gameState.completedSeals.length === 7) {
+            console.log('🎉 All seals completed!');
+        }
+
+        // 9. Game completion tracking and final updates
+        const progress = (this.gameState.completedSeals.length / 7) * 100;
+        
+        console.log(`📊 Completed Seals: ${this.gameState.completedSeals.length}`);
+    }
+
+    // Extract team update logic to separate method
+    updatePlayerTeamScore(sealId) {
         // 🔥 UNIVERSAL FIX: Update player team score in ALL modes
         if (this.gameState.teams) {
             console.log('🔍 DEBUG: Looking for player team in:', this.gameState.teams);
@@ -706,26 +783,25 @@ class GameController {
                     mode: this.gameState.mode
                 });
                 
-                // Trigger immediate HTML leaderboard update
-                if (typeof window.updateLeaderboard === 'function') {
-                    window.updateLeaderboard();
-                    console.log('🔥 UNIVERSAL: Triggered immediate HTML updateLeaderboard()');
-                }
+                // Team updated - leaderboard will be called from main completeSeal method
             } else {
                 console.log('🔥 WARNING: Could not find player team in teams array:', this.gameState.teams);
                 console.log('🔥 WARNING: Searched for currentTeam:', this.gameState.currentTeam, 'teamName:', this.gameState.teamName);
                 
-                // FORCE updateLeaderboard anyway since team might exist but not be found
-                if (typeof window.updateLeaderboard === 'function') {
-                    window.updateLeaderboard();
-                    console.log('🔥 FORCE: Triggered HTML updateLeaderboard() despite team not found');
-                }
+                // Team not found - leaderboard will still be called from main completeSeal method
             }
         }
 
         console.log('✅ Updated gameState.completedSeals to:', this.gameState.completedSeals);
 
-        // 2. IMMEDIATE leaderboard update (before UI rendering for faster response)
+        // 2. CRITICAL: Update HTML leaderboard IMMEDIATELY for ALL modes
+        console.log('🚀 FORCING immediate HTML leaderboard update after seal completion');
+        if (typeof window.updateLeaderboard === 'function') {
+            window.updateLeaderboard();
+            console.log('🚀 IMMEDIATE HTML updateLeaderboard triggered after seal completion');
+        }
+
+        // 3. LeaderboardManager update (secondary system)
         if (this.gameState.mode === 'ai') {
             console.log('🏆 Updating AI leaderboard immediately...');
             if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
