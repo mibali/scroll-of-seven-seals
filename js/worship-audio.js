@@ -16,12 +16,12 @@ class WorshipAudio {
         this.audioContext = null;
         this.setupAudioContext();
         
-        // Live Gospel Radio Stream - Black Gospel Radio 365
+        // Live Gospel Radio Stream - Moody Radio Urban Praise
         this.radioStream = {
-            name: "Black Gospel Radio 365",
-            url: "https://live365.com/station/Black-Gospel-Radio-365-a24152",
-            streamUrl: "http://ice.live365.com/stream/a24152", // Live365 stream URL format
-            description: "All GOSPEL. Only GOSPEL. All The Time!",
+            name: "Moody Radio Urban Praise",
+            url: "https://www.moodyradio.org/stations/urban-praise/",
+            streamUrl: "https://playerservices.streamtheworld.com/api/livestream-redirect/IM%5F3.mp3",
+            description: "Urban Gospel & Contemporary Christian Music",
             type: "live_radio"
         };
         
@@ -70,9 +70,9 @@ class WorshipAudio {
         
         // Try multiple stream URLs for better compatibility
         this.streamUrls = [
-            "https://ice.live365.com/stream/a24152",
-            "http://ice.live365.com/stream/a24152", 
-            "https://stream.live365.com/a24152"
+            "https://playerservices.streamtheworld.com/api/livestream-redirect/IM%5F3.mp3",
+            "https://playerservices.streamtheworld.com/api/livestream-redirect/IM_3.mp3",
+            "https://ice24.securenetsystems.net/IM3"
         ];
         
         // Add event listeners for radio stream
@@ -82,11 +82,11 @@ class WorshipAudio {
         });
         
         this.radioElement.addEventListener('loadstart', () => {
-            console.log('📻 Loading Black Gospel Radio 365...');
+            console.log('📻 Loading Moody Radio Urban Praise...');
         });
         
         this.radioElement.addEventListener('canplay', () => {
-            console.log('📻 Black Gospel Radio 365 ready to play');
+            console.log('📻 Moody Radio Urban Praise ready to play');
             this.updateCurrentTrackDisplay(this.radioStream.name);
         });
         
@@ -230,7 +230,7 @@ class WorshipAudio {
             
             this.isPlaying = true;
             
-            console.log('📻 Starting Black Gospel Radio 365...');
+            console.log('📻 Starting Moody Radio Urban Praise...');
             
             // First try to play the radio stream
             this.radioElement.src = this.streamUrls[0];
@@ -240,7 +240,7 @@ class WorshipAudio {
             
             if (playPromise !== undefined) {
                 playPromise.then(() => {
-                    console.log('📻 Black Gospel Radio 365 playing successfully!');
+                    console.log('📻 Moody Radio Urban Praise playing successfully!');
                     this.currentTrack = { 
                         name: this.radioStream.name, 
                         element: this.radioElement,
@@ -294,9 +294,9 @@ class WorshipAudio {
         
         // Reset stream URLs for next time
         this.streamUrls = [
-            "https://ice.live365.com/stream/a24152",
-            "http://ice.live365.com/stream/a24152", 
-            "https://stream.live365.com/a24152"
+            "https://playerservices.streamtheworld.com/api/livestream-redirect/IM%5F3.mp3",
+            "https://playerservices.streamtheworld.com/api/livestream-redirect/IM_3.mp3",
+            "https://ice24.securenetsystems.net/IM3"
         ];
         
         // Clear current track
@@ -407,7 +407,7 @@ class WorshipAudio {
                 button.classList.remove('bg-red-600', 'hover:bg-red-700');
                 button.classList.add('bg-gold-mystique');
                 icon.innerHTML = `<path d="M8 5v14l11-7z"/>`;
-                text.textContent = 'Black Gospel Radio 365';
+                text.textContent = 'Moody Radio Urban Praise';
                 if (nowPlaying) nowPlaying.style.display = 'none';
             }
         }
@@ -454,7 +454,12 @@ window.worshipAudio = new WorshipAudio();
 
 // Global functions for HTML onclick handlers
 function toggleWorship() {
-    window.worshipAudio.toggleWorship();
+    console.log('🎵 Global toggleWorship() called - using WorshipAudio system');
+    if (window.worshipAudio) {
+        window.worshipAudio.toggleWorship();
+    } else {
+        console.error('❌ window.worshipAudio not available!');
+    }
 }
 
 function adjustWorshipVolume(volume) {

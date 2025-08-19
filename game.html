@@ -3350,7 +3350,8 @@
                 
                 // For multiplayer, update Firebase
                 if (gameState.roomCode && database) {
-                    updateMultiplayerProgress();
+                    console.log('🔥 FIREBASE: Calling updateTeamProgressInFirebase for multiplayer sync');
+                    updateTeamProgressInFirebase();
                 }
             }
         }
@@ -4988,7 +4989,7 @@
                 'Holy Spirit Instrumental',
                 'Sacred Meditation Music',
                 'Reverent Praise Atmosphere',
-                'Black Gospel Radio 365',
+                'Moody Radio Urban Praise',
                 'Spiritual Reflection Music',
                 'Divine Presence Instrumental',
                 'Sanctuary Worship Ambience'
@@ -5229,7 +5230,23 @@
             };
         }
 
-        async function toggleWorship() {
+        // DISABLED: Old toggleWorship function - now using worship-audio.js
+        // The new WorshipAudio class in worship-audio.js provides the toggleWorship() function
+        // which streams Moody Radio Urban Praise instead of generated audio
+        
+        async function toggleWorshipOLD_DISABLED() {
+            console.log('🎵 toggleWorship called - checking for new WorshipAudio system...');
+            
+            // Use the new WorshipAudio system instead of the old one
+            if (window.worshipAudio) {
+                console.log('✅ Using new WorshipAudio system (Radio Stream)');
+                window.worshipAudio.toggleWorship();
+                return;
+            }
+            
+            console.log('⚠️ Falling back to old worship system (Generated Audio)');
+            
+            // Fallback to old system if new one isn't loaded
             const button = document.getElementById('worshipToggle');
             const nowPlaying = document.getElementById('nowPlaying');
             const currentTrack = document.getElementById('currentTrack');
@@ -5302,7 +5319,7 @@
             } else {
                 // Stop worship atmosphere with graceful fade-out
                 worshipPlaying = false;
-                button.innerHTML = '<span class="worship-icon">📻</span><span class="worship-text">Black Gospel Radio 365</span>';
+                button.innerHTML = '<span class="worship-icon">📻</span><span class="worship-text">Moody Radio Urban Praise</span>';
                 button.classList.remove('playing');
                 
                 // Smooth fade out
@@ -5567,7 +5584,7 @@
                             <svg id="worshipIcon" class="w-6 h-6 relative z-10 group-hover:animate-pulse" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z"/>
                             </svg>
-                            <span id="worshipText" class="text-lg font-semibold relative z-10 font-cinzel">Black Gospel Radio 365</span>
+                            <span id="worshipText" class="text-lg font-semibold relative z-10 font-cinzel">Moody Radio Urban Praise</span>
                         </button>
                         
                         <div class="flex items-center space-x-4 bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-2xl px-6 py-3 text-sm text-amber-200 shadow-golden-glow" 
