@@ -266,10 +266,12 @@ class WorshipAudio {
     }
     
     stopWorship() {
+        console.log('🛑 Stopping worship audio...');
         this.isPlaying = false;
         
         // Stop radio stream
         if (this.radioElement) {
+            console.log('📻 Pausing radio stream');
             this.radioElement.pause();
             this.radioElement.src = '';
         }
@@ -308,9 +310,12 @@ class WorshipAudio {
     }
     
     toggleWorship() {
+        console.log(`🔄 Toggle worship called - currently playing: ${this.isPlaying}`);
         if (this.isPlaying) {
+            console.log('⏸️ Stopping worship...');
             this.stopWorship();
         } else {
+            console.log('▶️ Starting worship...');
             this.startWorship();
         }
     }
@@ -396,20 +401,27 @@ class WorshipAudio {
         const text = document.getElementById('worshipText');
         const nowPlaying = document.getElementById('nowPlaying');
         
+        console.log(`🔄 Updating worship button - isPlaying: ${this.isPlaying}`);
+        console.log(`📋 Button elements found - button: ${!!button}, icon: ${!!icon}, text: ${!!text}`);
+        
         if (button && icon && text) {
             if (this.isPlaying) {
+                console.log('▶️ Setting button to PAUSE state');
                 button.classList.add('bg-red-600', 'hover:bg-red-700');
                 button.classList.remove('bg-gold-mystique');
                 icon.innerHTML = `<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>`;
                 text.textContent = 'Pause Worship';
                 if (nowPlaying) nowPlaying.style.display = 'flex';
             } else {
+                console.log('⏸️ Setting button to PLAY state');
                 button.classList.remove('bg-red-600', 'hover:bg-red-700');
                 button.classList.add('bg-gold-mystique');
                 icon.innerHTML = `<path d="M8 5v14l11-7z"/>`;
                 text.textContent = 'Moody Radio Urban Praise';
                 if (nowPlaying) nowPlaying.style.display = 'none';
             }
+        } else {
+            console.warn('⚠️ Could not find worship button elements');
         }
     }
     
