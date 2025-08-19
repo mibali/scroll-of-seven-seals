@@ -221,15 +221,10 @@ class GameController {
             this.showGameScreen();
             this.startGameTimer();
             
-            // CRITICAL: Don't initialize leaderboard for single player mode
-            if (window.LeaderboardManager && this.gameState?.mode !== 'single') {
+            // Initialize leaderboard for both single-player and AI modes
+            if (window.LeaderboardManager && (this.gameState?.mode === 'single' || this.gameState?.mode === 'ai')) {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
-                console.log('🏆 Initialized leaderboard for non-single mode');
-            } else {
-                console.log('🚫 Single-player mode: Leaderboard disabled');
-                if (window.LeaderboardManager) {
-                    window.LeaderboardManager.hideLeaderboard();
-                }
+                console.log('🏆 Initialized leaderboard for mode:', this.gameState?.mode);
             }
             
             showNotification(`Welcome ${teamName}! Your quest begins now.`, 'success');
@@ -701,12 +696,10 @@ class GameController {
                     mode: this.gameState.mode
                 });
                 
-                // Trigger the HTML leaderboard update
+                // Trigger immediate HTML leaderboard update
                 if (typeof window.updateLeaderboard === 'function') {
-                    setTimeout(() => {
-                        window.updateLeaderboard();
-                        console.log('🔥 UNIVERSAL: Triggered HTML updateLeaderboard()');
-                    }, 100);
+                    window.updateLeaderboard();
+                    console.log('🔥 UNIVERSAL: Triggered immediate HTML updateLeaderboard()');
                 }
             } else {
                 console.log('🔥 WARNING: Could not find player team in teams array:', this.gameState.teams);
@@ -715,25 +708,28 @@ class GameController {
 
         console.log('✅ Updated gameState.completedSeals to:', this.gameState.completedSeals);
 
-        // 2. Save state to localStorage for persistence
-        this.saveProgress();
-
-        // 3. refresh UI
-        this.updateProgress();
-        this.renderSeals();
-
-        // 3. leaderboard / sync
+        // 2. IMMEDIATE leaderboard update (before UI rendering for faster response)
         if (this.gameState.mode === 'ai') {
-            console.log('🏆 Updating AI leaderboard...');
+            console.log('🏆 Updating AI leaderboard immediately...');
             if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
             }
         } else if (this.gameState.mode === 'single') {
-            console.log('🚫 Single-player mode: Leaderboard update skipped');
-            if (window.LeaderboardManager) {
-                window.LeaderboardManager.hideLeaderboard();
+            console.log('📊 Single-player mode: Updating leaderboard with AI teams immediately...');
+            if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
+                window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
             }
-        } else if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
+        }
+
+        // 3. Save state to localStorage for persistence
+        this.saveProgress();
+
+        // 4. refresh UI
+        this.updateProgress();
+        this.renderSeals();
+
+        // 5. multiplayer sync
+        if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
             // CRITICAL: Ensure progress is fully updated before syncing to Firebase
             this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
             this.gameState.progress.keywords = [...this.gameState.keywords];

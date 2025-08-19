@@ -6,6 +6,7 @@ class LeaderboardManager {
         this.currentGameId = null;
         this.updateInterval = null;
         this.isLeaderboardVisible = true;
+        this.updateTimeout = null; // For debouncing rapid updates
     }
 
     // Initialize leaderboard for a game
@@ -67,10 +68,59 @@ class LeaderboardManager {
 
     // Update live leaderboard for single player
     updateSinglePlayerProgress(gameState) {
-        // CRITICAL: Don't show leaderboard in single-player mode
-        console.log('🚫 Single-player mode: Leaderboard disabled');
-        this.hideLeaderboard();
-        return;
+        if (!gameState) return;
+        
+        const playerSeals = (gameState.sealsCompleted?.length || gameState.completedSeals?.length || gameState.progress?.sealsCompleted?.length || 0);
+        
+        // Generate AI teams based on player progress
+        const aiTeams = this.generateAITeams(playerSeals);
+        
+        // Add player to the mix
+        const playerTeam = {
+            id: 'player',
+            name: 'Your Team',
+            status: playerSeals === 7 ? 'completed' : 'playing',
+            progress: {
+                sealsCompleted: gameState.sealsCompleted || gameState.completedSeals || gameState.progress?.sealsCompleted || [],
+                startTime: gameState.startTime || Date.now(),
+                completionTime: playerSeals === 7 ? Date.now() - gameState.startTime : null
+            }
+        };
+        
+        // Combine all teams and update leaderboard
+        const allTeams = [playerTeam, ...aiTeams];
+        this.liveLeaderboard = allTeams
+            .sort((a, b) => {
+                // First by seals completed
+                const aSeals = a.progress?.sealsCompleted?.length || 0;
+                const bSeals = b.progress?.sealsCompleted?.length || 0;
+                
+                if (aSeals !== bSeals) {
+                    return bSeals - aSeals;
+                }
+                
+                // Then by completion time (if both completed)
+                if (aSeals === 7 && bSeals === 7) {
+                    const aTime = a.progress?.completionTime || Infinity;
+                    const bTime = b.progress?.completionTime || Infinity;
+                    return aTime - bTime;
+                }
+                
+                // Finally by current elapsed time (for ongoing games)
+                const aElapsed = this.getElapsedTime(a);
+                const bElapsed = this.getElapsedTime(b);
+                return aElapsed - bElapsed;
+            });
+        
+        this.isLeaderboardVisible = true;
+        
+        // Debounced render to prevent rapid successive updates
+        clearTimeout(this.updateTimeout);
+        this.updateTimeout = setTimeout(() => {
+            this.renderLiveLeaderboard();
+        }, 10); // Very short delay, just to batch rapid updates
+        
+        console.log(`📊 Single-player leaderboard updated: Player ${playerSeals}/7 seals`);
     }
 
     // Generate AI teams for single player mode
@@ -132,41 +182,44 @@ class LeaderboardManager {
         this.liveLeaderboard = [];
     }
 
-    // Render live leaderboard in the UI
+    // Render live leaderboard in the UI (optimized for speed)
     renderLiveLeaderboard() {
         const container = document.getElementById('liveLeaderboardContent') || document.getElementById('leaderboardList');
         if (!container || !this.isLeaderboardVisible) return;
 
-        let html = '';
+        // Use requestAnimationFrame for smooth updates
+        requestAnimationFrame(() => {
+            let html = '';
 
-        this.liveLeaderboard.forEach((team, index) => {
-            const rank = index + 1;
-            const sealsCompleted = team.progress?.sealsCompleted?.length || 0;
-            const elapsedTime = this.getElapsedTime(team);
-            const timeDisplay = this.formatTime(elapsedTime);
-            
-            let rankClass = '';
-            if (rank === 1) rankClass = 'first';
-            else if (rank === 2) rankClass = 'second';  
-            else if (rank === 3) rankClass = 'third';
+            this.liveLeaderboard.forEach((team, index) => {
+                const rank = index + 1;
+                const sealsCompleted = team.progress?.sealsCompleted?.length || 0;
+                const elapsedTime = this.getElapsedTime(team);
+                const timeDisplay = this.formatTime(elapsedTime);
+                
+                let rankClass = '';
+                if (rank === 1) rankClass = 'first';
+                else if (rank === 2) rankClass = 'second';  
+                else if (rank === 3) rankClass = 'third';
 
-            const status = team.status === 'completed' ? '✅' : '🔄';
-            const isPlayer = team.id === 'player';
-            const teamDisplay = isPlayer ? `${team.name} (You)` : team.name;
-            
-            html += `
-                <div class="leaderboard-entry ${rankClass} ${isPlayer ? 'player-team' : ''}">
-                    <div class="rank">${this.getRankDisplay(rank)}</div>
-                    <div class="team-info">
-                        <div class="team-name">${teamDisplay} ${status}</div>
-                        <div class="team-progress">${sealsCompleted}/7</div>
+                const status = team.status === 'completed' ? '✅' : '🔄';
+                const isPlayer = team.id === 'player';
+                const teamDisplay = isPlayer ? `${team.name} (You)` : team.name;
+                
+                html += `
+                    <div class="leaderboard-entry ${rankClass} ${isPlayer ? 'player-team' : ''}">
+                        <div class="rank">${this.getRankDisplay(rank)}</div>
+                        <div class="team-info">
+                            <div class="team-name">${teamDisplay} ${status}</div>
+                            <div class="team-progress">${sealsCompleted}/7</div>
+                        </div>
+                        <div class="team-time">${timeDisplay}</div>
                     </div>
-                    <div class="team-time">${timeDisplay}</div>
-                </div>
-            `;
-        });
+                `;
+            });
 
-        container.innerHTML = html || '<p>No teams yet...</p>';
+            container.innerHTML = html || '<p>No teams yet...</p>';
+        });
     }
 
     // Get rank display with medals

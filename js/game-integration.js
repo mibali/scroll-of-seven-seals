@@ -385,11 +385,17 @@ function setupSealCompletion() {
             }
         }
 
-        // update leaderboard after state mutation (only for AI/multiplayer modes)
-        if (window.gameController && window.gameController.gameState?.mode !== 'single') {
-            console.log('🏆 Forcing leaderboard update after seal completion');
-            if (window.LeaderboardManager?.updateSinglePlayerProgress) {
-                window.LeaderboardManager.updateSinglePlayerProgress(window.gameController.gameState);
+        // IMMEDIATE leaderboard update after state mutation (for AI and single player modes)
+        if (window.gameController && window.gameController.gameState) {
+            const mode = window.gameController.gameState.mode;
+            if (mode === 'single' || mode === 'ai') {
+                console.log('🏆 IMMEDIATE leaderboard update after seal completion for mode:', mode);
+                // Use setTimeout with 0 delay to ensure this runs after current execution context
+                setTimeout(() => {
+                    if (window.LeaderboardManager?.updateSinglePlayerProgress) {
+                        window.LeaderboardManager.updateSinglePlayerProgress(window.gameController.gameState);
+                    }
+                }, 0);
             }
         }
 
