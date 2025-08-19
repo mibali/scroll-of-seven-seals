@@ -590,6 +590,7 @@
    RESPONSIVE DESIGN
    ======================================== */
 
+/* Enhanced mobile-friendly age-adaptive styles */
 @media (max-width: 768px) {
     .kids-title { font-size: 2em; }
     .teen-title { font-size: 1.8em; }
@@ -602,6 +603,20 @@
     .scholar-challenge {
         padding: 20px;
         margin: 10px;
+        border-radius: 12px;
+    }
+    
+    /* Touch-friendly buttons for all age groups */
+    .kids-button,
+    .teen-button,
+    .adult-button,
+    .scholar-button {
+        padding: 15px 25px;
+        margin: 8px 4px;
+        min-height: 48px;
+        font-size: 16px;
+        touch-action: manipulation;
+        border-radius: 8px;
     }
     
     .kids-text,
