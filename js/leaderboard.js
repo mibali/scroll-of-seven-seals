@@ -25,6 +25,17 @@ class LeaderboardManager {
             const teamsData = snapshot.val();
             if (teamsData) {
                 this.updateLiveLeaderboard(teamsData);
+                
+                // CRITICAL: Also update HTML leaderboard for cross-device sync
+                console.log('🔥 FIREBASE: Teams data updated, triggering HTML leaderboard');
+                if (typeof window.updateLeaderboard === 'function') {
+                    // Update gameState.teams with Firebase data first
+                    this.syncGameStateWithFirebase(teamsData);
+                    
+                    // Then trigger HTML update
+                    window.updateLeaderboard();
+                    console.log('🔥 FIREBASE: HTML updateLeaderboard triggered from Firebase listener');
+                }
             }
         });
 
@@ -132,6 +143,54 @@ class LeaderboardManager {
         }, 10); // Very short delay, just to batch rapid updates
         
         console.log(`📊 Single-player leaderboard updated: Player ${playerSeals}/7 seals`);
+    }
+
+    // Sync local gameState.teams with Firebase data for cross-device updates
+    syncGameStateWithFirebase(firebaseTeamsData) {
+        if (!window.gameController || !firebaseTeamsData) return;
+        
+        console.log('🔥 FIREBASE SYNC: Updating gameState.teams with Firebase data');
+        
+        // Convert Firebase teams data to array format
+        const firebaseTeams = Object.values(firebaseTeamsData);
+        
+        // Update existing gameState.teams or create new array
+        if (!window.gameController.gameState.teams) {
+            window.gameController.gameState.teams = [];
+        }
+        
+        // Update each team's progress
+        firebaseTeams.forEach(firebaseTeam => {
+            let localTeam = window.gameController.gameState.teams.find(t => 
+                t.id === firebaseTeam.id || t.name === firebaseTeam.name
+            );
+            
+            if (localTeam) {
+                // Update existing team with Firebase data
+                localTeam.score = firebaseTeam.progress?.sealsCompleted?.length || 0;
+                localTeam.completedSeals = firebaseTeam.progress?.sealsCompleted || [];
+                localTeam.status = firebaseTeam.status || 'playing';
+                
+                console.log('🔥 FIREBASE SYNC: Updated team:', {
+                    name: localTeam.name,
+                    score: localTeam.score,
+                    status: localTeam.status
+                });
+            } else {
+                // Add new team from Firebase
+                const newTeam = {
+                    id: firebaseTeam.id,
+                    name: firebaseTeam.name,
+                    score: firebaseTeam.progress?.sealsCompleted?.length || 0,
+                    completedSeals: firebaseTeam.progress?.sealsCompleted || [],
+                    status: firebaseTeam.status || 'playing',
+                    isAI: false
+                };
+                window.gameController.gameState.teams.push(newTeam);
+                
+                console.log('🔥 FIREBASE SYNC: Added new team:', newTeam.name);
+            }
+        });
     }
 
     // Generate AI teams for single player mode
