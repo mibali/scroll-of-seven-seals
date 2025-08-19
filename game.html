@@ -1773,7 +1773,11 @@
                 </div>
                 
                 <h1 class="font-cinzel font-bold text-5xl md:text-7xl text-amber-100 mb-6 tracking-wide relative">
-                    <span class="relative z-10 drop-shadow-2xl" style="text-shadow: 0 0 40px rgba(251, 191, 36, 0.8), 0 0 80px rgba(245, 158, 11, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8);">
+                    <span 
+                        class="relative z-10 drop-shadow-2xl cursor-pointer hover:text-amber-50 transition-all duration-300 hover:scale-105" 
+                        style="text-shadow: 0 0 40px rgba(251, 191, 36, 0.8), 0 0 80px rgba(245, 158, 11, 0.6), 0 2px 4px rgba(0, 0, 0, 0.8);"
+                        onclick="goToHome()"
+                        title="Click to return to main menu">
                         The Scroll of Seven Seals
                     </span>
                 </h1>
@@ -2330,6 +2334,37 @@
                 playerTeam.completedSeals = [...gameState.completedSeals];
                 playerTeam.lastSealTime = Date.now();
                 handleAIGameEnd(playerTeam, elapsed);
+            }
+        };
+        
+        // Home navigation function
+        window.goToHome = function() {
+            console.log('🏠 Returning to main menu...');
+            
+            // Reset any active game state if needed
+            if (window.gameController) {
+                // Stop any active timers
+                if (window.gameController.stopGameTimer) {
+                    window.gameController.stopGameTimer();
+                }
+                // Show main menu
+                window.gameController.showMainMenu();
+            } else {
+                // Fallback: show main menu screen directly
+                document.querySelectorAll('.screen').forEach(screen => screen.classList.remove('active'));
+                const mainMenuScreen = document.getElementById('mainMenu');
+                if (mainMenuScreen) {
+                    mainMenuScreen.classList.add('active');
+                }
+            }
+            
+            // Optional: Add visual feedback
+            const titleElement = document.querySelector('h1 span');
+            if (titleElement) {
+                titleElement.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    titleElement.style.transform = 'scale(1)';
+                }, 150);
             }
         };
         
