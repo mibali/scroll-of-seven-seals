@@ -718,6 +718,16 @@ class GameController {
 
         // 6. multiplayer sync
         if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
+            // CRITICAL: Update multiplayer team score immediately
+            this.updateMultiplayerTeamScore();
+            
+            // CRITICAL: Update HTML leaderboard IMMEDIATELY for multiplayer
+            console.log('🚀 MULTIPLAYER: Forcing immediate HTML leaderboard update');
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+                console.log('🚀 MULTIPLAYER: Immediate HTML updateLeaderboard triggered');
+            }
+            
             // CRITICAL: Ensure progress is fully updated before syncing to Firebase
             this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
             this.gameState.progress.keywords = [...this.gameState.keywords];
@@ -733,6 +743,14 @@ class GameController {
                 window.MultiplayerManager.currentTeam.id,
                 this.gameState.progress
             );
+            
+            // CRITICAL: Update leaderboard again after Firebase sync
+            if (typeof window.updateLeaderboard === 'function') {
+                setTimeout(() => {
+                    window.updateLeaderboard();
+                    console.log('🚀 MULTIPLAYER: Post-Firebase leaderboard update');
+                }, 100);
+            }
         }
 
         // 7. notifications
@@ -803,6 +821,35 @@ class GameController {
                 
                 // Team not found - leaderboard will still be called from main completeSeal method
             }
+        }
+    }
+
+    // Update multiplayer team score method
+    updateMultiplayerTeamScore() {
+        if (!this.gameState.teams || !window.MultiplayerManager.currentTeam) return;
+        
+        console.log('🏆 MULTIPLAYER: Updating team score for:', window.MultiplayerManager.currentTeam.name);
+        
+        // Find the current player's team in gameState.teams
+        const playerTeam = this.gameState.teams.find(team => 
+            team.id === window.MultiplayerManager.currentTeam.id ||
+            team.name === window.MultiplayerManager.currentTeam.name
+        );
+        
+        if (playerTeam) {
+            // CRITICAL: Sync team data with authoritative gameState
+            playerTeam.completedSeals = [...this.gameState.completedSeals];
+            playerTeam.score = this.gameState.completedSeals.length;
+            
+            console.log('🏆 MULTIPLAYER SYNC: Updated team score:', {
+                teamName: playerTeam.name,
+                teamId: playerTeam.id,
+                score: playerTeam.score,
+                completedSeals: playerTeam.completedSeals.length,
+                gameStateSeals: this.gameState.completedSeals.length
+            });
+        } else {
+            console.log('🏆 MULTIPLAYER WARNING: Could not find player team in gameState.teams');
         }
 
         console.log('✅ Updated gameState.completedSeals to:', this.gameState.completedSeals);
