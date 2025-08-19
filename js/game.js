@@ -245,6 +245,18 @@ class GameController {
             this.gameState.mode = 'single';
             this.gameState.teams = [{ name: teamName, score: 0, completedSeals: [], isAI: false }];
             
+            // Add AI competitor teams for single-player mode
+            const aiCompetitors = [
+                { name: 'Scripture Scholars 📚', score: 0, completedSeals: [], isAI: true },
+                { name: 'Holy Hunters 🗡️', score: 1, completedSeals: [1], isAI: true },
+                { name: 'Gospel Guardians 🛡️', score: 0, completedSeals: [], isAI: true }
+            ];
+            this.gameState.teams.push(...aiCompetitors);
+            
+            console.log('🎮 Single-player teams initialized:', this.gameState.teams.map(t => ({
+                name: t.name, score: t.score, isAI: t.isAI
+            })));
+            
             // FIX: Ensure startTime is set for accurate completion time tracking
             if (!this.gameState.startTime) {
                 this.gameState.startTime = Date.now();
@@ -762,14 +774,15 @@ class GameController {
             console.log('🔍 DEBUG: Found player team:', playerTeam);
             
             if (playerTeam) {
-                // Ensure completedSeals array exists and is in sync
-                if (!playerTeam.completedSeals) {
-                    playerTeam.completedSeals = [];
-                }
-                if (!playerTeam.completedSeals.includes(sealId)) {
-                    playerTeam.completedSeals.push(sealId);
-                }
-                playerTeam.score = playerTeam.completedSeals.length; // Score = seals completed
+                // CRITICAL: Sync team data with authoritative gameState
+                playerTeam.completedSeals = [...this.gameState.completedSeals];
+                playerTeam.score = this.gameState.completedSeals.length;
+                
+                console.log('🔥 SYNC: Force syncing team with gameState:', {
+                    gameStateSeals: this.gameState.completedSeals.length,
+                    teamSeals: playerTeam.completedSeals.length,
+                    teamScore: playerTeam.score
+                });
                 console.log('🎯 TEAM UPDATE: Player team after seal completion:', {
                     name: playerTeam.name,
                     score: playerTeam.score,
