@@ -70,7 +70,18 @@ class LeaderboardManager {
     updateSinglePlayerProgress(gameState) {
         if (!gameState) return;
         
-        const playerSeals = (gameState.sealsCompleted?.length || gameState.completedSeals?.length || gameState.progress?.sealsCompleted?.length || 0);
+        // CRITICAL FIX: Use Math.max to avoid short-circuit bug when arrays exist but are empty
+        const playerSeals = Math.max(
+            gameState.sealsCompleted?.length ?? 0,
+            gameState.completedSeals?.length ?? 0,
+            gameState.progress?.sealsCompleted?.length ?? 0
+        );
+        console.log('🔍 SEAL COUNT DEBUG:', {
+            sealsCompleted: gameState.sealsCompleted?.length,
+            completedSeals: gameState.completedSeals?.length,
+            progressSeals: gameState.progress?.sealsCompleted?.length,
+            finalCount: playerSeals
+        });
         
         // Generate AI teams based on player progress
         const aiTeams = this.generateAITeams(playerSeals);
@@ -184,11 +195,17 @@ class LeaderboardManager {
 
     // Render live leaderboard in the UI (optimized for speed)
     renderLiveLeaderboard() {
+        console.trace('🖼️ renderLiveLeaderboard called from:');
         const container = document.getElementById('liveLeaderboardContent') || document.getElementById('leaderboardList');
         if (!container || !this.isLeaderboardVisible) return;
 
         // Use requestAnimationFrame for smooth updates
         requestAnimationFrame(() => {
+            console.log('🖼️ RENDERING leaderboard with data:', this.liveLeaderboard.map(t => ({
+                name: t.name, 
+                seals: t.progress?.sealsCompleted?.length || 0,
+                id: t.id
+            })));
             let html = '';
 
             this.liveLeaderboard.forEach((team, index) => {

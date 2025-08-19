@@ -651,8 +651,11 @@ class GameController {
 
         // 1. update local state
         console.log(`🎯 Adding seal ${sealId} (type: ${typeof sealId}) to completedSeals`);
+        console.log('🎯 BEFORE: completedSeals =', [...this.gameState.completedSeals]);
         this.gameState.completedSeals.push(sealId);
+        console.log('🎯 AFTER: completedSeals =', [...this.gameState.completedSeals]);
         this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
+        console.log('🎯 SYNCED: progress.sealsCompleted =', [...this.gameState.progress.sealsCompleted]);
 
         if (keyword) {
             this.gameState.keywords.push(keyword);
@@ -690,6 +693,12 @@ class GameController {
                     playerTeam.completedSeals.push(sealId);
                 }
                 playerTeam.score = playerTeam.completedSeals.length; // Score = seals completed
+                console.log('🎯 TEAM UPDATE: Player team after seal completion:', {
+                    name: playerTeam.name,
+                    score: playerTeam.score,
+                    completedSeals: [...playerTeam.completedSeals],
+                    gameStateSeals: [...this.gameState.completedSeals]
+                });
                 console.log('🔥 UNIVERSAL: Updated player team:', {
                     name: playerTeam.name,
                     completedSeals: playerTeam.completedSeals,

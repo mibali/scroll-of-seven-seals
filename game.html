@@ -3563,6 +3563,8 @@
         }
 
         function updateLeaderboard() {
+            console.trace('🏆 HTML updateLeaderboard called from:');
+            console.log('🏆 HTML updateLeaderboard - gameState.teams:', gameState.teams?.map(t => ({name: t.name, score: t.score})));
             const leaderboardContainer = document.querySelector('.leaderboard');
             const leaderboardList = document.getElementById('leaderboardList');
             
