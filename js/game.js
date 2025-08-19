@@ -243,7 +243,7 @@ class GameController {
             // Initialize game state
             this.gameState.currentTeam = teamName;
             this.gameState.mode = 'single';
-            this.gameState.teams = [{ name: teamName, score: 0, completedSeals: [] }];
+            this.gameState.teams = [{ name: teamName, score: 0, completedSeals: [], isAI: false }];
             
             // FIX: Ensure startTime is set for accurate completion time tracking
             if (!this.gameState.startTime) {
@@ -664,6 +664,7 @@ class GameController {
             console.log('🔍 DEBUG: Looking for player team in:', this.gameState.teams);
             console.log('🔍 DEBUG: currentTeam:', this.gameState.currentTeam);
             console.log('🔍 DEBUG: teamName:', this.gameState.teamName);
+            console.log('🔍 DEBUG: mode:', this.gameState.mode);
             
             // Try multiple ways to find the player team
             let playerTeam = this.gameState.teams.find(team => !team.isAI && (team.name === this.gameState.currentTeam || team.name === this.gameState.teamName));
@@ -703,6 +704,13 @@ class GameController {
                 }
             } else {
                 console.log('🔥 WARNING: Could not find player team in teams array:', this.gameState.teams);
+                console.log('🔥 WARNING: Searched for currentTeam:', this.gameState.currentTeam, 'teamName:', this.gameState.teamName);
+                
+                // FORCE updateLeaderboard anyway since team might exist but not be found
+                if (typeof window.updateLeaderboard === 'function') {
+                    window.updateLeaderboard();
+                    console.log('🔥 FORCE: Triggered HTML updateLeaderboard() despite team not found');
+                }
             }
         }
 
@@ -714,10 +722,20 @@ class GameController {
             if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
             }
+            // CRITICAL: Also trigger HTML leaderboard update for AI mode
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+                console.log('🔥 CRITICAL: Triggered HTML updateLeaderboard() for AI mode');
+            }
         } else if (this.gameState.mode === 'single') {
             console.log('📊 Single-player mode: Updating leaderboard with AI teams immediately...');
             if (window.LeaderboardManager && window.LeaderboardManager.updateSinglePlayerProgress) {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
+            }
+            // CRITICAL: Also trigger HTML leaderboard update for single mode
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+                console.log('🔥 CRITICAL: Triggered HTML updateLeaderboard() for single mode');
             }
         }
 
