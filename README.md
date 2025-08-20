@@ -1,6 +1,6 @@
 # 🔮 The Scroll of Seven Seals - Real-Time Firebase Multiplayer Bible Mystery Adventure
 
-A real-time multiplayer Bible adventure game with three exciting game modes, built with Firebase and vanilla JavaScript. Challenge teams worldwide to unlock the seven seals through biblical puzzles!
+A real-time multiplayer Bible adventure game with three exciting game modes, spiritual worship audio, and enhanced biblical challenges. Built with Firebase and vanilla JavaScript, featuring immersive worship atmosphere and dynamic AI opponents. Challenge teams worldwide to unlock the seven seals through biblical puzzles!
 
 <img width="1261" height="433" alt="image" src="https://github.com/user-attachments/assets/10e76405-5ad7-48cd-80cd-5e6d133a5dff" />
 
@@ -53,8 +53,23 @@ A real-time multiplayer Bible adventure game with three exciting game modes, bui
 - Top 5 fastest completion times
 - Country representation with flags
 
-### ⚡ Real-Time Features
+### ⚡ Enhanced Features
 
+#### 🎵 Spiritual Worship Audio System
+- **Sacred Harmonies**: Mathematically perfect frequency ratios for spiritual atmosphere
+- **6 Worship Tracks**: "Holy Spirit's Embrace", "Cathedral of Grace", "Angelic Presence", etc.
+- **Ethereal Bell Tones**: Crystalline temple bells with spatial positioning
+- **Dynamic Soundscapes**: Auto-transitioning tracks every 4 minutes
+- **Cathedral Reverb**: Deep 3-second reverb for sacred ambiance
+- **Pause/Play Control**: Seamless audio management without page refresh
+
+#### 🤖 Enhanced AI Competition
+- **Dynamic Difficulty**: Adaptive AI that matches human solving patterns  
+- **Realistic Behavior**: AI teams pause, celebrate, and show human-like reactions
+- **Strategic Timing**: Smart pacing that creates genuine competition
+- **Multiple AI Personalities**: Different solving styles and speeds per team
+
+#### 🔥 Real-Time Multiplayer
 - **🔥 Firebase Integration**: Live database updates and user authentication
 - **⚡ Instant Synchronization**: Real-time game state across all devices  
 - **🏆 Live Winner Detection**: Immediate victory celebration when seals are unlocked
@@ -153,17 +168,30 @@ Each seal features different puzzle mechanics:
 - **Matching**: Connect related biblical concepts
 - **Code Breaking**: Solve numerical puzzles
 
+### 🎵 Worship Audio Experience
+
+Enhance your biblical journey with immersive spiritual audio:
+
+- **🎶 Gospel Radio Button**: Click to start/pause worship music
+- **🔄 Auto-Transitioning**: Experience 6 different sacred soundscapes
+- **🔊 Sacred Frequencies**: Mathematically perfect ratios (256Hz, 341Hz, 426Hz, etc.)
+- **🌊 Cathedral Ambiance**: Deep reverb and ethereal bell tones
+- **📱 Device Friendly**: Works on all modern browsers with Web Audio API
+- **⏯️ Smart Controls**: Seamless pause/resume without page refresh
+
 ## 🏗️ Technical Architecture
 
 ### Stack Overview
 - **Frontend**: Pure HTML5, CSS3, and Vanilla JavaScript (ES6+)
+- **Audio**: Web Audio API with spatial positioning and sacred harmonic synthesis
 - **Backend**: Firebase Realtime Database with Authentication
 - **Hosting**: Render (production) with GitHub integration
-- **Version**: v1.3.1 - Stable release with fixed winner detection
+- **Version**: v1.4.0 - Enhanced spiritual audio system and advanced AI
 
 ### Core Technologies
 - **Firebase SDK 9.22.1** - Real-time database and anonymous auth
-- **Vanilla JavaScript** - No frameworks, pure ES6+ modules
+- **Web Audio API** - Spatial audio synthesis with mathematical harmony ratios
+- **Vanilla JavaScript** - No frameworks, pure ES6+ modules with advanced AI algorithms
 - **CSS Grid & Flexbox** - Responsive design for all devices
 - **WebSocket-like** - Real-time sync via Firebase listeners
 
@@ -227,11 +255,12 @@ Each seal has multiple puzzle variations for replayability:
 ### Live Production  
 - **URL**: [scroll-of-seven-seals.onrender.com](https://scroll-of-seven-seals.onrender.com)
 - **Platform**: Render.com with automatic GitHub deployments
-- **Status**: ✅ Active and stable (v1.3.1)
+- **Status**: ✅ Active and stable (v1.4.0)
 - **Firebase**: Live database with real-time synchronization
 
 ### Version History
-- **v1.3.1** - Current: Fixed winner detection and null error handling
+- **v1.4.0** - Current: Enhanced spiritual audio system with sacred harmonics and advanced AI behavior
+- **v1.3.1** - Fixed winner detection and null error handling
 - **v1.3.0** - Added VS Computer Teams mode with AI opponents  
 - **v1.2.0** - Enhanced multiplayer with room management
 - **v1.1.0** - Global leaderboards and ranking system
