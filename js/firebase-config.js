@@ -19,12 +19,22 @@ try {
         database = firebase.database();
         auth = firebase.auth();
         
+        // Make sure they're globally available
+        window.app = app;
+        window.database = database;
+        window.auth = auth;
+        
         console.log('🔥 Firebase initialized successfully');
+        
+        // Update connection status
+        updateConnectionStatus('connecting');
         
         // Test connectivity after a short delay to ensure auth is ready
         setTimeout(async () => {
-            await FirebaseUtils.testConnectivity();
-        }, 2000);
+            if (window.FirebaseUtils && window.FirebaseUtils.testConnectivity) {
+                await window.FirebaseUtils.testConnectivity();
+            }
+        }, 3000);
         
         // Set up authentication state listener
         auth.onAuthStateChanged((user) => {
@@ -32,12 +42,27 @@ try {
                 console.log('👤 User authenticated:', user.uid);
                 console.log('👤 User details:', { uid: user.uid, isAnonymous: user.isAnonymous });
                 window.currentUser = user;
+                updateConnectionStatus('connected');
+                
+                // Monitor connection status
+                database.ref('.info/connected').on('value', (snapshot) => {
+                    const connected = snapshot.val();
+                    console.log('🔥 Firebase connection status:', connected);
+                    if (connected === true) {
+                        updateConnectionStatus('connected');
+                    } else {
+                        updateConnectionStatus('disconnected');
+                    }
+                });
             } else {
                 console.log('👤 No user authenticated, signing in anonymously...');
                 // Sign in anonymously for game participation
                 auth.signInAnonymously().catch((error) => {
                     console.error('Authentication error:', error);
-                    showNotification('Authentication failed. Some features may not work.', 'error');
+                    updateConnectionStatus('disconnected');
+                    if (window.showNotification) {
+                        showNotification('Authentication failed. Some features may not work.', 'error');
+                    }
                 });
             }
         });
@@ -123,6 +148,34 @@ function createDemoFirebase() {
     window.currentUser = window.auth.currentUser;
 }
 
+// Connection status update function
+function updateConnectionStatus(status) {
+    const statusEl = document.getElementById('connectionStatus');
+    if (!statusEl) return;
+    
+    const textSpan = statusEl.querySelector('span.font-medium');
+    if (!textSpan) return;
+    
+    statusEl.className = `bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/30 rounded-2xl px-4 py-2 text-sm text-slate-200 shadow-golden-glow ${status}`;
+    
+    switch (status) {
+        case 'connecting':
+            textSpan.textContent = '⚡ Connecting to Firebase...';
+            statusEl.style.display = 'block';
+            break;
+        case 'connected':
+            textSpan.textContent = '✅ Firebase Connected';
+            setTimeout(() => {
+                if (statusEl) statusEl.style.display = 'none';
+            }, 3000);
+            break;
+        case 'disconnected':
+            textSpan.textContent = '❌ Firebase Disconnected';
+            statusEl.style.display = 'block';
+            break;
+    }
+}
+
 // Utility functions for Firebase operations
 const FirebaseUtils = {
     // Get a reference to a database path
@@ -135,9 +188,11 @@ const FirebaseUtils = {
         return Math.random().toString(36).substring(2, 8).toUpperCase();
     },
     
-    // Get current timestamp
+    // Get current timestamp - always use client-side timestamp for consistency
     timestamp: () => {
-        return firebase?.database?.ServerValue?.TIMESTAMP || Date.now();
+        // Always use Date.now() to avoid Firebase server timestamp complications
+        // Firebase ServerValue.TIMESTAMP can cause timing calculation issues
+        return Date.now();
     },
     
     // Validate room code format
@@ -149,6 +204,12 @@ const FirebaseUtils = {
     testConnectivity: async () => {
         try {
             console.log('🧪 Testing Firebase connectivity...');
+            
+            // Check if database is available
+            if (!window.database || typeof window.database.ref !== 'function') {
+                throw new Error('Firebase database not initialized');
+            }
+            
             const testRef = window.database.ref('test');
             await testRef.set({ timestamp: Date.now(), test: 'connectivity' });
             console.log('✅ Firebase write test successful');
@@ -163,6 +224,7 @@ const FirebaseUtils = {
             return true;
         } catch (error) {
             console.error('❌ Firebase connectivity test failed:', error);
+            updateConnectionStatus('disconnected');
             return false;
         }
     }

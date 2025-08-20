@@ -11,6 +11,11 @@ class MultiplayerManager {
     // Create a new multiplayer game
     async createGame(gameTitle, maxTeams, hostTeamName, hostTeamSize) {
         try {
+            // Check Firebase connectivity first
+            if (!window.database) {
+                throw new Error('Firebase not available - cannot create multiplayer game');
+            }
+            
             const roomCode = FirebaseUtils.generateRoomCode();
             const gameId = `game_${roomCode}_${Date.now()}`;
             
@@ -32,14 +37,31 @@ class MultiplayerManager {
                 }
             };
 
-            // Create the game in Firebase
+            // Create the game in Firebase with retry logic
             const gameRef = FirebaseUtils.ref(`games/${gameId}`);
             console.log('🎮 Creating game with data:', gameData);
             console.log('🏷️ Room code being saved:', roomCode);
             console.log('📍 Game path:', `games/${gameId}`);
             
-            await gameRef.set(gameData);
-            console.log('✅ Game created successfully in Firebase');
+            // Retry mechanism for Firebase operations
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            while (attempts < maxAttempts) {
+                try {
+                    await gameRef.set(gameData);
+                    console.log('✅ Game created successfully in Firebase');
+                    break;
+                } catch (retryError) {
+                    attempts++;
+                    console.warn(`⚠️ Firebase write attempt ${attempts} failed:`, retryError.message);
+                    if (attempts >= maxAttempts) {
+                        throw retryError;
+                    }
+                    // Wait before retry
+                    await new Promise(resolve => setTimeout(resolve, 1000 * attempts));
+                }
+            }
 
             // Add the host team
             const teamData = await this.joinGameAsTeam(gameId, hostTeamName, hostTeamSize, true);

@@ -3,12 +3,70 @@
     ".read": false,
     ".write": false,
     "rooms": {
-      ".read": true,
-      ".write": true
+      "$roomId": {
+        ".read": true,
+        ".write": true,
+        "players": {
+          "$playerId": {
+            ".read": true,
+            ".write": true
+          }
+        },
+        "gameState": {
+          ".read": true,
+          ".write": true
+        },
+        "progress": {
+          ".read": true,
+          ".write": true
+        },
+        "rankings": {
+          ".read": true,
+          ".write": true
+        },
+        "aiTeams": {
+          ".read": true,
+          ".write": true
+        }
+      }
     },
-    "test": {
+    "playerData": {
+      "$userId": {
+        ".read": "$userId === auth.uid || auth === null",
+        ".write": "$userId === auth.uid || auth === null",
+        "learningData": {
+          ".validate": "newData.hasChildren(['sessions', 'preferences', 'strengths']) || auth === null"
+        },
+        "gameStats": {
+          ".validate": "newData.hasChildren(['gamesPlayed', 'averageTime', 'favoriteComplexity']) || auth === null"
+        }
+      }
+    },
+    "leaderboards": {
       ".read": true,
-      ".write": true
+      ".write": true,
+      "$complexityLevel": {
+        "$entryId": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    },
+    "gameRooms": {
+      ".read": true,
+      ".write": true,
+      "$roomCode": {
+        ".read": true,
+        ".write": true,
+        "teams": {
+          ".read": true,
+          ".write": true
+        },
+        "gameData": {
+          ".read": true,
+          ".write": true
+        }
+      }
     }
   }
 }

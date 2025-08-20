@@ -1,0 +1,657 @@
+/* Enhanced Challenge Styles for Scroll of Seven Seals */
+
+/* Challenge Warning Styles */
+.challenge-warning {
+    background: rgba(139, 0, 0, 0.2);
+    border: 2px solid #8b0000;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.challenge-warning strong {
+    color: #ff6b6b;
+    font-size: 1.1em;
+}
+
+.keyword-target {
+    color: #d4af37;
+    font-weight: bold;
+    font-size: 1.2em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Bible Knowledge Challenge */
+.bible-knowledge-challenge {
+    padding: 20px;
+}
+
+.knowledge-question {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #6b4d37;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.question-header {
+    color: #d4af37;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.question-text {
+    color: #ffffff;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    line-height: 1.4;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.knowledge-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #6b4d37;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #f4f1e8;
+    font-family: inherit;
+}
+
+.knowledge-input:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.1);
+}
+
+/* Logical Reasoning Challenge */
+.logical-reasoning-challenge {
+    padding: 20px;
+}
+
+.logical-puzzle {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #4a90e2;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.puzzle-type {
+    background: #4a90e2;
+    color: #ffffff;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.puzzle-question {
+    color: #ffffff;
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.logical-select, .logical-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #4a90e2;
+    border-radius: 5px;
+    background: rgba(74, 144, 226, 0.1);
+    color: #f4f1e8;
+    font-family: inherit;
+}
+
+.logical-select:focus, .logical-input:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.1);
+}
+
+/* Team Communication Challenge */
+.team-communication-challenge {
+    padding: 20px;
+}
+
+.collaborative-challenge, .chain-challenge {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #32cd32;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.team-part, .chain-step {
+    background: rgba(50, 205, 50, 0.1);
+    border: 1px solid #32cd32;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.role-label {
+    color: #d4af37;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.task-description {
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.team-input, .chain-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #32cd32;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #f4f1e8;
+    font-family: inherit;
+}
+
+.step-number {
+    background: #32cd32;
+    color: #000;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.completion-note {
+    color: #32cd32;
+    font-style: italic;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Code Breaking Challenge */
+.code-breaking-challenge {
+    padding: 20px;
+}
+
+.code-breaking-puzzle {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #ff6b35;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.cipher-type {
+    background: #ff6b35;
+    color: #000;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 0.8em;
+    font-weight: bold;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.cipher-name {
+    color: #d4af37;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.encrypted-message {
+    background: rgba(255, 107, 53, 0.1);
+    border: 1px solid #ff6b35;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-family: 'Courier New', monospace;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.cipher-hint {
+    color: #ffeb3b;
+    font-style: italic;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.code-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #ff6b35;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #f4f1e8;
+    font-family: 'Courier New', monospace;
+}
+
+/* Metaphorical Scripture Challenge */
+.metaphorical-scripture-challenge {
+    padding: 20px;
+}
+
+.metaphor-interpretation {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #9c27b0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.scripture-passage {
+    background: rgba(156, 39, 176, 0.2);
+    border: 1px solid #9c27b0;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    font-style: italic;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.interpretation-levels {
+    margin-bottom: 15px;
+}
+
+.surface-level, .deeper-level {
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 5px;
+}
+
+.surface-level {
+    background: rgba(156, 39, 176, 0.1);
+    border-left: 4px solid #9c27b0;
+}
+
+.deeper-level {
+    background: rgba(156, 39, 176, 0.2);
+    border-left: 4px solid #d4af37;
+}
+
+.interpretation-question {
+    color: #d4af37;
+    font-weight: bold;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.metaphor-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #9c27b0;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #f4f1e8;
+    font-family: inherit;
+}
+
+/* Prophetic Logic Challenge */
+.prophetic-logic-challenge {
+    padding: 20px;
+}
+
+.logic-chain, .timeline-logic, .syllogism-logic {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #e91e63;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.premises {
+    margin-bottom: 15px;
+}
+
+.premise {
+    background: rgba(233, 30, 99, 0.1);
+    border-left: 4px solid #e91e63;
+    padding: 10px;
+    margin-bottom: 8px;
+    color: #ffffff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.conclusion-question {
+    color: #d4af37;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.timeline-title {
+    color: #d4af37;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.timeline-events {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.timeline-event {
+    background: rgba(233, 30, 99, 0.1);
+    border: 1px solid #e91e63;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px;
+    text-align: center;
+    flex: 1;
+    min-width: 150px;
+}
+
+.stage {
+    color: #d4af37;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.content {
+    color: #ffffff;
+    font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.syllogism {
+    background: rgba(233, 30, 99, 0.2);
+    border: 2px solid #e91e63;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #ffffff;
+    font-style: italic;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.prophetic-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 1em;
+    border: 2px solid #e91e63;
+    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.5);
+    color: #f4f1e8;
+    font-family: inherit;
+}
+
+/* Revelation Code Challenge */
+.revelation-code-challenge {
+    padding: 20px;
+}
+
+.symbolic-matrix, .numerical-prophecy, .alpha-omega, .ultimate-code {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 165, 0, 0.1));
+    border: 3px solid #ffd700;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+}
+
+.matrix-title, .prophecy-title {
+    color: #ffd700;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.matrix-elements {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.matrix-element {
+    background: rgba(255, 215, 0, 0.2);
+    border: 1px solid #ffd700;
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.matrix-pattern, .prophecy-sequence, .prophecy-meaning {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid #ffd700;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.matrix-question, .timeline-question, .prophecy-input, .title-question, .code-question {
+    color: #ffd700;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.title-message, .code-message {
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px solid #ffd700;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+    color: #ffffff;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.revelation-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1em;
+    border: 3px solid #ffd700;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffd700;
+    font-family: inherit;
+    font-weight: bold;
+    text-align: center;
+}
+
+.revelation-input:focus {
+    outline: none;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+    background: rgba(255, 215, 0, 0.1);
+}
+
+/* Challenge Controls */
+.challenge-controls {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin: 30px 0;
+    flex-wrap: wrap;
+}
+
+.btn.primary {
+    background: linear-gradient(135deg, #d4af37, #b8941f);
+    color: #2c1810;
+    border: none;
+    padding: 15px 30px;
+    font-size: 1.1em;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn.primary:hover {
+    background: linear-gradient(135deg, #f4e876, #d4af37);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4);
+}
+
+.btn.secondary {
+    background: rgba(108, 77, 55, 0.8);
+    color: #f4f1e8;
+    border: 2px solid #6b4d37;
+    padding: 12px 25px;
+    font-size: 1em;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn.secondary:hover {
+    background: rgba(108, 77, 55, 1);
+    border-color: #8b6d47;
+    transform: translateY(-2px);
+}
+
+/* Challenge Results */
+.challenge-result {
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    text-align: center;
+    min-height: 50px;
+    font-size: 1.1em;
+    line-height: 1.6;
+}
+
+/* Enhanced Responsive Design */
+
+/* Tablets and medium screens */
+@media (max-width: 1024px) {
+    .challenge-container {
+        padding: 20px 15px;
+    }
+    
+    .matrix-elements {
+        gap: 10px;
+    }
+    
+    .draggable-item {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+}
+
+/* iPads and smaller tablets */
+@media (max-width: 768px) {
+    .challenge-controls {
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .btn.primary, .btn.secondary {
+        width: 100%;
+        max-width: 300px;
+        padding: 15px;
+        font-size: 16px;
+        min-height: 48px;
+        touch-action: manipulation;
+    }
+    
+    .timeline-events {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .matrix-elements {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    }
+}
+
+/* Challenge Type Indicators */
+.seal .challenge-type-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(212, 175, 55, 0.9);
+    color: #2c1810;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.seal[data-challenge-type="Bible Knowledge"] .challenge-type-indicator {
+    background: rgba(76, 175, 80, 0.9);
+}
+
+.seal[data-challenge-type="Logical Reasoning"] .challenge-type-indicator {
+    background: rgba(33, 150, 243, 0.9);
+}
+
+.seal[data-challenge-type="Team Communication"] .challenge-type-indicator {
+    background: rgba(255, 152, 0, 0.9);
+}
+
+.seal[data-challenge-type="Code-Breaking"] .challenge-type-indicator {
+    background: rgba(244, 67, 54, 0.9);
+}
+
+.seal[data-challenge-type="Interpreting Metaphorical Scripture"] .challenge-type-indicator {
+    background: rgba(156, 39, 176, 0.9);
+}
+
+/* Loading Animation for Challenges */
+.challenge-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: #d4af37;
+    font-size: 1.2em;
+}
+
+.challenge-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d4af37;
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
