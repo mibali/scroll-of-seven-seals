@@ -3530,45 +3530,23 @@
                 score: gameState.completedSeals.length,
                 completedSeals: gameState.completedSeals,
                 lastUpdate: firebase.database.ServerValue.TIMESTAMP,
-                lastSealTime: Date.now(), // Track when this seal was completed for tiebreaking
-                progress: {
-                    sealsCompleted: gameState.completedSeals,
-                    keywords: gameState.keywords || [],
-                    lastUpdated: Date.now()
-                }
+                lastSealTime: Date.now() // Track when this seal was completed for tiebreaking
             };
 
             console.log('💾 FIREBASE UPDATE: Updating team progress...', teamData);
-            
-            // CRITICAL: Use MultiplayerManager path structure for consistency
-            if (window.MultiplayerManager && window.MultiplayerManager.currentGame && window.MultiplayerManager.currentTeam) {
-                const gameId = window.MultiplayerManager.currentGame.id;
-                const teamId = window.MultiplayerManager.currentTeam.id;
-                const path = `games/${gameId}/teams/${teamId}`;
-                console.log('📍 FIREBASE UPDATE: Using MultiplayerManager path:', path);
-                
-                try {
-                    await database.ref(path).update(teamData);
-                } catch (error) {
-                    console.error('❌ FIREBASE UPDATE: Failed with MultiplayerManager path:', error);
-                    // Fallback to old path
-                    await database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData);
-                }
-            } else {
-                // Fallback to legacy path structure
-                console.log('📍 FIREBASE UPDATE: Using legacy path:', `rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`);
+            console.log('📍 FIREBASE UPDATE: Path:', `rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`);
+
+            try {
                 await database.ref(`rooms/${gameState.roomCode}/teams/${gameState.currentTeam}`).update(teamData);
-            }
-            
-            console.log('✅ FIREBASE UPDATE: Team progress updated successfully');
-            
-            // CRITICAL: Check for winner after EACH seal completion, not just at the end
-            if (gameState.completedSeals.length === 7 && gameState.isGameActive) {
-                console.log('🏆 FIREBASE UPDATE: Team completed 7 seals - checking for winner!');
-                const elapsed = Date.now() - gameState.startTime;
-                await checkForGameWinner(elapsed);
-            }
-        } catch (error) {
+                console.log('✅ FIREBASE UPDATE: Team progress updated successfully');
+                
+                // CRITICAL: Check for winner after EACH seal completion, not just at the end
+                if (gameState.completedSeals.length === 7 && gameState.isGameActive) {
+                    console.log('🏆 FIREBASE UPDATE: Team completed 7 seals - checking for winner!');
+                    const elapsed = Date.now() - gameState.startTime;
+                    await checkForGameWinner(elapsed);
+                }
+            } catch (error) {
                 console.error('❌ FIREBASE UPDATE: Failed to update team progress:', error);
             }
         }
