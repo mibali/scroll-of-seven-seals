@@ -207,8 +207,14 @@ class SealMiniGames {
             
             const quizQuestions = content.map(item => {
                 const words = item.text.split(' ');
-                const wordIndex = Math.floor(Math.random() * words.length);
-                const missingWord = words[wordIndex];
+                // Choose a meaningful word to remove (not articles or short words)
+                const meaningfulWords = words.map((word, idx) => ({ word, idx }))
+                    .filter(w => w.word.length > 3 && !['the', 'and', 'but', 'for', 'his', 'her', 'him', 'she', 'you', 'that', 'this', 'with', 'from', 'they', 'them', 'have', 'will', 'said', 'unto'].includes(w.word.toLowerCase()));
+                
+                const selectedWord = meaningfulWords[Math.floor(Math.random() * meaningfulWords.length)] || { word: words[Math.floor(words.length / 2)], idx: Math.floor(words.length / 2) };
+                const wordIndex = selectedWord.idx;
+                const missingWord = selectedWord.word;
+                
                 const questionText = words.map((word, idx) => 
                     idx === wordIndex ? '____' : word
                 ).join(' ');
@@ -285,10 +291,12 @@ class SealMiniGames {
     async launchFaithDragDrop() {
         this.setGameTitle('⛪ Principles of Faith', 'Match these Bible verses with their faith principles');
 
-        const faithPrinciples = [
-            { principle: 'Faith overcomes fear', verse: 'Do not fear, for I am with you', reference: 'Isaiah 41:10' },
-            { principle: 'Trust in God\'s plan', verse: 'For I know the plans I have for you', reference: 'Jeremiah 29:11' },
-            { principle: 'Prayer brings peace', verse: 'Be anxious for nothing, but pray', reference: 'Philippians 4:6' },
+        // Get faith principles from Bible service
+        const sealContent = window.BibleService ? window.BibleService.getSealContent(3) : null;
+        const faithPrinciples = sealContent && sealContent.faithVerses ? sealContent.faithVerses : [
+            { principle: 'Faith overcomes fear', verse: 'Fear not, for I am with you', reference: 'Isaiah 41:10' },
+            { principle: 'Trust in God\'s plan', verse: 'For I know the thoughts that I think toward you', reference: 'Jeremiah 29:11' },
+            { principle: 'Prayer brings peace', verse: 'Be careful for nothing; but pray', reference: 'Philippians 4:6' },
             { principle: 'Love your neighbor', verse: 'Love your neighbor as yourself', reference: 'Matthew 22:39' },
             { principle: 'God\'s strength in weakness', verse: 'My grace is sufficient for you', reference: '2 Corinthians 12:9' }
         ];
@@ -408,8 +416,9 @@ class SealMiniGames {
     async launchParablesMatching() {
         this.setGameTitle('🌱 Kingdom Parables', 'Match the parables with their teachings');
 
-        const parables = [
-            { parable: 'The Good Samaritan', teaching: 'Love and mercy to all people', reference: 'Luke 10:25-37' },
+        const sealContent = window.BibleService ? window.BibleService.getSealContent(4) : null;
+        const parables = sealContent && sealContent.parables ? sealContent.parables : [
+            { parable: 'The Good Samaritan', teaching: 'Show compassion to all people', reference: 'Luke 10:25-37' },
             { parable: 'The Prodigal Son', teaching: 'God\'s forgiveness and grace', reference: 'Luke 15:11-32' },
             { parable: 'The Mustard Seed', teaching: 'Small faith grows greatly', reference: 'Matthew 13:31-32' },
             { parable: 'The Lost Sheep', teaching: 'God seeks the lost', reference: 'Luke 15:3-7' },
@@ -505,7 +514,8 @@ class SealMiniGames {
     async launchChurchLettersQuiz() {
         this.setGameTitle('📜 Letters to the Churches', 'Test your knowledge of Paul\'s epistles');
 
-        const churchQuestions = [
+        const sealContent = window.BibleService ? window.BibleService.getSealContent(5) : null;
+        const churchQuestions = sealContent && sealContent.churchQuestions ? sealContent.churchQuestions : [
             {
                 question: 'Which church was told "I can do all things through Christ who strengthens me"?',
                 options: ['Ephesians', 'Philippians', 'Colossians', 'Thessalonians'],
@@ -513,7 +523,7 @@ class SealMiniGames {
                 reference: 'Philippians 4:13'
             },
             {
-                question: 'Which letter contains the "Love Chapter" (1 Corinthians 13)?',
+                question: 'Which letter contains the "Love Chapter"?',
                 options: ['Romans', 'Corinthians', 'Galatians', 'Ephesians'],
                 correct: 1,
                 reference: '1 Corinthians 13'
@@ -595,7 +605,8 @@ class SealMiniGames {
     async launchHealingStoriesPuzzle() {
         this.setGameTitle('🙏 Stories of Healing', 'Complete these healing miracles');
 
-        const healingStories = [
+        const sealContent = window.BibleService ? window.BibleService.getSealContent(6) : null;
+        const healingStories = sealContent && sealContent.healingStories ? sealContent.healingStories : [
             {
                 story: 'The blind man at Bethsaida',
                 incomplete: 'Jesus took the _____ man by the hand and led him outside the village.',
@@ -678,12 +689,13 @@ class SealMiniGames {
     async launchRevelationSymbols() {
         this.setGameTitle('🔮 Symbols of Revelation', 'Decode the symbolic language of Revelation');
 
-        const symbols = [
+        const sealContent = window.BibleService ? window.BibleService.getSealContent(7) : null;
+        const symbols = sealContent && sealContent.symbols ? sealContent.symbols : [
             { symbol: '🐑 Lamb', meaning: 'Jesus Christ', reference: 'Revelation 5:6' },
             { symbol: '👑 24 Elders', meaning: 'Representatives of God\'s people', reference: 'Revelation 4:4' },
-            { symbol: '🕊️ Seven Spirits', meaning: 'The Holy Spirit in fullness', reference: 'Revelation 1:4' },
             { symbol: '🌟 Morning Star', meaning: 'Jesus as the bright hope', reference: 'Revelation 22:16' },
-            { symbol: '🌆 New Jerusalem', meaning: 'The eternal dwelling with God', reference: 'Revelation 21:2' }
+            { symbol: '🌆 New Jerusalem', meaning: 'The eternal dwelling with God', reference: 'Revelation 21:2' },
+            { symbol: '⚡ Seven Thunders', meaning: 'God\'s powerful voice', reference: 'Revelation 10:3-4' }
         ];
 
         const shuffledMeanings = [...symbols.map(s => s.meaning)].sort(() => Math.random() - 0.5);

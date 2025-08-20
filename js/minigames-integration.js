@@ -181,10 +181,10 @@ class MiniGamesIntegration {
                     </div>
                     <div class="minigame-option-buttons">
                         <button class="minigame-option-btn primary" onclick="window.MiniGamesIntegration.playMiniGame(${sealNumber})">
-                            ✨ Play Mini-Game
+                            ✨ Play Interactive Game
                         </button>
                         <button class="minigame-option-btn secondary" onclick="window.MiniGamesIntegration.continueOriginalGame()">
-                            📜 Continue Traditional Way
+                            📜 Skip to Next
                         </button>
                     </div>
                 </div>
@@ -301,38 +301,99 @@ class MiniGamesIntegration {
 
     // Add mini-game buttons to existing UI
     addMiniGameButtons() {
-        // Add a mini-games launcher button
-        const existingContainer = document.querySelector('.game-mode') || 
-                                document.querySelector('.container') || 
-                                document.body;
-
-        if (existingContainer) {
-            const miniGameLauncher = document.createElement('div');
-            miniGameLauncher.className = 'minigame-launcher-section';
-            miniGameLauncher.innerHTML = `
-                <div class="minigame-launcher-card">
-                    <h3>🎮 Biblical Mini-Games</h3>
-                    <p>Experience interactive Bible-based games for each of the 7 seals</p>
-                    <div class="minigame-quick-launch">
-                        ${Array.from({length: 7}, (_, i) => `
-                            <button class="minigame-quick-btn" onclick="window.MiniGamesIntegration.launchDirectMiniGame(${i + 1})">
-                                Seal ${i + 1}
-                            </button>
-                        `).join('')}
-                    </div>
-                    <div class="minigame-toggle">
-                        <label>
-                            <input type="checkbox" id="miniGameToggle" ${this.miniGameEnabled ? 'checked' : ''} 
-                                   onchange="window.MiniGamesIntegration.toggleMiniGames(this.checked)">
-                            Auto-offer mini-games during seal opening
-                        </label>
-                    </div>
-                </div>
-            `;
-
-            existingContainer.appendChild(miniGameLauncher);
-            this.addLauncherStyles();
+        // Find existing game mode cards and enhance them
+        const gameModeCards = document.querySelectorAll('.mode-card');
+        
+        if (gameModeCards.length > 0) {
+            // Add mini-game info to existing cards
+            gameModeCards.forEach((card, index) => {
+                this.enhanceModeCard(card, index + 1);
+            });
+        } else {
+            // Create new enhanced seal cards
+            this.createEnhancedSealCards();
         }
+        
+        this.addLauncherStyles();
+    }
+
+    // Enhance existing mode cards with mini-game features
+    enhanceModeCard(card, sealNumber) {
+        // Add mini-game badge if not already present
+        if (!card.querySelector('.minigame-badge')) {
+            const badge = document.createElement('div');
+            badge.className = 'minigame-badge';
+            badge.innerHTML = '🎮';
+            badge.title = 'Interactive Bible game available!';
+            card.style.position = 'relative';
+            card.appendChild(badge);
+
+            // Add mini-game launch button
+            const launchBtn = document.createElement('button');
+            launchBtn.className = 'minigame-launch-btn';
+            launchBtn.innerHTML = '✨ Play Interactive Game';
+            launchBtn.onclick = (e) => {
+                e.stopPropagation();
+                this.launchDirectMiniGame(sealNumber);
+            };
+            
+            card.appendChild(launchBtn);
+        }
+    }
+
+    // Create enhanced seal cards with mini-games built-in
+    createEnhancedSealCards() {
+        const container = document.querySelector('.container') || document.body;
+        
+        const sealCards = document.createElement('div');
+        sealCards.className = 'enhanced-seal-cards';
+        sealCards.innerHTML = `
+            <div class="enhanced-seals-header">
+                <h2>🔮 The Seven Seals of Revelation</h2>
+                <p>Discover biblical truths through interactive games and challenges</p>
+            </div>
+            <div class="seals-grid">
+                ${this.generateSealCards()}
+            </div>
+            <div class="minigame-controls">
+                <label class="toggle-label">
+                    <input type="checkbox" id="miniGameToggle" ${this.miniGameEnabled ? 'checked' : ''} 
+                           onchange="window.MiniGamesIntegration.toggleMiniGames(this.checked)">
+                    <span>Auto-launch interactive games</span>
+                </label>
+            </div>
+        `;
+        
+        container.appendChild(sealCards);
+    }
+
+    // Generate individual seal cards
+    generateSealCards() {
+        const sealData = [
+            { title: 'Timeline of Faith', icon: '📜', description: 'Old Testament Events & History', theme: 'Arrange biblical events in chronological order' },
+            { title: 'Wisdom & Worship', icon: '🎵', description: 'Psalms & Proverbs', theme: 'Complete verses from wisdom literature' },
+            { title: 'Principles of Faith', icon: '⛪', description: 'Spiritual Growth', theme: 'Match verses with faith principles' },
+            { title: 'Kingdom Parables', icon: '🌱', description: 'Jesus\' Teachings', theme: 'Connect parables with their meanings' },
+            { title: 'Church Letters', icon: '📜', description: 'Paul\'s Epistles', theme: 'Test knowledge of early church' },
+            { title: 'Stories of Healing', icon: '🙏', description: 'Divine Restoration', theme: 'Complete healing miracle accounts' },
+            { title: 'Revelation Symbols', icon: '🔮', description: 'Prophetic Imagery', theme: 'Decode symbolic language' }
+        ];
+
+        return sealData.map((seal, index) => `
+            <div class="enhanced-seal-card" data-seal="${index + 1}">
+                <div class="seal-header">
+                    <div class="seal-icon">${seal.icon}</div>
+                    <div class="seal-number">Seal ${index + 1}</div>
+                </div>
+                <h3 class="seal-title">${seal.title}</h3>
+                <p class="seal-description">${seal.description}</p>
+                <p class="seal-theme">${seal.theme}</p>
+                <button class="play-seal-btn" onclick="window.MiniGamesIntegration.launchDirectMiniGame(${index + 1})">
+                    <span class="btn-icon">🎮</span>
+                    <span class="btn-text">Play Interactive Game</span>
+                </button>
+            </div>
+        `).join('');
     }
 
     // Launch mini-game directly
@@ -526,96 +587,251 @@ class MiniGamesIntegration {
         const styles = document.createElement('style');
         styles.id = 'minigameLauncherStyles';
         styles.textContent = `
-            .minigame-launcher-section {
-                margin: 30px 0;
+            /* Enhanced Seal Cards */
+            .enhanced-seal-cards {
+                margin: 40px 0;
             }
 
-            .minigame-launcher-card {
-                background: linear-gradient(145deg, rgba(139, 69, 19, 0.3), rgba(160, 82, 45, 0.2));
+            .enhanced-seals-header {
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .enhanced-seals-header h2 {
+                color: #d4af37;
+                font-family: 'Cinzel', serif;
+                font-size: 2.5em;
+                margin-bottom: 10px;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            .enhanced-seals-header p {
+                color: #e8e8e8;
+                font-size: 1.2em;
+                max-width: 600px;
+                margin: 0 auto;
+                line-height: 1.6;
+            }
+
+            .seals-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 25px;
+                margin-bottom: 30px;
+            }
+
+            .enhanced-seal-card {
+                background: linear-gradient(145deg, rgba(139, 69, 19, 0.4), rgba(160, 82, 45, 0.3));
                 border: 2px solid rgba(212, 175, 55, 0.4);
                 border-radius: 20px;
                 padding: 30px;
                 text-align: center;
-                backdrop-filter: blur(10px);
+                backdrop-filter: blur(15px);
+                transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
             }
 
-            .minigame-launcher-card h3 {
-                color: #d4af37;
-                font-family: 'Cinzel', serif;
-                font-size: 1.8em;
-                margin-bottom: 10px;
+            .enhanced-seal-card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: radial-gradient(circle at 30% 30%, rgba(255, 215, 0, 0.1) 0%, transparent 60%);
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                pointer-events: none;
             }
 
-            .minigame-launcher-card p {
-                color: #e8e8e8;
-                margin-bottom: 25px;
-                font-size: 1.1em;
+            .enhanced-seal-card:hover::before {
+                opacity: 1;
             }
 
-            .minigame-quick-launch {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-                gap: 10px;
+            .enhanced-seal-card:hover {
+                transform: translateY(-8px) scale(1.02);
+                border-color: #d4af37;
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 8px 25px rgba(212, 175, 55, 0.3);
+            }
+
+            .seal-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
                 margin-bottom: 20px;
+                position: relative;
+                z-index: 2;
             }
 
-            .minigame-quick-btn {
+            .seal-icon {
+                font-size: 3em;
+                filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+            }
+
+            .seal-number {
                 background: linear-gradient(135deg, #d4af37, #b8860b);
                 color: #1a0f0f;
-                border: none;
-                border-radius: 8px;
-                padding: 12px 16px;
+                padding: 8px 15px;
+                border-radius: 20px;
+                font-weight: 700;
+                font-size: 0.9em;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            }
+
+            .seal-title {
+                color: #d4af37;
+                font-family: 'Cinzel', serif;
+                font-size: 1.6em;
+                margin-bottom: 10px;
+                text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+                position: relative;
+                z-index: 2;
+            }
+
+            .seal-description {
+                color: #e8e8e8;
+                font-size: 1.1em;
                 font-weight: 600;
+                margin-bottom: 8px;
+                position: relative;
+                z-index: 2;
+            }
+
+            .seal-theme {
+                color: #b8a082;
+                font-size: 0.95em;
+                line-height: 1.4;
+                margin-bottom: 25px;
+                position: relative;
+                z-index: 2;
+            }
+
+            .play-seal-btn {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                border-radius: 12px;
+                padding: 15px 25px;
+                font-weight: 700;
+                font-size: 1.1em;
                 cursor: pointer;
                 transition: all 0.3s ease;
-                font-size: 0.9em;
-            }
-
-            .minigame-quick-btn:hover {
-                background: linear-gradient(135deg, #ffd700, #d4af37);
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
-            }
-
-            .minigame-toggle {
-                background: rgba(0, 0, 0, 0.2);
-                border-radius: 10px;
-                padding: 15px;
-                border: 1px solid rgba(212, 175, 55, 0.3);
-            }
-
-            .minigame-toggle label {
-                color: #e8e8e8;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 10px;
+                width: 100%;
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+                position: relative;
+                z-index: 2;
+                font-family: 'Cinzel', serif;
+            }
+
+            .play-seal-btn:hover {
+                background: linear-gradient(135deg, #16a34a, #15803d);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+            }
+
+            .btn-icon {
+                font-size: 1.2em;
+            }
+
+            .minigame-controls {
+                text-align: center;
+                background: rgba(0, 0, 0, 0.2);
+                border-radius: 15px;
+                padding: 20px;
+                border: 1px solid rgba(212, 175, 55, 0.3);
+            }
+
+            .toggle-label {
+                color: #e8e8e8;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 12px;
                 cursor: pointer;
-                font-size: 1em;
+                font-size: 1.1em;
+                font-weight: 500;
             }
 
-            .minigame-toggle input[type="checkbox"] {
-                width: 18px;
-                height: 18px;
+            .toggle-label input[type="checkbox"] {
+                width: 20px;
+                height: 20px;
                 accent-color: #d4af37;
+                cursor: pointer;
             }
 
-            .minigame-available-badge {
+            /* Enhancement badges for existing cards */
+            .minigame-badge {
                 position: absolute;
-                top: -5px;
-                right: -5px;
+                top: -8px;
+                right: -8px;
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 color: white;
-                width: 25px;
-                height: 25px;
+                width: 30px;
+                height: 30px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 12px;
+                font-size: 14px;
                 animation: pulse 2s infinite;
-                box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4);
                 z-index: 10;
+                border: 2px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .minigame-launch-btn {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 10px 15px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-size: 0.9em;
+                margin-top: 15px;
+                width: 100%;
+            }
+
+            .minigame-launch-btn:hover {
+                background: linear-gradient(135deg, #16a34a, #15803d);
+                transform: translateY(-1px);
+            }
+
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .seals-grid {
+                    grid-template-columns: 1fr;
+                    gap: 20px;
+                }
+                
+                .enhanced-seals-header h2 {
+                    font-size: 2em;
+                }
+                
+                .enhanced-seal-card {
+                    padding: 25px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .enhanced-seal-card {
+                    padding: 20px;
+                }
+                
+                .seal-icon {
+                    font-size: 2.5em;
+                }
+                
+                .seal-title {
+                    font-size: 1.4em;
+                }
             }
         `;
 
