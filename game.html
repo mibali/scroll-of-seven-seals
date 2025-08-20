@@ -5041,11 +5041,13 @@
                 currentTrack.textContent = '♪ Divine Worship Sounds • Generated';
                 
                 // Start worship audio immediately
-                console.log('🎵 Starting divine worship audio');
+                console.log('🎵 Starting divine worship audio - radioPlaying:', radioPlaying, 'worshipPlaying:', worshipPlaying);
                 await playFallbackWorship();
+                console.log('🎵 Worship audio start completed - worshipPlaying:', worshipPlaying);
                 
             } else {
                 // Stop worship audio
+                console.log('🎵 Stopping worship audio - radioPlaying:', radioPlaying, 'worshipPlaying:', worshipPlaying);
                 radioPlaying = false;
                 worshipPlaying = false;
                 button.classList.remove('playing');
@@ -5054,21 +5056,27 @@
                 // Update UI
                 radioIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Play icon
                 radioText.textContent = 'Black Gospel Radio';
+                console.log('🎵 Set states to false - radioPlaying:', radioPlaying, 'worshipPlaying:', worshipPlaying);
                 
-                // Stop worship audio
-                if (worshipAudio && worshipAudio.masterGain) {
-                    worshipAudio.masterGain.gain.setTargetAtTime(0, audioContext.currentTime, 1.0);
+                // Completely stop worship audio
+                if (worshipAudio) {
+                    // Fade out quickly
+                    if (worshipAudio.masterGain) {
+                        worshipAudio.masterGain.gain.setTargetAtTime(0, audioContext.currentTime, 0.5);
+                    }
+                    
+                    // Stop all oscillators after fade
+                    setTimeout(() => {
+                        if (worshipAudio && worshipAudio.oscillators) {
+                            worshipAudio.oscillators.forEach(osc => {
+                                try { osc.stop(); } catch(e) {}
+                            });
+                        }
+                        // Clear the audio object completely
+                        worshipAudio = null;
+                        console.log('🎵 Worship audio completely stopped and cleared');
+                    }, 600);
                 }
-                
-                // Stop oscillators
-                if (worshipAudio && worshipAudio.oscillators) {
-                    worshipAudio.oscillators.forEach(osc => {
-                        try { osc.stop(); } catch(e) {}
-                    });
-                }
-                
-                // Reset worship audio so it can be recreated on next play
-                worshipAudio = null;
                 
                 console.log('🎵 Worship audio stopped');
             }
@@ -5076,34 +5084,32 @@
 
         // Fallback worship sounds when radio stream fails
         async function playFallbackWorship() {
-            console.log('🎵 Starting fallback worship audio');
+            console.log('🎵 Starting worship audio');
             
             // Initialize audio if needed
             if (!isAudioInitialized) {
                 await initializeAudio();
             }
             
-            // Start the synthetic worship audio system
-            if (!worshipPlaying) {
-                worshipPlaying = true;
-                
-                // Resume audio context if suspended
-                if (audioContext && audioContext.state === 'suspended') {
-                    await audioContext.resume();
-                }
-                
-                // Create new worship audio if it doesn't exist or was stopped
-                if (!worshipAudio) {
-                    worshipAudio = createEnhancedWorshipAmbience();
-                }
-                
-                // Start enhanced worship audio with smooth fade-in
-                if (worshipAudio && worshipAudio.masterGain) {
-                    worshipAudio.masterGain.gain.setTargetAtTime(0.12, audioContext.currentTime, 2.0);
-                }
-                
-                console.log('🎵 Fallback worship audio activated');
+            // Force set worship playing state
+            worshipPlaying = true;
+            
+            // Resume audio context if suspended
+            if (audioContext && audioContext.state === 'suspended') {
+                await audioContext.resume();
             }
+            
+            // Always create fresh worship audio for restart
+            worshipAudio = createEnhancedWorshipAmbience();
+            console.log('🎵 Created fresh worship audio');
+            
+            // Start enhanced worship audio with smooth fade-in
+            if (worshipAudio && worshipAudio.masterGain) {
+                worshipAudio.masterGain.gain.setTargetAtTime(0.12, audioContext.currentTime, 2.0);
+                console.log('🎵 Started audio fade-in');
+            }
+            
+            console.log('🎵 Worship audio fully activated');
         }
 
         // Enhanced Audio System for Beautiful Worship Atmosphere
