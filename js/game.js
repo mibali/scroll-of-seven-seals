@@ -30,6 +30,7 @@ class GameController {
         
         // Expose globally for other scripts (Oracle's fix)
         window.GameController = this;
+        window.gameController = this; // CRITICAL: Add lowercase alias for leaderboard compatibility
     }
 
     // Initialize the game

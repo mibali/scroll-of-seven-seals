@@ -4997,6 +4997,8 @@
 
         let currentWorshipIndex = 0;
         let worshipPlaying = false;
+        let radioPlaying = false;
+        let radioAudio = null;
 
         function updateSpiritualContent() {
             // Update Scripture motivation
@@ -5012,6 +5014,125 @@
             document.getElementById('wisdomAttribution').textContent = `- ${wisdom.attribution}`;
 
             console.log('✝️ Spiritual content updated for fresh inspiration');
+        }
+
+        // Radio stream functionality
+        function toggleRadio() {
+            const button = document.getElementById('radioToggle');
+            const nowPlaying = document.getElementById('nowPlaying');
+            const currentTrack = document.getElementById('currentTrack');
+            const radioIcon = document.getElementById('radioIcon');
+            const radioText = document.getElementById('radioText');
+
+            if (!radioPlaying) {
+                // Start radio stream
+                radioPlaying = true;
+                button.classList.add('playing');
+                nowPlaying.style.display = 'block';
+                
+                // Update UI
+                radioIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause icon
+                radioText.textContent = 'Pause Worship';
+                currentTrack.textContent = '♪ Black Gospel Radio 365 • Live Stream';
+                
+                // Create audio element if it doesn't exist
+                if (!radioAudio) {
+                    radioAudio = new Audio();
+                    radioAudio.crossOrigin = 'anonymous';
+                    radioAudio.preload = 'none';
+                    
+                    // Try multiple potential stream URLs for Live365
+                    const streamUrls = [
+                        'https://live365.com/station/Black-Gospel-Radio-365-a24152/stream',
+                        'https://stream.live365.com/a24152',
+                        'https://playerservices.streamtheworld.com/api/livestream-redirect/LIVE365AAC24152.aac'
+                    ];
+                    
+                    let currentUrlIndex = 0;
+                    
+                    const tryNextUrl = () => {
+                        if (currentUrlIndex < streamUrls.length) {
+                            radioAudio.src = streamUrls[currentUrlIndex];
+                            console.log(`🎵 Trying stream URL ${currentUrlIndex + 1}: ${streamUrls[currentUrlIndex]}`);
+                            radioAudio.play().catch(error => {
+                                console.warn(`Stream URL ${currentUrlIndex + 1} failed:`, error);
+                                currentUrlIndex++;
+                                if (currentUrlIndex < streamUrls.length) {
+                                    tryNextUrl();
+                                } else {
+                                    // All URLs failed - fallback to generated worship sounds
+                                    console.log('🎵 All stream URLs failed, using fallback worship audio');
+                                    currentTrack.textContent = '♪ Divine Worship Sounds • Generated';
+                                    playFallbackWorship();
+                                }
+                            });
+                        }
+                    };
+                    
+                    radioAudio.addEventListener('loadstart', () => {
+                        console.log('🎵 Radio stream loading...');
+                        currentTrack.textContent = '♪ Connecting to Black Gospel Radio 365...';
+                    });
+                    
+                    radioAudio.addEventListener('canplay', () => {
+                        console.log('🎵 Radio stream ready to play');
+                        currentTrack.textContent = '♪ Black Gospel Radio 365 • Live Stream';
+                    });
+                    
+                    radioAudio.addEventListener('error', (e) => {
+                        console.warn('🎵 Radio stream error:', e);
+                        currentUrlIndex++;
+                        tryNextUrl();
+                    });
+                }
+                
+                radioAudio.volume = 0.3;
+                tryNextUrl();
+                
+            } else {
+                // Stop radio stream
+                radioPlaying = false;
+                button.classList.remove('playing');
+                nowPlaying.style.display = 'none';
+                
+                // Update UI
+                radioIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Play icon
+                radioText.textContent = 'Gentle Worship Sounds';
+                
+                // Stop audio
+                if (radioAudio) {
+                    radioAudio.pause();
+                    radioAudio.currentTime = 0;
+                }
+                
+                console.log('🎵 Radio stream stopped');
+            }
+        }
+
+        // Fallback worship sounds when radio stream fails
+        function playFallbackWorship() {
+            // Use the existing worship audio system as fallback
+            if (typeof toggleWorship === 'function') {
+                // Call existing worship toggle if available
+                toggleWorship();
+            } else {
+                // Simple fallback audio
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = context.createOscillator();
+                const gainNode = context.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(context.destination);
+                
+                oscillator.frequency.setValueAtTime(440, context.currentTime); // A4 note
+                gainNode.gain.setValueAtTime(0.1, context.currentTime);
+                
+                oscillator.start();
+                
+                setTimeout(() => {
+                    oscillator.stop();
+                }, 2000);
+            }
         }
 
         // Enhanced Audio System for Beautiful Worship Atmosphere
@@ -5559,15 +5680,15 @@
                     
                     <!-- Worship Controls -->
                     <div class="flex flex-col items-center space-y-6">
-                        <button id="worshipToggle" onclick="toggleWorship()" 
+                        <button id="radioToggle" onclick="toggleRadio()" 
                                 class="group bg-gold-mystique text-midnight-950 font-bold py-5 px-10 rounded-2xl transition-all duration-500 hover:scale-105 hover:shadow-golden-glow flex items-center space-x-4 relative overflow-hidden">
                             <!-- Shimmer effect -->
                             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
                             
-                            <svg id="worshipIcon" class="w-6 h-6 relative z-10 group-hover:animate-pulse" fill="currentColor" viewBox="0 0 24 24">
+                            <svg id="radioIcon" class="w-6 h-6 relative z-10 group-hover:animate-pulse" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z"/>
                             </svg>
-                            <span id="worshipText" class="text-lg font-semibold relative z-10 font-cinzel">Divine Worship Sounds</span>
+                            <span id="radioText" class="text-lg font-semibold relative z-10 font-cinzel">Gentle Worship Sounds</span>
                         </button>
                         
                         <div class="flex items-center space-x-4 bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-2xl px-6 py-3 text-sm text-amber-200 shadow-golden-glow" 
