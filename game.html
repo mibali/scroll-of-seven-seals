@@ -5017,12 +5017,17 @@
         }
 
         // Radio stream functionality
-        function toggleRadio() {
+        async function toggleRadio() {
             const button = document.getElementById('radioToggle');
             const nowPlaying = document.getElementById('nowPlaying');
             const currentTrack = document.getElementById('currentTrack');
             const radioIcon = document.getElementById('radioIcon');
             const radioText = document.getElementById('radioText');
+
+            // Initialize audio on first user interaction
+            if (!isAudioInitialized) {
+                await initializeAudio();
+            }
 
             if (!radioPlaying) {
                 // Start radio stream
@@ -5039,15 +5044,24 @@
                 if (!radioAudio) {
                     radioAudio = new Audio();
                     radioAudio.crossOrigin = 'anonymous';
-                    radioAudio.preload = 'none';
+                    radioAudio.preload = 'metadata';
+                    
+                    // Add error handling for better debugging
+                    radioAudio.addEventListener('error', (e) => {
+                        console.warn('🎵 Radio audio error:', e);
+                    });
+                    
+                    radioAudio.addEventListener('loadeddata', () => {
+                        console.log('🎵 Radio audio loaded successfully');
+                    });
                 }
                 
-                // Try multiple gospel radio streams (working fallbacks)
+                // Try multiple gospel radio streams (CORS-enabled HTTPS sources)
                 const streamUrls = [
-                    'https://live365.com/station/Black-Gospel-Radio-365-a24152/stream',
-                    'https://stream-relay-geo.ntslive.net/stream', // NTS Radio (fallback)
-                    'https://streaming.radio.co/s8b10b2b50/listen', // Generic gospel stream
-                    'https://streams.radio.co/s44ab7faea/listen' // Another gospel fallback
+                    'https://ice55.securenetsystems.net/WBLK', // Buffalo Gospel Station (CORS enabled)
+                    'https://streams.radiomast.io/gospel-365', // Gospel 365 Stream
+                    'https://ais-sa1.streamon.fm/7064_48k.aac', // Christian Radio
+                    'https://stream.zeno.fm/1e8ks8f8k0quv' // Worship music stream
                 ];
                 
                 let currentUrlIndex = 0;
