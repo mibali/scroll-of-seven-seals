@@ -5030,7 +5030,7 @@
             }
 
             if (!radioPlaying) {
-                // Start radio stream
+                // Start worship audio (synthetic generation)
                 radioPlaying = true;
                 button.classList.add('playing');
                 nowPlaying.style.display = 'block';
@@ -5038,75 +5038,16 @@
                 // Update UI
                 radioIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause icon
                 radioText.textContent = 'Pause Radio';
-                currentTrack.textContent = '♪ Black Gospel Radio 365 • Live Stream';
+                currentTrack.textContent = '♪ Divine Worship Sounds • Generated';
                 
-                // Create audio element if it doesn't exist
-                if (!radioAudio) {
-                    radioAudio = new Audio();
-                    radioAudio.crossOrigin = 'anonymous';
-                    radioAudio.preload = 'metadata';
-                    
-                    // Add error handling for better debugging
-                    radioAudio.addEventListener('error', (e) => {
-                        console.warn('🎵 Radio audio error:', e);
-                    });
-                    
-                    radioAudio.addEventListener('loadeddata', () => {
-                        console.log('🎵 Radio audio loaded successfully');
-                    });
-                }
-                
-                // Try multiple gospel radio streams (CORS-enabled HTTPS sources)
-                const streamUrls = [
-                    'https://ice55.securenetsystems.net/WBLK', // Buffalo Gospel Station (CORS enabled)
-                    'https://streams.radiomast.io/gospel-365', // Gospel 365 Stream
-                    'https://ais-sa1.streamon.fm/7064_48k.aac', // Christian Radio
-                    'https://stream.zeno.fm/1e8ks8f8k0quv' // Worship music stream
-                ];
-                
-                let currentUrlIndex = 0;
-                
-                const tryNextUrl = () => {
-                    if (currentUrlIndex < streamUrls.length) {
-                        radioAudio.src = streamUrls[currentUrlIndex];
-                        console.log(`🎵 Trying stream URL ${currentUrlIndex + 1}: ${streamUrls[currentUrlIndex]}`);
-                        radioAudio.play().catch(error => {
-                            console.warn(`Stream URL ${currentUrlIndex + 1} failed:`, error);
-                            currentUrlIndex++;
-                            if (currentUrlIndex < streamUrls.length) {
-                                setTimeout(tryNextUrl, 1000); // Add delay before trying next URL
-                            } else {
-                                // All URLs failed - fallback to generated worship sounds
-                                console.log('🎵 All stream URLs failed, using fallback worship audio');
-                                currentTrack.textContent = '♪ Divine Worship Sounds • Generated';
-                                playFallbackWorship();
-                            }
-                        });
-                    }
-                };
-                    
-                radioAudio.addEventListener('loadstart', () => {
-                    console.log('🎵 Radio stream loading...');
-                    currentTrack.textContent = '♪ Connecting to Black Gospel Radio 365...';
-                });
-                
-                radioAudio.addEventListener('canplay', () => {
-                    console.log('🎵 Radio stream ready to play');
-                    currentTrack.textContent = '♪ Black Gospel Radio 365 • Live Stream';
-                });
-                
-                radioAudio.addEventListener('error', (e) => {
-                    console.warn('🎵 Radio stream error:', e);
-                    currentUrlIndex++;
-                    setTimeout(tryNextUrl, 1000);
-                });
-                
-                radioAudio.volume = 0.3;
-                tryNextUrl();
+                // Start worship audio immediately
+                console.log('🎵 Starting divine worship audio');
+                await playFallbackWorship();
                 
             } else {
-                // Stop radio stream
+                // Stop worship audio
                 radioPlaying = false;
+                worshipPlaying = false;
                 button.classList.remove('playing');
                 nowPlaying.style.display = 'none';
                 
@@ -5114,39 +5055,46 @@
                 radioIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Play icon
                 radioText.textContent = 'Black Gospel Radio';
                 
-                // Stop audio
-                if (radioAudio) {
-                    radioAudio.pause();
-                    radioAudio.currentTime = 0;
+                // Stop worship audio
+                if (worshipAudio && worshipAudio.masterGain) {
+                    worshipAudio.masterGain.gain.setTargetAtTime(0, audioContext.currentTime, 1.0);
                 }
                 
-                console.log('🎵 Radio stream stopped');
+                // Stop oscillators
+                if (worshipAudio && worshipAudio.oscillators) {
+                    worshipAudio.oscillators.forEach(osc => {
+                        try { osc.stop(); } catch(e) {}
+                    });
+                }
+                
+                console.log('🎵 Worship audio stopped');
             }
         }
 
         // Fallback worship sounds when radio stream fails
-        function playFallbackWorship() {
-            // Use the existing worship audio system as fallback
-            if (typeof toggleWorship === 'function') {
-                // Call existing worship toggle if available
-                toggleWorship();
-            } else {
-                // Simple fallback audio
-                const context = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = context.createOscillator();
-                const gainNode = context.createGain();
+        async function playFallbackWorship() {
+            console.log('🎵 Starting fallback worship audio');
+            
+            // Initialize audio if needed
+            if (!isAudioInitialized) {
+                await initializeAudio();
+            }
+            
+            // Start the synthetic worship audio system
+            if (!worshipPlaying) {
+                worshipPlaying = true;
                 
-                oscillator.connect(gainNode);
-                gainNode.connect(context.destination);
+                // Resume audio context if suspended
+                if (audioContext && audioContext.state === 'suspended') {
+                    await audioContext.resume();
+                }
                 
-                oscillator.frequency.setValueAtTime(440, context.currentTime); // A4 note
-                gainNode.gain.setValueAtTime(0.1, context.currentTime);
+                // Start enhanced worship audio with smooth fade-in
+                if (worshipAudio && worshipAudio.masterGain) {
+                    worshipAudio.masterGain.gain.setTargetAtTime(0.15, audioContext.currentTime, 2.0);
+                }
                 
-                oscillator.start();
-                
-                setTimeout(() => {
-                    oscillator.stop();
-                }, 2000);
+                console.log('🎵 Fallback worship audio activated');
             }
         }
 
