@@ -5032,7 +5032,7 @@
                 
                 // Update UI
                 radioIcon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'; // Pause icon
-                radioText.textContent = 'Pause Worship';
+                radioText.textContent = 'Pause Radio';
                 currentTrack.textContent = '♪ Black Gospel Radio 365 • Live Stream';
                 
                 // Create audio element if it doesn't exist
@@ -5040,51 +5040,52 @@
                     radioAudio = new Audio();
                     radioAudio.crossOrigin = 'anonymous';
                     radioAudio.preload = 'none';
-                    
-                    // Try multiple potential stream URLs for Live365
-                    const streamUrls = [
-                        'https://live365.com/station/Black-Gospel-Radio-365-a24152/stream',
-                        'https://stream.live365.com/a24152',
-                        'https://playerservices.streamtheworld.com/api/livestream-redirect/LIVE365AAC24152.aac'
-                    ];
-                    
-                    let currentUrlIndex = 0;
-                    
-                    const tryNextUrl = () => {
-                        if (currentUrlIndex < streamUrls.length) {
-                            radioAudio.src = streamUrls[currentUrlIndex];
-                            console.log(`🎵 Trying stream URL ${currentUrlIndex + 1}: ${streamUrls[currentUrlIndex]}`);
-                            radioAudio.play().catch(error => {
-                                console.warn(`Stream URL ${currentUrlIndex + 1} failed:`, error);
-                                currentUrlIndex++;
-                                if (currentUrlIndex < streamUrls.length) {
-                                    tryNextUrl();
-                                } else {
-                                    // All URLs failed - fallback to generated worship sounds
-                                    console.log('🎵 All stream URLs failed, using fallback worship audio');
-                                    currentTrack.textContent = '♪ Divine Worship Sounds • Generated';
-                                    playFallbackWorship();
-                                }
-                            });
-                        }
-                    };
-                    
-                    radioAudio.addEventListener('loadstart', () => {
-                        console.log('🎵 Radio stream loading...');
-                        currentTrack.textContent = '♪ Connecting to Black Gospel Radio 365...';
-                    });
-                    
-                    radioAudio.addEventListener('canplay', () => {
-                        console.log('🎵 Radio stream ready to play');
-                        currentTrack.textContent = '♪ Black Gospel Radio 365 • Live Stream';
-                    });
-                    
-                    radioAudio.addEventListener('error', (e) => {
-                        console.warn('🎵 Radio stream error:', e);
-                        currentUrlIndex++;
-                        tryNextUrl();
-                    });
                 }
+                
+                // Try multiple gospel radio streams (working fallbacks)
+                const streamUrls = [
+                    'https://live365.com/station/Black-Gospel-Radio-365-a24152/stream',
+                    'https://stream-relay-geo.ntslive.net/stream', // NTS Radio (fallback)
+                    'https://streaming.radio.co/s8b10b2b50/listen', // Generic gospel stream
+                    'https://streams.radio.co/s44ab7faea/listen' // Another gospel fallback
+                ];
+                
+                let currentUrlIndex = 0;
+                
+                const tryNextUrl = () => {
+                    if (currentUrlIndex < streamUrls.length) {
+                        radioAudio.src = streamUrls[currentUrlIndex];
+                        console.log(`🎵 Trying stream URL ${currentUrlIndex + 1}: ${streamUrls[currentUrlIndex]}`);
+                        radioAudio.play().catch(error => {
+                            console.warn(`Stream URL ${currentUrlIndex + 1} failed:`, error);
+                            currentUrlIndex++;
+                            if (currentUrlIndex < streamUrls.length) {
+                                setTimeout(tryNextUrl, 1000); // Add delay before trying next URL
+                            } else {
+                                // All URLs failed - fallback to generated worship sounds
+                                console.log('🎵 All stream URLs failed, using fallback worship audio');
+                                currentTrack.textContent = '♪ Divine Worship Sounds • Generated';
+                                playFallbackWorship();
+                            }
+                        });
+                    }
+                };
+                    
+                radioAudio.addEventListener('loadstart', () => {
+                    console.log('🎵 Radio stream loading...');
+                    currentTrack.textContent = '♪ Connecting to Black Gospel Radio 365...';
+                });
+                
+                radioAudio.addEventListener('canplay', () => {
+                    console.log('🎵 Radio stream ready to play');
+                    currentTrack.textContent = '♪ Black Gospel Radio 365 • Live Stream';
+                });
+                
+                radioAudio.addEventListener('error', (e) => {
+                    console.warn('🎵 Radio stream error:', e);
+                    currentUrlIndex++;
+                    setTimeout(tryNextUrl, 1000);
+                });
                 
                 radioAudio.volume = 0.3;
                 tryNextUrl();
@@ -5097,7 +5098,7 @@
                 
                 // Update UI
                 radioIcon.innerHTML = '<path d="M8 5v14l11-7z"/>'; // Play icon
-                radioText.textContent = 'Gentle Worship Sounds';
+                radioText.textContent = 'Black Gospel Radio';
                 
                 // Stop audio
                 if (radioAudio) {
@@ -5660,7 +5661,7 @@
                             <svg class="w-6 h-6 text-mystic-gold-400 mr-3" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V5H19V19M17,17H7V16H17V17M17,15H7V14H17V15M17,13H7V12H17V13M17,11H7V10H17V11M17,9H7V8H17V9Z"/>
                             </svg>
-                            <span class="text-mystic-gold-300 font-semibold">Sacred Scripture</span>
+                            <span class="text-mystic-gold-300 font-semibold">Daily Scripture</span>
                         </div>
                         <div class="text-white italic mb-4 leading-relaxed font-inter" id="scriptureText" style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);"></div>
                         <div class="text-mystic-gold-400 font-semibold text-sm font-cinzel" id="scriptureReference"></div>
@@ -5688,7 +5689,7 @@
                             <svg id="radioIcon" class="w-6 h-6 relative z-10 group-hover:animate-pulse" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M8 5v14l11-7z"/>
                             </svg>
-                            <span id="radioText" class="text-lg font-semibold relative z-10 font-cinzel">Gentle Worship Sounds</span>
+                            <span id="radioText" class="text-lg font-semibold relative z-10 font-cinzel">Black Gospel Radio</span>
                         </button>
                         
                         <div class="flex items-center space-x-4 bg-glass-morphism backdrop-blur-xl border border-mystic-gold-400/20 rounded-2xl px-6 py-3 text-sm text-amber-200 shadow-golden-glow" 
