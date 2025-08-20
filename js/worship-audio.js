@@ -232,14 +232,9 @@ class WorshipAudio {
             
             console.log('📻 Starting Moody Radio Urban Praise...');
             
-            // Check if we already have a source loaded (resuming)
-            if (!this.radioElement.src || this.radioElement.src === '') {
-                console.log('📻 Loading fresh stream...');
-                this.radioElement.src = this.streamUrls[0];
-                this.radioElement.load();
-            } else {
-                console.log('📻 Resuming existing stream...');
-            }
+            // First try to play the radio stream
+            this.radioElement.src = this.streamUrls[0];
+            this.radioElement.load();
             
             const playPromise = this.radioElement.play();
             
@@ -278,8 +273,7 @@ class WorshipAudio {
         if (this.radioElement) {
             console.log('📻 Pausing radio stream');
             this.radioElement.pause();
-            // Don't clear src - just pause to allow resume
-            console.log('📻 Radio paused, src preserved for resume');
+            this.radioElement.src = '';
         }
         
         // Stop current track
