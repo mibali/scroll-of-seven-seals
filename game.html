@@ -5067,6 +5067,9 @@
                     });
                 }
                 
+                // Reset worship audio so it can be recreated on next play
+                worshipAudio = null;
+                
                 console.log('🎵 Worship audio stopped');
             }
         }
@@ -5089,9 +5092,14 @@
                     await audioContext.resume();
                 }
                 
+                // Create new worship audio if it doesn't exist or was stopped
+                if (!worshipAudio) {
+                    worshipAudio = createEnhancedWorshipAmbience();
+                }
+                
                 // Start enhanced worship audio with smooth fade-in
                 if (worshipAudio && worshipAudio.masterGain) {
-                    worshipAudio.masterGain.gain.setTargetAtTime(0.15, audioContext.currentTime, 2.0);
+                    worshipAudio.masterGain.gain.setTargetAtTime(0.12, audioContext.currentTime, 2.0);
                 }
                 
                 console.log('🎵 Fallback worship audio activated');
@@ -5106,52 +5114,58 @@
 
         const worshipTracks = [
             {
-                name: "Holy Spirit's Presence",
-                frequencies: [261.63, 329.63, 392.00, 523.25, 659.25], // C major pentatonic
-                harmonics: [130.81, 164.81, 196.00], // Lower harmony
-                modulation: { rate: 0.2, depth: 1.5 },
+                name: "Holy Spirit's Embrace",
+                frequencies: [256, 341.33, 426.67, 512, 768], // Sacred 4th and 5th intervals
+                harmonics: [128, 170.67, 213.33], // Perfect octaves and fifths
+                bells: [1024, 1536, 2048], // Crystalline bell tones
+                modulation: { rate: 0.08, depth: 0.3 }, // Very gentle
+                reverb: { roomSize: 0.95, damping: 0.15 },
+                atmosphere: "transcendent"
+            },
+            {
+                name: "Cathedral of Grace", 
+                frequencies: [220, 293.33, 366.67, 440, 660], // Perfect fifths progression
+                harmonics: [110, 146.67, 183.33], // Deep foundation
+                bells: [880, 1320, 1760], // Gentle chimes
+                modulation: { rate: 0.06, depth: 0.25 },
+                reverb: { roomSize: 0.98, damping: 0.12 },
+                atmosphere: "sacred"
+            },
+            {
+                name: "Angelic Presence",
+                frequencies: [288, 384, 480, 576, 864], // Pure 3:4:5 ratios
+                harmonics: [144, 192, 240], // Harmonic series
+                bells: [1152, 1728, 2304], // Ethereal high tones
+                modulation: { rate: 0.05, depth: 0.2 },
+                reverb: { roomSize: 0.92, damping: 0.18 },
+                atmosphere: "heavenly"
+            },
+            {
+                name: "Ocean of Peace",
+                frequencies: [196, 261.33, 326.67, 392, 588], // Golden ratio harmonics
+                harmonics: [98, 130.67, 163.33], // Gentle bass
+                bells: [784, 1176, 1568], // Soft temple bells
+                modulation: { rate: 0.04, depth: 0.15 },
+                reverb: { roomSize: 0.88, damping: 0.22 },
+                atmosphere: "serene"
+            },
+            {
+                name: "Divine Communion",
+                frequencies: [240, 320, 400, 480, 720], // Perfect mathematical ratios
+                harmonics: [120, 160, 200], // Strong foundation
+                bells: [960, 1440, 1920], // Sacred chimes
+                modulation: { rate: 0.07, depth: 0.28 },
+                reverb: { roomSize: 0.96, damping: 0.14 },
+                atmosphere: "mystical"
+            },
+            {
+                name: "Light of Dawn",
+                frequencies: [264, 352, 440, 528, 792], // Solfeggio-inspired
+                harmonics: [132, 176, 220], // Warm undertones
+                bells: [1056, 1584, 2112], // Bright awakening
+                modulation: { rate: 0.09, depth: 0.35 },
                 reverb: { roomSize: 0.85, damping: 0.25 },
-                atmosphere: "peaceful"
-            },
-            {
-                name: "Sanctuary of Grace", 
-                frequencies: [220.00, 277.18, 329.63, 440.00, 554.37], // A minor pentatonic
-                harmonics: [110.00, 138.59, 164.81], // Lower harmony
-                modulation: { rate: 0.18, depth: 1.8 },
-                reverb: { roomSize: 0.9, damping: 0.3 },
-                atmosphere: "contemplative"
-            },
-            {
-                name: "Divine Light",
-                frequencies: [196.00, 246.94, 293.66, 392.00, 493.88], // G major pentatonic
-                harmonics: [98.00, 123.47, 146.83], // Lower harmony
-                modulation: { rate: 0.25, depth: 2.2 },
-                reverb: { roomSize: 0.95, damping: 0.2 },
                 atmosphere: "uplifting"
-            },
-            {
-                name: "River of Peace",
-                frequencies: [174.61, 220.00, 261.63, 349.23, 440.00], // F major pentatonic
-                harmonics: [87.31, 110.00, 130.81], // Lower harmony
-                modulation: { rate: 0.15, depth: 1.0 },
-                reverb: { roomSize: 0.8, damping: 0.4 },
-                atmosphere: "tranquil"
-            },
-            {
-                name: "Eternal Worship",
-                frequencies: [293.66, 369.99, 440.00, 587.33, 739.99], // D major pentatonic
-                harmonics: [146.83, 185.00, 220.00], // Lower harmony
-                modulation: { rate: 0.22, depth: 1.6 },
-                reverb: { roomSize: 0.88, damping: 0.28 },
-                atmosphere: "majestic"
-            },
-            {
-                name: "Morning Prayer",
-                frequencies: [246.94, 311.13, 369.99, 493.88, 622.25], // B major pentatonic
-                harmonics: [123.47, 155.56, 185.00], // Lower harmony
-                modulation: { rate: 0.19, depth: 1.3 },
-                reverb: { roomSize: 0.82, damping: 0.32 },
-                atmosphere: "hopeful"
             }
         ];
 
@@ -5224,14 +5238,14 @@
                 const lfo = audioContext.createOscillator();
                 const lfoGain = audioContext.createGain();
                 
-                // Use more musical waveforms
-                osc.type = index % 3 === 0 ? 'sine' : index % 3 === 1 ? 'triangle' : 'sawtooth';
+                // Use ethereal, spiritual waveforms  
+                osc.type = 'sine'; // Pure sine waves for spiritual clarity
                 osc.frequency.setValueAtTime(freq, audioContext.currentTime);
                 
-                // Slower, more gentle modulation
+                // Very slow, breathing-like modulation
                 lfo.type = 'sine';
-                lfo.frequency.setValueAtTime(track.modulation.rate + (Math.random() * 0.05), audioContext.currentTime);
-                lfoGain.gain.setValueAtTime(track.modulation.depth * 0.5, audioContext.currentTime);
+                lfo.frequency.setValueAtTime(track.modulation.rate + (Math.random() * 0.02), audioContext.currentTime);
+                lfoGain.gain.setValueAtTime(track.modulation.depth, audioContext.currentTime);
                 
                 // Stereo positioning
                 const panner = audioContext.createStereoPanner();
@@ -5291,6 +5305,50 @@
                 
                 oscillators.push(osc);
                 gains.push(gain);
+            });
+            
+            // Add ethereal bell tones for spiritual atmosphere
+            track.bells.forEach((freq, index) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                const envelope = audioContext.createGain();
+                
+                // Use triangle wave for bell-like sound
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(freq, audioContext.currentTime);
+                
+                // Create bell envelope (attack and decay)
+                envelope.gain.setValueAtTime(0, audioContext.currentTime);
+                envelope.gain.setTargetAtTime(0.02 / track.bells.length, audioContext.currentTime, 0.1);
+                envelope.gain.setTargetAtTime(0.01 / track.bells.length, audioContext.currentTime + 2, 4);
+                
+                // Stereo positioning for bells
+                const panner = audioContext.createStereoPanner();
+                const panPosition = (Math.random() - 0.5) * 0.8;
+                panner.pan.setValueAtTime(panPosition, audioContext.currentTime);
+                
+                gain.gain.setValueAtTime(0.008 / track.bells.length, audioContext.currentTime);
+                
+                // Connect bell chain
+                osc.connect(envelope);
+                envelope.connect(gain);
+                gain.connect(panner);
+                panner.connect(reverbGain); // Bells go through reverb for ethereal effect
+                
+                osc.start();
+                
+                // Bell oscillators also fade in and out periodically for mystical effect
+                setInterval(() => {
+                    if (osc.frequency) {
+                        const now = audioContext.currentTime;
+                        envelope.gain.cancelScheduledValues(now);
+                        envelope.gain.setValueAtTime(envelope.gain.value, now);
+                        envelope.gain.setTargetAtTime(0.03 / track.bells.length, now, 2);
+                        envelope.gain.setTargetAtTime(0.005 / track.bells.length, now + 8, 6);
+                    }
+                }, (15000 + Math.random() * 10000)); // Random intervals between 15-25 seconds
+                
+                oscillators.push(osc);
             });
             
             // Connect reverb
