@@ -16,22 +16,38 @@ class WorshipAudio {
         this.audioContext = null;
         this.setupAudioContext();
         
-        // Live Gospel Radio Stream - Black Gospel Radio 365
-        this.radioStream = {
-            name: "Black Gospel Radio 365",
-            url: "https://live365.com/station/Black-Gospel-Radio-365-a24152",
-            streamUrl: "http://ice.live365.com/stream/a24152", // Live365 stream URL format
-            description: "All GOSPEL. Only GOSPEL. All The Time!",
-            type: "live_radio"
-        };
-        
-        // Fallback gospel tracks in case radio stream fails
+        // Gospel music tracks (Pixabay public domain sources)
+        // Note: These are example URLs - in production, you would use actual Pixabay download URLs
         this.gospelTracks = [
             {
-                name: "Sacred Harmony (Generated)",
-                url: "generated", // Use our harmonic progression
-                duration: 0, // Continuous
-                type: "generated"
+                name: "Peaceful Worship",
+                url: "https://cdn.pixabay.com/download/audio/2022/08/02/audio_550d815fa6.mp3?filename=amazing-grace-21612.mp3", // Example - replace with actual
+                duration: 180,
+                type: "hymn"
+            },
+            {
+                name: "Gospel Piano",
+                url: "https://cdn.pixabay.com/download/audio/2022/03/25/audio_1e0b4b5cd9.mp3?filename=gospel-music-21634.mp3", // Example - replace with actual
+                duration: 240,
+                type: "hymn"
+            },
+            {
+                name: "Blessed Worship",
+                url: "https://cdn.pixabay.com/download/audio/2021/12/15/audio_2fb2b87ea4.mp3?filename=worship-background-21501.mp3", // Example - replace with actual
+                duration: 200,
+                type: "hymn"
+            },
+            {
+                name: "Soulful Gospel",
+                url: "https://cdn.pixabay.com/download/audio/2022/05/14/audio_ab7d8c7e85.mp3?filename=gospel-instrumental-21891.mp3", // Example - replace with actual
+                duration: 220,
+                type: "hymn"
+            },
+            {
+                name: "Heavenly Strings",
+                url: "https://cdn.pixabay.com/download/audio/2021/10/22/audio_7c5e2b1f94.mp3?filename=heavenly-worship-21234.mp3", // Example - replace with actual
+                duration: 195,
+                type: "hymn"
             }
         ];
         
@@ -63,40 +79,8 @@ class WorshipAudio {
     }
     
     setupAudioElements() {
-        // Setup radio stream audio element
-        this.radioElement = new Audio();
-        this.radioElement.volume = this.volume;
-        this.radioElement.crossOrigin = "anonymous";
-        
-        // Try multiple stream URLs for better compatibility
-        this.streamUrls = [
-            "https://ice.live365.com/stream/a24152",
-            "http://ice.live365.com/stream/a24152", 
-            "https://stream.live365.com/a24152"
-        ];
-        
-        // Add event listeners for radio stream
-        this.radioElement.addEventListener('error', (e) => {
-            console.log('Radio stream failed, trying next URL or fallback...');
-            this.tryNextStream();
-        });
-        
-        this.radioElement.addEventListener('loadstart', () => {
-            console.log('📻 Loading Black Gospel Radio 365...');
-        });
-        
-        this.radioElement.addEventListener('canplay', () => {
-            console.log('📻 Black Gospel Radio 365 ready to play');
-            this.updateCurrentTrackDisplay(this.radioStream.name);
-        });
-        
-        // Create audio elements for fallback tracks
+        // Create audio elements for tracks
         this.gospelTracks.forEach((track, index) => {
-            if (track.type === 'generated') {
-                // Skip setting up audio element for generated tracks
-                return;
-            }
-            
             const audio = new Audio();
             audio.src = track.url;
             audio.loop = false;
@@ -121,45 +105,6 @@ class WorshipAudio {
             audio.preload = 'metadata';
             sound.element = audio;
         });
-    }
-    
-    // Try different stream URLs for radio
-    tryNextStream() {
-        if (!this.streamUrls || this.streamUrls.length === 0) {
-            console.log('📻 All radio stream URLs failed, falling back to generated harmony');
-            this.playGeneratedHarmony();
-            return;
-        }
-        
-        const nextUrl = this.streamUrls.shift();
-        console.log(`📻 Trying stream URL: ${nextUrl}`);
-        
-        this.radioElement.src = nextUrl;
-        this.radioElement.load();
-        
-        // Try to play after loading
-        setTimeout(() => {
-            this.radioElement.play().catch(e => {
-                console.log(`Failed to play stream ${nextUrl}:`, e.message);
-                this.tryNextStream();
-            });
-        }, 1000);
-    }
-    
-    // Play generated harmony as fallback
-    playGeneratedHarmony() {
-        this.currentTrack = { name: "Sacred Harmony (Generated)", element: null };
-        this.updateCurrentTrackDisplay("Sacred Harmony (Generated)");
-        
-        // Start continuous harmony generation
-        this.harmonyInterval = setInterval(() => {
-            if (this.isPlaying) {
-                this.playHarmony();
-            }
-        }, 8000);
-        
-        // Play initial harmony
-        this.playHarmony();
     }
     
     // Generate simple tones as placeholder music
@@ -230,52 +175,43 @@ class WorshipAudio {
             
             this.isPlaying = true;
             
-            console.log('📻 Starting Black Gospel Radio 365...');
+            // Try to play a random gospel track first
+            const hasValidTracks = this.gospelTracks.some(track => track.element && track.element.readyState >= 2);
             
-            // First try to play the radio stream
-            this.radioElement.src = this.streamUrls[0];
-            this.radioElement.load();
-            
-            const playPromise = this.radioElement.play();
-            
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    console.log('📻 Black Gospel Radio 365 playing successfully!');
-                    this.currentTrack = { 
-                        name: this.radioStream.name, 
-                        element: this.radioElement,
-                        type: 'live_radio'
-                    };
-                    this.updateCurrentTrackDisplay(this.radioStream.name + " - Live Stream");
-                }).catch(e => {
-                    console.log('📻 Radio stream failed, trying alternatives...');
-                    this.tryNextStream();
-                });
+            if (hasValidTracks) {
+                // Play a random track
+                this.playNext();
+            } else {
+                // Fall back to harmonic progression
+                this.playHarmony();
+                this.updateCurrentTrackDisplay('Sacred Harmony');
             }
+            
+            // Set interval to play harmony as backup every 8 seconds
+            this.harmonyInterval = setInterval(() => {
+                if (this.isPlaying) {
+                    // If no track is currently playing, play harmony
+                    if (!this.currentTrack || this.currentTrack.element.paused) {
+                        this.playHarmony();
+                    }
+                }
+            }, 8000);
             
             // Update UI
             this.updateWorshipButton();
             
-            console.log('🎵 Gospel worship music started');
+            console.log('🎵 Worship music started');
             
         } catch (error) {
             console.error('Failed to start worship audio:', error);
-            // Fallback to generated harmony
-            this.playGeneratedHarmony();
         }
     }
     
     stopWorship() {
         this.isPlaying = false;
         
-        // Stop radio stream
-        if (this.radioElement) {
-            this.radioElement.pause();
-            this.radioElement.src = '';
-        }
-        
         // Stop current track
-        if (this.currentTrack && this.currentTrack.element && this.currentTrack.type !== 'live_radio') {
+        if (this.currentTrack && this.currentTrack.element) {
             this.fadeOut(this.currentTrack.element);
         }
         
@@ -292,19 +228,8 @@ class WorshipAudio {
             }
         });
         
-        // Reset stream URLs for next time
-        this.streamUrls = [
-            "https://ice.live365.com/stream/a24152",
-            "http://ice.live365.com/stream/a24152", 
-            "https://stream.live365.com/a24152"
-        ];
-        
-        // Clear current track
-        this.currentTrack = null;
-        
         this.updateWorshipButton();
-        this.updateCurrentTrackDisplay('');
-        console.log('🎵 Gospel worship music stopped');
+        console.log('🎵 Worship music stopped');
     }
     
     toggleWorship() {
@@ -374,11 +299,6 @@ class WorshipAudio {
     setVolume(newVolume) {
         this.volume = Math.max(0, Math.min(1, newVolume));
         
-        // Update radio stream volume
-        if (this.radioElement) {
-            this.radioElement.volume = this.volume;
-        }
-        
         if (this.currentTrack && this.currentTrack.element) {
             this.currentTrack.element.volume = this.volume;
         }
@@ -407,7 +327,7 @@ class WorshipAudio {
                 button.classList.remove('bg-red-600', 'hover:bg-red-700');
                 button.classList.add('bg-gold-mystique');
                 icon.innerHTML = `<path d="M8 5v14l11-7z"/>`;
-                text.textContent = 'Black Gospel Radio 365';
+                text.textContent = 'Divine Worship Sounds';
                 if (nowPlaying) nowPlaying.style.display = 'none';
             }
         }
