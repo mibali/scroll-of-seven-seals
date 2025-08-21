@@ -272,8 +272,14 @@ class SealMiniGames {
             input.disabled = true;
             this.updateScore(this.currentGame.score + 20);
         } else {
-            feedback.innerHTML = `❌ Not quite. The answer is: <strong>${correctAnswer}</strong>`;
+            feedback.innerHTML = `❌ Not quite. Try again or think about the context of the verse.`;
             feedback.className = 'answer-feedback incorrect';
+            // Give a hint after 2 wrong attempts
+            const attempts = parseInt(input.dataset.attempts || '0') + 1;
+            input.dataset.attempts = attempts;
+            if (attempts >= 2) {
+                feedback.innerHTML += ` <br><small>💡 Hint: The answer starts with "${correctAnswer.charAt(0).toUpperCase()}"</small>`;
+            }
         }
 
         // Check if all questions are answered correctly
@@ -680,8 +686,14 @@ class SealMiniGames {
                 }, 1000);
             }
         } else {
-            feedback.innerHTML = `❌ Not quite. The answer is: <strong>${correctAnswer}</strong>`;
+            feedback.innerHTML = `❌ Not quite. Think about what makes sense in this healing context.`;
             feedback.className = 'story-feedback incorrect';
+            // Give a hint after 2 wrong attempts
+            const attempts = parseInt(input.dataset.attempts || '0') + 1;
+            input.dataset.attempts = attempts;
+            if (attempts >= 2) {
+                feedback.innerHTML += ` <br><small>💡 Hint: It's a ${correctAnswer.length}-letter word starting with "${correctAnswer.charAt(0).toUpperCase()}"</small>`;
+            }
         }
     }
 

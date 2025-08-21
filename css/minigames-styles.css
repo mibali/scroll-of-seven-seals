@@ -31,10 +31,10 @@
     backdrop-filter: blur(20px);
     border: 3px solid #d4af37;
     border-radius: 20px;
-    width: 90%;
-    max-width: 900px;
-    height: 85%;
-    max-height: 700px;
+    width: 95%;
+    max-width: 1200px;
+    height: 90%;
+    max-height: 800px;
     display: flex;
     flex-direction: column;
     box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(212, 175, 55, 0.4);

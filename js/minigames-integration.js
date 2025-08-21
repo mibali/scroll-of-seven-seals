@@ -67,13 +67,13 @@ class MiniGamesIntegration {
 
     // Integrate with the existing seal system
     integrateWithExistingSystem() {
-        // Hook into existing seal opening mechanism
-        this.interceptSealMethods();
+        // DISABLED: Don't hook into existing seal methods to prevent old system from running
+        // this.interceptSealMethods();
         
         // Add mini-game option to existing UI
         this.enhanceExistingUI();
         
-        console.log('🔗 Integrated with existing seal system');
+        console.log('🔗 Enhanced UI with mini-games (original system preserved)');
     }
 
     // Intercept existing seal methods to add mini-game option
@@ -211,10 +211,9 @@ class MiniGamesIntegration {
                     console.log(`🎉 Mini-game completed for Seal ${seal} with score: ${score}`);
                     // Award bonus points or benefits
                     this.awardMiniGameBonus(seal, score);
-                    // Continue with original game flow
-                    if (this.currentOriginalCallback) {
-                        this.currentOriginalCallback();
-                    }
+                    // Mark seal as completed and show success message
+                    this.completeSeal(seal, score);
+                    // DO NOT call original callback - mini-game is the complete experience
                 },
                 onScoreUpdate: (score) => {
                     // Optional: Update global game score
@@ -225,6 +224,74 @@ class MiniGamesIntegration {
             console.error('Mini-games system not available');
             this.continueOriginalGame();
         }
+    }
+
+    // Complete seal with mini-game (replaces original game flow)
+    completeSeal(sealNumber, score) {
+        // Show completion notification
+        this.showSealCompletionNotification(sealNumber, score);
+        
+        // Mark seal as completed in any existing system
+        this.markSealAsCompleted(sealNumber);
+        
+        // Update any global game state if needed
+        if (typeof window.updateGameProgress === 'function') {
+            window.updateGameProgress(sealNumber, score);
+        }
+        
+        console.log(`✅ Seal ${sealNumber} completed through mini-game with score: ${score}`);
+    }
+
+    // Mark seal as completed in existing game systems
+    markSealAsCompleted(sealNumber) {
+        try {
+            // Try to find and update any existing seal tracking
+            const sealElements = document.querySelectorAll(`[data-seal="${sealNumber}"], .seal-${sealNumber}, #seal${sealNumber}`);
+            sealElements.forEach(element => {
+                element.classList.add('completed', 'mini-game-completed');
+                element.setAttribute('data-completed', 'true');
+            });
+
+            // Update any global seal completion tracking
+            if (window.completedSeals) {
+                if (Array.isArray(window.completedSeals)) {
+                    if (!window.completedSeals.includes(sealNumber)) {
+                        window.completedSeals.push(sealNumber);
+                    }
+                } else if (typeof window.completedSeals === 'object') {
+                    window.completedSeals[sealNumber] = true;
+                }
+            }
+        } catch (error) {
+            console.warn('Could not update existing seal tracking:', error);
+        }
+    }
+
+    // Show seal completion notification
+    showSealCompletionNotification(sealNumber, score) {
+        const notification = document.createElement('div');
+        notification.className = 'seal-completion-notification';
+        notification.innerHTML = `
+            <div class="completion-content">
+                <div class="completion-icon">🏆</div>
+                <div class="completion-text">
+                    <strong>Seal ${sealNumber} Completed!</strong><br>
+                    Biblical knowledge gained: ${score} points<br>
+                    <small>You have unlocked deeper spiritual understanding</small>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+
+        this.addCompletionNotificationStyles();
     }
 
     // Continue with original game without mini-game
@@ -908,6 +975,121 @@ class MiniGamesIntegration {
                 0%, 100% { transform: rotate(0deg); }
                 25% { transform: rotate(-10deg); }
                 75% { transform: rotate(10deg); }
+            }
+        `;
+
+        document.head.appendChild(styles);
+    }
+
+    // Add styles for completion notification
+    addCompletionNotificationStyles() {
+        if (document.getElementById('completionNotificationStyles')) return;
+
+        const styles = document.createElement('style');
+        styles.id = 'completionNotificationStyles';
+        styles.textContent = `
+            .seal-completion-notification {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+                z-index: 15000;
+                animation: completionBounce 0.8s ease, completionFadeOut 0.8s ease 4.2s forwards;
+                border: 3px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(15px);
+                text-align: center;
+                min-width: 400px;
+            }
+
+            .completion-content {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                justify-content: center;
+            }
+
+            .completion-icon {
+                font-size: 3em;
+                animation: rotateGlow 2s ease-in-out infinite;
+                filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+            }
+
+            .completion-text {
+                font-weight: 600;
+                text-align: left;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            .completion-text strong {
+                font-size: 1.4em;
+                display: block;
+                margin-bottom: 5px;
+                font-family: 'Cinzel', serif;
+            }
+
+            .completion-text small {
+                opacity: 0.9;
+                font-style: italic;
+                display: block;
+                margin-top: 5px;
+            }
+
+            @keyframes completionBounce {
+                0% {
+                    transform: translate(-50%, -50%) scale(0.3);
+                    opacity: 0;
+                }
+                50% {
+                    transform: translate(-50%, -50%) scale(1.1);
+                    opacity: 1;
+                }
+                100% {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes completionFadeOut {
+                from {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+                to {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.8);
+                }
+            }
+
+            @keyframes rotateGlow {
+                0%, 100% { 
+                    transform: rotate(0deg);
+                    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.6));
+                }
+                50% { 
+                    transform: rotate(5deg);
+                    filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.8));
+                }
+            }
+
+            @media (max-width: 480px) {
+                .seal-completion-notification {
+                    min-width: 300px;
+                    padding: 30px;
+                }
+                
+                .completion-content {
+                    flex-direction: column;
+                    gap: 15px;
+                }
+                
+                .completion-text {
+                    text-align: center;
+                }
             }
         `;
 
