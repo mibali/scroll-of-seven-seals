@@ -268,7 +268,15 @@ class BibleGameAI {
             ...originalPuzzleManager,
             generatePuzzleContent: (sealId, puzzleType) => {
                 return this.generateIntelligentSealContent(sealId, puzzleType);
-            }
+            },
+            regeneratePuzzles: () => {
+                console.log('🔄 Regenerating puzzles with fresh Bible content');
+                // Force fresh content on next generation
+                this.lastGenerationTime = 0;
+                return true;
+            },
+            currentPuzzles: {},
+            gameSessionId: Date.now()
         };
         
         console.log('🧠 Intelligent Bible-based content generation ENABLED');
@@ -460,12 +468,17 @@ class BibleGameAI {
 
     // Generate character options for biblical speakers
     generateCharacterOptions(correctCharacter) {
-        const characters = ['Jesus', 'God', 'Moses', 'David', 'Paul', 'Peter', 'John', 'Joshua', 'Isaiah', 'Jeremiah'];
+        const characters = ['Jesus', 'God', 'Moses', 'David', 'Paul', 'Peter', 'John', 'Joshua', 'Isaiah', 'Jeremiah', 'Daniel', 'Shadrach, Meshach, Abednego', 'Biblical Author'];
         const options = [correctCharacter];
         
-        // Add 3 random other characters
+        // Add 3 random other characters, but keep common ones more likely
+        const commonCharacters = ['Jesus', 'God', 'Moses', 'David', 'Paul'];
+        
         while (options.length < 4) {
-            const randomChar = characters[Math.floor(Math.random() * characters.length)];
+            const useCommon = Math.random() > 0.5;
+            const pool = useCommon ? commonCharacters : characters;
+            const randomChar = pool[Math.floor(Math.random() * pool.length)];
+            
             if (!options.includes(randomChar)) {
                 options.push(randomChar);
             }
@@ -474,20 +487,34 @@ class BibleGameAI {
         return options.sort(() => Math.random() - 0.5);
     }
 
-    // Determine who likely spoke the verse
+    // Determine who likely spoke the verse with accurate attribution
     getVerseSpeaker(verse) {
         const text = verse.text.toLowerCase();
+        const reference = `${verse.book} ${verse.chapter}:${verse.verse}`.toLowerCase();
         
-        if (text.includes('jesus') || text.includes('i am') || verse.book === 'Matthew' || verse.book === 'Mark' || verse.book === 'Luke' || verse.book === 'John') {
+        // Specific verse attributions for accuracy
+        if (reference.includes('daniel 3') && text.includes('blazing furnace')) {
+            return 'Shadrach, Meshach, Abednego';
+        } else if (text.includes('i am the way') || text.includes('i am who i am')) {
             return 'Jesus';
-        } else if (text.includes('moses') || verse.book === 'Exodus' || verse.book === 'Deuteronomy') {
+        } else if (verse.book === 'Exodus' && verse.chapter === 3 && text.includes('i am who i am')) {
+            return 'God';
+        } else if (text.includes('jesus') || text.includes('christ') || (verse.book === 'John' && !text.includes('god said'))) {
+            return 'Jesus';
+        } else if (text.includes('moses said') || (verse.book === 'Exodus' && text.includes('israelites'))) {
             return 'Moses';
         } else if (verse.book === 'Psalms') {
             return 'David';
-        } else if (verse.book === 'Romans' || verse.book === '1 Corinthians' || verse.book === 'Ephesians') {
+        } else if (verse.book === 'Romans' || verse.book === '1 Corinthians' || verse.book === 'Ephesians' || verse.book === 'Philippians') {
             return 'Paul';
-        } else if (text.includes('god said') || text.includes('declares the lord')) {
+        } else if (text.includes('god said') || text.includes('declares the lord') || text.includes('says the lord')) {
             return 'God';
+        } else if (verse.book === 'Daniel') {
+            return 'Daniel';
+        } else if (verse.book === 'Isaiah') {
+            return 'Isaiah';
+        } else if (verse.book === 'Jeremiah') {
+            return 'Jeremiah';
         } else {
             return 'Biblical Author';
         }

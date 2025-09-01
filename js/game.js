@@ -954,10 +954,28 @@ class GameController {
             }
         }
 
-        // 4. notifications
+        // 4. Auto-advance to next seal or return to selection
+        const nextSeal = this.getNextAvailableSeal();
+        if (nextSeal) {
+            console.log('🔄 Auto-advancing to next seal:', nextSeal.id);
+            setTimeout(() => {
+                this.closePuzzle(); // Exit current seal
+                setTimeout(() => {
+                    this.openSeal(nextSeal.id);
+                }, 500);
+            }, 3000); // Give time to see the completion notification
+        } else if (this.gameState.completedSeals.length < 7) {
+            console.log('🔄 No next seal available, returning to seal selection');
+            setTimeout(() => {
+                this.closePuzzle();
+                this.showSealSelection();
+            }, 3000);
+        }
+
+        // 5. notifications
         showNotification(`🎉 Seal ${sealId} broken! Keyword: ${keyword}`, 'success');
 
-        // 5. final challenge?
+        // 6. final challenge?
         if (this.gameState.completedSeals.length === 7) {
             // Small delay to ensure all state updates, UI refreshes, and async operations complete
             setTimeout(() => {
@@ -1502,6 +1520,37 @@ class GameController {
         if (tabs[tabMap[active]]) {
             tabs[tabMap[active]].classList.add('active');
         }
+    }
+
+    // Get the next available seal that can be opened
+    getNextAvailableSeal() {
+        if (!window.GameData || !window.GameData.seals) {
+            return null;
+        }
+        
+        return window.GameData.seals.find(seal => {
+            // Not already completed
+            if (this.gameState.completedSeals.includes(seal.id)) {
+                return false;
+            }
+            
+            // Check if requirements are met
+            return this.canOpenSeal(seal);
+        });
+    }
+    
+    // Show seal selection screen
+    showSealSelection() {
+        console.log('🎯 Showing seal selection screen');
+        
+        // Hide current content
+        this.hideGameplayScreen();
+        
+        // Show main game screen
+        this.showGameScreen();
+        
+        // Show notification
+        showNotification('Choose your next seal to break', 'info');
     }
 
     // Update page state for navigation

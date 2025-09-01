@@ -3411,7 +3411,7 @@
                         <h4>✅ Excellent Biblical Knowledge!</h4>
                         <p>You got ${correct} out of ${total} questions correct (${Math.round(score)}%)</p>
                         <p>You have earned the keyword: <strong>${keyword}</strong></p>
-                        <button onclick="completeSeal(1, '${keyword}')" class="btn-complete">
+                        <button onclick="window.gameController.completeSeal(1, '${keyword}')" class="btn-complete">
                             🔓 Break the First Seal
                         </button>
                     </div>
@@ -4562,7 +4562,7 @@
             }
             
             // Apply random mode setting
-            if (gameOptions.randomMode) {
+            if (gameOptions.randomMode && window.PuzzleManager && window.PuzzleManager.regeneratePuzzles) {
                 window.PuzzleManager.regeneratePuzzles();
             }
         }
