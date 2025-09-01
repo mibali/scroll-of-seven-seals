@@ -761,8 +761,8 @@ class BibleGameAI {
                         ${questionType.options.map((option, optionIndex) => 
                             `<div class="beautiful-option" 
                                  data-question="q${index + 1}" 
-                                 data-option="${option.replace(/"/g, '&quot;')}" 
-                                 data-correct="${questionType.answer.replace(/"/g, '&quot;')}"
+                                 data-option="${String(option || '').replace(/"/g, '&quot;')}" 
+                                 data-correct="${String(questionType.answer || '').replace(/"/g, '&quot;')}"
                                  onclick="selectAnswerSafe(this)">
                                 <div class="option-letter">${String.fromCharCode(65 + optionIndex)}</div>
                                 <div class="option-content">${option}</div>
@@ -1203,6 +1203,9 @@ class BibleGameAI {
     }
 
     generateSpecificBibleOptions(event) {
+        if (!event || !event.name) {
+            return ['God reveals His plan', 'His people respond in faith', 'Divine guidance is provided', 'Blessing follows obedience'];
+        }
         const eventName = event.name.toLowerCase();
         
         // Create specific, relevant distractor options based on the event
