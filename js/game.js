@@ -602,45 +602,84 @@ class GameController {
         return seal.requiredSeals.every(reqId => this.gameState.completedSeals.includes(reqId));
     }
 
-    // Open a seal puzzle
+    // Open a seal puzzle in full-screen mode
     async openSeal(sealId) {
         const seal = window.GameData.seals.find(s => s.id === sealId);
         if (!seal || !this.canOpenSeal(seal)) return;
         
         this.gameState.currentSeal = seal;
         
-        const titleEl = document.getElementById('puzzleTitle');
-        const questionEl = document.getElementById('puzzleQuestion');
-        const modalEl = document.getElementById('puzzleModal');
-        
-        if (titleEl) {
-            titleEl.textContent = `Seal ${seal.id}: ${seal.title}`;
-        }
-        if (questionEl) {
-            try {
-                console.log(`🎯 Generating puzzle content for seal ${seal.id}, puzzle type: ${seal.puzzle}`);
-                if (!window.PuzzleManager || !window.PuzzleManager.generatePuzzleContent) {
-                    console.error('❌ PuzzleManager or generatePuzzleContent not available');
-                    questionEl.innerHTML = '<p style="color: red; padding: 20px;">Puzzle system not available. Please refresh the page.</p>';
-                    return;
-                }
-                const puzzleContent = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
-                console.log(`✅ Generated puzzle content length:`, puzzleContent?.length || 0);
-                questionEl.innerHTML = puzzleContent || '<p style="color: red; padding: 20px;">Failed to generate puzzle content.</p>';
-            } catch (error) {
-                console.error('❌ Error generating puzzle content:', error);
-                questionEl.innerHTML = `<p style="color: red; padding: 20px;">Error loading puzzle: ${error.message}</p>`;
+        try {
+            console.log(`🎯 Generating puzzle content for seal ${seal.id}, puzzle type: ${seal.puzzle}`);
+            if (!window.PuzzleManager || !window.PuzzleManager.generatePuzzleContent) {
+                console.error('❌ PuzzleManager or generatePuzzleContent not available');
+                this.showGameplayScreen('<p style="color: red; padding: 20px;">Puzzle system not available. Please refresh the page.</p>');
+                return;
             }
-        }
-        if (modalEl) {
-            modalEl.style.display = 'block';
+            
+            const puzzleContent = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+            console.log(`✅ Generated puzzle content length:`, puzzleContent?.length || 0);
+            
+            if (puzzleContent) {
+                const fullscreenContent = `
+                    <div class="fullscreen-content">
+                        <div class="text-center mb-8">
+                            <h1 class="text-4xl font-bold text-mystic-gold-400 mb-4">Seal ${seal.id}: ${seal.title}</h1>
+                            <p class="text-amber-200 text-lg">${seal.description}</p>
+                        </div>
+                        ${puzzleContent}
+                    </div>
+                `;
+                this.showGameplayScreen(fullscreenContent);
+            } else {
+                this.showGameplayScreen('<div class="fullscreen-content"><p style="color: red; padding: 20px;">Failed to generate puzzle content.</p></div>');
+            }
+        } catch (error) {
+            console.error('❌ Error generating puzzle content:', error);
+            this.showGameplayScreen(`<div class="fullscreen-content"><p style="color: red; padding: 20px;">Error loading puzzle: ${error.message}</p></div>`);
         }
     }
 
-    // Close puzzle modal
+    // Show full-screen gameplay
+    showGameplayScreen(content) {
+        const gameplayScreen = document.getElementById('gameplayScreen');
+        if (!gameplayScreen) return;
+        
+        const homeButton = `<button id="homeBtn" onclick="window.gameController.closePuzzle()">🏠 Home</button>`;
+        gameplayScreen.innerHTML = homeButton + content;
+        gameplayScreen.classList.add('active');
+        
+        // Update page state and try to enter fullscreen
+        this.updatePageState('gameplay');
+        
+        // Request fullscreen on supported devices
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(e => {
+                console.log('Fullscreen not supported or denied:', e);
+            });
+        }
+    }
+
+    // Hide full-screen gameplay
+    hideGameplayScreen() {
+        const gameplayScreen = document.getElementById('gameplayScreen');
+        if (gameplayScreen) {
+            gameplayScreen.classList.remove('active');
+        }
+        
+        // Exit fullscreen if active
+        if (document.fullscreenElement) {
+            document.exitFullscreen().catch(e => {
+                console.log('Exit fullscreen failed:', e);
+            });
+        }
+    }
+
+    // Close puzzle and return to main game
     closePuzzle() {
-        document.getElementById('puzzleModal').style.display = 'none';
+        this.hideGameplayScreen();
         this.gameState.currentSeal = null;
+        this.showGameScreen(); // Return to seal selection
     }
 
     // ---- UNIVERSAL seal-completion handler (Oracle's fix) ----
@@ -1458,6 +1497,16 @@ class GameController {
         const tabs = document.querySelectorAll('.tab-btn');
         if (tabs[tabMap[active]]) {
             tabs[tabMap[active]].classList.add('active');
+        }
+    }
+
+    // Update page state for navigation
+    updatePageState(state) {
+        // Update URL hash for better navigation
+        if (state === 'gameplay') {
+            window.history.pushState({state: 'gameplay'}, '', '#gameplay');
+        } else if (state === 'home') {
+            window.history.pushState({state: 'home'}, '', '#home');
         }
     }
 

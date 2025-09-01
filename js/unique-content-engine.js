@@ -46,6 +46,45 @@ class UniqueContentEngine {
         };
 
         this.initializeContentPools();
+        
+        // Expose shared profiles globally for other engines to use
+        window.ContentProfile = {
+            difficultyMappings: this.difficultyMappings,
+            sealThemes: this.sealThemes,
+            getAgeAppropriateProfile: (ageGroup) => {
+                return Object.values(this.difficultyMappings).find(profile => profile.ageGroup === ageGroup) || this.difficultyMappings.intermediate;
+            }
+        };
+        
+        // Ensure Bible data is available for intelligent content generation
+        this.ensureBibleDataAvailable();
+    }
+    
+    // Ensure Bible data is available for intelligent content generation
+    async ensureBibleDataAvailable() {
+        if (!window.BibleIndex && window.BibleGameAI && window.BibleGameAI.loadBibleText) {
+            try {
+                await window.BibleGameAI.loadBibleText();
+            } catch (error) {
+                console.log('📖 Bible data will load when needed');
+            }
+        }
+    }
+
+    // Helper to pick random verse from Bible data
+    pickRandomVerse(theme = null, seed = Date.now()) {
+        if (!window.BibleVerses || window.BibleVerses.length === 0) {
+            // Fallback to embedded verses
+            return {
+                reference: "John 3:16",
+                text: "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
+                book: "John"
+            };
+        }
+        
+        // Use seed for consistent randomness within a session
+        const randomIndex = Math.floor((seed % 1000) / 1000 * window.BibleVerses.length);
+        return window.BibleVerses[randomIndex];
     }
 
     initializeContentPools() {

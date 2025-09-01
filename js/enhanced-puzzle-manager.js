@@ -232,6 +232,11 @@ class EnhancedPuzzleManager {
 
     // Age-appropriate styling and content methods
     getAgeAppropriateStyles(ageGroup) {
+        // Use shared age styles if available
+        if (window.AGE_STYLES) {
+            return window.AGE_STYLES[ageGroup] || window.AGE_STYLES.adults;
+        }
+        
         const styles = {
             kids: {
                 containerClass: 'kids-challenge rainbow-border',
@@ -1204,8 +1209,18 @@ class AudioFeedbackEngine {
     }
 }
 
-// Export the enhanced manager
+// Export the enhanced manager and shared age styles
 window.EnhancedPuzzleManager = EnhancedPuzzleManager;
+
+// Create and expose shared age styles globally
+const manager = new EnhancedPuzzleManager();
+window.AGE_STYLES = {
+    kids: manager.getAgeAppropriateStyles('kids'),
+    teenagers: manager.getAgeAppropriateStyles('teenagers'), 
+    adults: manager.getAgeAppropriateStyles('adults'),
+    scholars: manager.getAgeAppropriateStyles('scholars')
+};
+
 } // End of conditional declaration
 window.AnswerValidationEngine = AnswerValidationEngine;
 window.VisualEffectsEngine = VisualEffectsEngine;
