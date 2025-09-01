@@ -30,7 +30,24 @@ class EnhancedPuzzleManager {
             }
         }
         
-        // Try AI engine for dynamic generation
+        // GUARANTEED FRESH CONTENT: Always force regeneration with timestamp
+        const freshTimestamp = Date.now() + Math.random();
+        console.log(`🔄 FORCING fresh content generation for Seal ${sealId} with timestamp: ${freshTimestamp}`);
+        
+        // PRIORITY: Try BibleGameAI intelligent generation first
+        if (window.BibleGameAI && window.BibleGameAI.generateIntelligentSealContent) {
+            try {
+                const intelligentContent = window.BibleGameAI.generateIntelligentSealContent(sealId, puzzleType);
+                if (intelligentContent && intelligentContent.length > 100) {
+                    console.log(`🧠 BibleGameAI: Generated FRESH INTELLIGENT content for Seal ${sealId}, type: ${puzzleType} (${intelligentContent.length} chars)`);
+                    return intelligentContent; // Return directly, it's already HTML
+                }
+            } catch (error) {
+                console.error('❌ BibleGameAI failed:', error);
+            }
+        }
+        
+        // Fallback: Try AI engine for dynamic generation
         if (window.BibleGameAI && window.gameState?.complexity?.level) {
             const dynamicContent = await this.generateDynamicContent(sealId, puzzleType);
             if (dynamicContent) {

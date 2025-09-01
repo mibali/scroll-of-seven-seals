@@ -3589,6 +3589,100 @@
             }
         }
 
+        // SEAL 2: Safe Fill-in-the-Verse Interaction 
+        let seal2Answers = {};
+        
+        function selectVerseWordSafe(buttonElement) {
+            const verseId = buttonElement.getAttribute('data-verse');
+            const selectedWord = buttonElement.getAttribute('data-word');
+            const correctWord = buttonElement.getAttribute('data-correct');
+            
+            console.log(`SAFE Verse word selected: ${selectedWord} for ${verseId}, correct: ${correctWord}`);
+            
+            // Reset progress for fresh attempt
+            if (Object.keys(seal2Answers).length === 0) {
+                seal2Progress = 0;
+            }
+            
+            seal2Answers[verseId] = {
+                selected: selectedWord,
+                correct: correctWord,
+                isCorrect: selectedWord === correctWord
+            };
+            
+            // Update UI for this verse card
+            const verseCard = buttonElement.closest('.fill-in-verse-card');
+            if (verseCard) {
+                // Remove previous selections
+                verseCard.querySelectorAll('.word-option-button').forEach(btn => {
+                    btn.classList.remove('selected', 'correct', 'incorrect');
+                });
+                
+                // Mark selected option
+                buttonElement.classList.add('selected');
+                
+                // Update status
+                const statusElement = verseCard.querySelector('.verse-status');
+                if (selectedWord === correctWord) {
+                    buttonElement.classList.add('correct');
+                    statusElement.innerHTML = `<span class="status-icon">✅</span><span class="status-text">Correct! "${selectedWord}"</span>`;
+                    statusElement.style.color = '#4caf50';
+                } else {
+                    buttonElement.classList.add('incorrect');
+                    statusElement.innerHTML = `<span class="status-icon">❌</span><span class="status-text">Wrong. Try "${correctWord}"</span>`;
+                    statusElement.style.color = '#f44336';
+                }
+                
+                // Calculate current progress
+                const correctAnswers = Object.values(seal2Answers).filter(a => a.isCorrect).length;
+                
+                // Update progress display
+                const progressSpan = document.getElementById('verse-progress');
+                const progressBar = document.getElementById('verse-progress-bar');
+                if (progressSpan) progressSpan.textContent = `${correctAnswers}/5`;
+                if (progressBar) progressBar.style.width = `${(correctAnswers / 5) * 100}%`;
+                
+                // Enable submit if enough correct
+                if (correctAnswers >= 4) {
+                    const submitButton = document.querySelector('.wisdom-submit');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.style.opacity = '1';
+                        submitButton.style.background = 'linear-gradient(135deg, #6495ed, #4169e1)';
+                    }
+                }
+            }
+        }
+        
+        function completeSeal2FillIn(keyword) {
+            const correctAnswers = Object.values(seal2Answers).filter(a => a.isCorrect).length;
+            const score = (correctAnswers / 5) * 100;
+            
+            if (score >= 80) {
+                showNotification(`🎉 Excellent Bible Wisdom! You completed ${correctAnswers}/5 verses correctly!`, 'success');
+                setTimeout(() => {
+                    if (window.gameController) {
+                        window.gameController.completeSeal(2, keyword);
+                    }
+                }, 2000);
+            } else {
+                showNotification(`📚 You need at least 4/5 correct. Study these verses more! Current: ${correctAnswers}/5`, 'error');
+                // Reset for retry
+                setTimeout(() => {
+                    seal2Answers = {};
+                    document.querySelectorAll('.word-option-button').forEach(btn => {
+                        btn.classList.remove('selected', 'correct', 'incorrect');
+                    });
+                    document.getElementById('verse-progress').textContent = '0/5';
+                    document.getElementById('verse-progress-bar').style.width = '0%';
+                }, 3000);
+            }
+        }
+        
+        window.selectVerseWord = selectVerseWordSafe; // Use safe version
+        window.selectVerseWordSafe = selectVerseWordSafe;
+        window.completeSeal2FillIn = completeSeal2FillIn;
+
         // Add all validation functions to global scope
         window.checkIntelligentLogical = checkIntelligentLogical;
         window.checkIntelligentTeamwork = checkIntelligentTeamwork; 
@@ -3689,7 +3783,46 @@
             }
         }
         
+        // Safe answer selection using data attributes to avoid quote issues
+        function selectAnswerSafe(optionElement) {
+            const questionId = optionElement.getAttribute('data-question');
+            const selectedOption = optionElement.getAttribute('data-option');
+            const correctAnswer = optionElement.getAttribute('data-correct');
+            
+            console.log(`Safe selection: ${selectedOption} for ${questionId}, correct: ${correctAnswer}`);
+            
+            // Store the selected answer
+            selectedAnswers[questionId] = {
+                selected: selectedOption,
+                correct: correctAnswer
+            };
+            
+            // Update UI - remove previous selections in this question
+            const questionDiv = optionElement.closest('.multiple-choice-question');
+            if (questionDiv) {
+                questionDiv.querySelectorAll('.beautiful-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                
+                // Mark the clicked option as selected
+                optionElement.classList.add('selected');
+            }
+            
+            // Check if all questions are answered
+            const totalQuestions = document.querySelectorAll('.multiple-choice-question').length;
+            if (Object.keys(selectedAnswers).length === totalQuestions) {
+                const submitButton = document.querySelector('.submit-challenge');
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.style.opacity = '1';
+                    submitButton.style.cursor = 'pointer';
+                    submitButton.style.background = 'linear-gradient(135deg, #d4af37, #b8860b)';
+                }
+            }
+        }
+        
         window.selectAnswer = selectAnswer;
+        window.selectAnswerSafe = selectAnswerSafe;
         window.completeSeal1MultipleChoice = completeSeal1MultipleChoice;
 
         // SEAL-SPECIFIC VALIDATION FUNCTIONS FOR UNIQUE GAME MECHANICS
