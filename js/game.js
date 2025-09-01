@@ -805,7 +805,6 @@ class GameController {
         const progress = (this.gameState.completedSeals.length / 7) * 100;
         
         console.log(`📊 Completed Seals: ${this.gameState.completedSeals.length}`);
-    }
 
     // Extract team update logic to separate method
     updatePlayerTeamScore(sealId) {

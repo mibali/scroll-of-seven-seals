@@ -1,8 +1,10 @@
 // GAME INTEGRATION SCRIPT - Connects all enhanced features
 // Ensures seamless integration between unique content, age adaptation, and learning journey
 
-// Use existing puzzle manager instead of creating new variable
-let enhancedPuzzleManager = null;
+// Safely initialize puzzle manager variable  
+if (typeof window.enhancedPuzzleManager === 'undefined') {
+    window.enhancedPuzzleManager = null;
+}
 if (typeof learningJourneyManager === 'undefined') {
     var learningJourneyManager = null;
 }
@@ -17,15 +19,12 @@ function initializeEnhancedGame() {
     learningJourneyManager = new LearningJourneyManager();
     
     // Use the existing PuzzleManager from puzzles.js if available
-    enhancedPuzzleManager = window.PuzzleManager || new EnhancedPuzzleManager();
-    
-    // Make managers globally available
-    window.enhancedPuzzleManager = enhancedPuzzleManager;
+    window.enhancedPuzzleManager = window.PuzzleManager;
     window.learningJourneyManager = learningJourneyManager;
     
     // Ensure PuzzleManager is set (don't overwrite if already set)
     if (!window.PuzzleManager) {
-        window.PuzzleManager = enhancedPuzzleManager;
+        window.PuzzleManager = window.enhancedPuzzleManager;
         console.log('🔧 Set PuzzleManager from game-integration.js');
     } else {
         console.log('🔧 PuzzleManager already exists, not overwriting');
@@ -240,7 +239,7 @@ async function startEnhancedGame(difficulty, ageGroup, playerName) {
     
     try {
         // Start new game with unique content
-        const gameSession = await enhancedPuzzleManager.startNewGame(difficulty, ageGroup);
+        const gameSession = await window.enhancedPuzzleManager.startNewGame(difficulty, ageGroup);
         
         // Start learning journey
         const journey = learningJourneyManager.startJourney(difficulty, ageGroup, playerName);
