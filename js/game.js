@@ -219,8 +219,16 @@ class GameController {
             // Generate random puzzle variations
             this.generatePuzzleVariations();
 
+            // Start the intelligent Bible study system for fresh content
+            if (window.BibleGameAI && window.BibleGameAI.resetForNewGame) {
+                window.BibleGameAI.resetForNewGame();
+            }
+
             this.showGameScreen();
             this.startGameTimer();
+            
+            // Render seals immediately to show starting state
+            this.renderSeals();
             
             // Initialize leaderboard for both single-player and AI modes
             if (window.LeaderboardManager && (this.gameState?.mode === 'single' || this.gameState?.mode === 'ai')) {
@@ -556,9 +564,6 @@ class GameController {
             else if (isLocked) statusClass = 'locked';
             
             console.log(`🔧 Seal ${seal.id} (type: ${typeof seal.id}): completed=${isCompleted}, locked=${isLocked}`);
-            if (seal.id <= 4) { // Only log for first 4 seals to avoid spam
-                console.log(`🔧 Checking if ${seal.id} in [${this.gameState.completedSeals}] = ${this.gameState.completedSeals.includes(seal.id)}`);
-            }
             
             html += `
                 <div class="seal ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}">
@@ -566,34 +571,24 @@ class GameController {
                     <div class="seal-title">${seal.title}</div>
                     <div class="seal-theme">${seal.theme}</div>
                     <div class="seal-description">${seal.description}</div>
-                    ${isCompleted ? '<div class="seal-completed">✅ Completed</div>' : ''}
+                    ${isCompleted ? '<div class="completed-badge">✅ COMPLETED</div>' : ''}
                 </div>
             `;
         });
         
-        console.log('🔧 Generated HTML length:', html.length);
-        console.log('🔧 Container before:', container.innerHTML.length);
-        
         container.innerHTML = html;
         
-        console.log('🔧 Container after:', container.innerHTML.length);
-        console.log('🔧 sealsGrid element:', container, 'visible:', container.offsetWidth, 'x', container.offsetHeight);
-        console.log('🔧 Container computed styles:', window.getComputedStyle(container).display, window.getComputedStyle(container).visibility);
-        
-        // Force make visible for debugging
-        container.style.display = 'block';
-        container.style.visibility = 'visible';
-        container.style.minHeight = '200px';
-        container.style.backgroundColor = 'rgba(255,0,0,0.1)'; // Red tint for debugging
-        
-        // Check parent element
-        const parent = container.parentElement;
-        console.log('🔧 Parent element:', parent, 'visible:', parent ? parent.offsetWidth + 'x' + parent.offsetHeight : 'none');
-        if (parent) {
-            console.log('🔧 Parent computed styles:', window.getComputedStyle(parent).display, window.getComputedStyle(parent).visibility);
-            parent.style.display = 'block';
-            parent.style.visibility = 'visible';
+        // Show visual feedback for seal updates
+        if (this.gameState.completedSeals.length > 0) {
+            container.classList.add('seals-updated');
+            setTimeout(() => container.classList.remove('seals-updated'), 1000);
         }
+        
+        console.log('🔧 Seals rendered successfully:', {
+            totalSeals: window.GameData.seals.length,
+            completedSeals: this.gameState.completedSeals.length,
+            htmlLength: html.length
+        });
     }
 
     // Check if seal can be opened

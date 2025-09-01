@@ -3420,7 +3420,7 @@
                         <h4>✅ Excellent Biblical Knowledge!</h4>
                         <p>You got ${correct} out of ${total} questions correct (${Math.round(score)}%)</p>
                         <p>You have earned the keyword: <strong>${keyword}</strong></p>
-                        <button onclick="window.gameController.completeSeal(1, '${keyword}')" class="btn-complete">
+                        <button onclick="completeSealWithValidation(1, '${keyword}')" class="btn-complete">
                             🔓 Break the First Seal
                         </button>
                     </div>
@@ -3474,6 +3474,94 @@
 
         window.isAnswerCorrect = isAnswerCorrect;
 
+        // Enhanced seal completion with full validation and progression
+        async function completeSealWithValidation(sealId, keyword) {
+            try {
+                console.log(`🔓 Attempting to complete Seal ${sealId} with keyword: ${keyword}`);
+                
+                // Double-check that we have a game controller
+                if (!window.gameController) {
+                    console.error('❌ Game controller not found!');
+                    showAlert('Game system not ready. Please refresh the page.', 'error');
+                    return;
+                }
+                
+                // Verify the seal isn't already completed
+                if (window.gameController.gameState.completedSeals.includes(sealId)) {
+                    console.log('⚠️ Seal already completed, showing success message');
+                    showAlert(`Seal ${sealId} is already completed!`, 'success');
+                    closePuzzleModal();
+                    return;
+                }
+                
+                // Show processing feedback
+                showAlert('Breaking the seal...', 'info');
+                
+                // Complete the seal through game controller
+                await window.gameController.completeSeal(sealId, keyword);
+                
+                // Close puzzle modal
+                closePuzzleModal();
+                
+                // Show success message
+                setTimeout(() => {
+                    showAlert(`🎉 Seal ${sealId} broken! You've earned the keyword: ${keyword}`, 'success');
+                }, 300);
+                
+                // Ensure UI updates
+                setTimeout(() => {
+                    if (window.gameController.renderSeals) {
+                        window.gameController.renderSeals();
+                    }
+                    if (window.renderSeals) {
+                        window.renderSeals();
+                    }
+                    
+                    // Check if all seals are completed
+                    if (window.gameController.gameState.completedSeals.length >= 7) {
+                        setTimeout(() => {
+                            showAlert('🏆 Congratulations! All seven seals have been broken!', 'success');
+                        }, 1000);
+                    }
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Error completing seal:', error);
+                showAlert('Failed to complete seal. Please try again.', 'error');
+            }
+        }
+
+        // Enhanced puzzle modal closing
+        function closePuzzleModal() {
+            // Close all possible puzzle modals
+            const modals = [
+                document.getElementById('puzzleModal'),
+                document.getElementById('sealModal'),
+                document.querySelector('.puzzle-modal'),
+                document.querySelector('.modal-overlay')
+            ];
+            
+            modals.forEach(modal => {
+                if (modal) {
+                    modal.style.display = 'none';
+                    modal.classList.remove('show');
+                }
+            });
+            
+            // Clear any modal backdrop
+            const backdrops = document.querySelectorAll('.modal-backdrop, .overlay');
+            backdrops.forEach(backdrop => backdrop.remove());
+            
+            // Reset body scroll
+            document.body.style.overflow = '';
+            
+            console.log('🔒 All puzzle modals closed');
+        }
+
+        // Make functions globally available
+        window.completeSealWithValidation = completeSealWithValidation;
+        window.closePuzzleModal = closePuzzleModal;
+
         // Validation functions for all intelligent seals
         function checkIntelligentLogical(keyword) {
             const puzzles = document.querySelectorAll('.logical-puzzle');
@@ -3499,7 +3587,7 @@
                     <div class="result-success">
                         <h4>✅ Excellent Logical Reasoning!</h4>
                         <p>You solved ${correct} out of ${puzzles.length} puzzles correctly!</p>
-                        <button onclick="window.gameController.completeSeal(2, '${keyword}')" class="btn-complete">
+                        <button onclick="completeSealWithValidation(2, '${keyword}')" class="btn-complete">
                             🔓 Break the Second Seal
                         </button>
                     </div>`;
@@ -3538,7 +3626,7 @@
                     <div class="result-success">
                         <h4>✅ Perfect Unity!</h4>
                         <p>You completed ${correct} out of ${parts.length} unity tasks!</p>
-                        <button onclick="window.gameController.completeSeal(3, '${keyword}')" class="btn-complete">
+                        <button onclick="completeSealWithValidation(3, '${keyword}')" class="btn-complete">
                             🔓 Break the Third Seal
                         </button>
                     </div>`;
@@ -3575,7 +3663,7 @@
                     <div class="result-success">
                         <h4>✅ Cipher Decoded!</h4>
                         <p>You correctly sorted ${correct} out of ${total} events!</p>
-                        <button onclick="window.gameController.completeSeal(4, '${keyword}')" class="btn-complete">
+                        <button onclick="completeSealWithValidation(4, '${keyword}')" class="btn-complete">
                             🔓 Break the Fourth Seal
                         </button>
                     </div>`;
@@ -3662,7 +3750,7 @@
                 showNotification(`🎉 Excellent Bible Wisdom! You completed ${correctAnswers}/5 verses correctly!`, 'success');
                 setTimeout(() => {
                     if (window.gameController) {
-                        window.gameController.completeSeal(2, keyword);
+                        completeSealWithValidation(2, keyword);
                     }
                 }, 2000);
             } else {
@@ -3763,7 +3851,7 @@
                 showNotification(`🎉 Excellent! You scored ${Math.round(score)}% - Seal 1 Complete!`, 'success');
                 setTimeout(() => {
                     if (window.gameController) {
-                        window.gameController.completeSeal(1, keyword);
+                        completeSealWithValidation(1, keyword);
                     }
                 }, 2000);
             } else {
