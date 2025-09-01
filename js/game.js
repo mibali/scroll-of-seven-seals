@@ -74,7 +74,12 @@ class GameController {
 
     // Show main menu
     showMainMenu() {
-        this.showScreen('mainMenu');
+        // Prefer Router when available and target the real home screen id
+        if (window.Router && window.Router.navigateTo) {
+            window.Router.navigateTo('homeScreen');
+        } else {
+            this.showScreen('homeScreen');
+        }
         this.updatePageState('mainMenu');
         
         // Check if there's a saved game and show resume option
@@ -510,20 +515,37 @@ class GameController {
         }
     }
 
+    // Resolve the screen element for the current mode
+    getModeScreenElement() {
+        let targetId = null;
+        if (this.gameState.mode === 'single') {
+            targetId = 'singleGameScreen';
+        } else if (this.gameState.mode === 'ai') {
+            targetId = 'aiGameScreen';
+        } else if (this.gameState.mode === 'multiplayer') {
+            targetId = 'multiGameScreen';
+        }
+        return targetId ? document.getElementById(targetId) : null;
+    }
+
     // Show main game screen
     showGameScreen() {
-        // Force show the game container
-        const gameContainer = document.getElementById('gameContainer');
-        if (gameContainer) {
-            gameContainer.style.display = 'block';
-            console.log('🔧 Forced gameContainer to be visible');
+        // Navigate to the appropriate screen for the current mode
+        const targetScreen = this.getModeScreenElement();
+        const targetId = targetScreen ? targetScreen.id : null;
+        if (targetId) {
+            if (window.Router && window.Router.navigateTo) {
+                window.Router.navigateTo(targetId);
+            } else {
+                this.showScreen(targetId);
+            }
+            this.updatePageState('gameScreen');
+        } else {
+            console.warn('⚠️ No mode-specific screen found; rendering without navigation');
         }
         
-        this.showScreen('gameContainer');
-        this.updatePageState('gameScreen');
-        
-        // team name display (make call safe - element may not exist)
-        const teamNameEl = document.getElementById('currentTeamName');
+        // team name display (safe lookup within the target screen)
+        const teamNameEl = targetScreen ? targetScreen.querySelector('#currentTeamName') : document.getElementById('currentTeamName');
         if (teamNameEl) {
             teamNameEl.textContent = this.gameState.teamName;
         }
@@ -531,15 +553,18 @@ class GameController {
         this.renderSeals();
         this.updateProgress();
         
-        // Show admin panel for hosts
-        if (window.MultiplayerManager.isHost) {
-            document.getElementById('adminPanel').style.display = 'block';
+        // Show admin panel for hosts (safe)
+        if (window.MultiplayerManager && window.MultiplayerManager.isHost) {
+            const adminPanel = document.getElementById('adminPanel');
+            if (adminPanel) adminPanel.style.display = 'block';
         }
     }
 
     // Render seals grid
     renderSeals() {
-        const container = document.getElementById('sealsGrid');
+        // Scope DOM queries to the active mode screen to avoid duplicate ID collisions
+        const modeScreen = this.getModeScreenElement();
+        const container = modeScreen ? modeScreen.querySelector('#sealsGrid') : document.getElementById('sealsGrid');
         if (!container) {
             console.warn('❌ sealsGrid element not found');
             return;
@@ -998,8 +1023,9 @@ class GameController {
     updateProgress() {
         const progress = (this.gameState.completedSeals.length / 7) * 100;
         
+        const modeScreen = this.getModeScreenElement();
         // Update progress bar with safety checks
-        const progressFill = document.getElementById('progressFill');
+        const progressFill = modeScreen ? modeScreen.querySelector('#progressFill') : document.getElementById('progressFill');
         if (progressFill) {
             progressFill.style.width = progress + '%';
         } else {
@@ -1007,7 +1033,7 @@ class GameController {
         }
         
         // Update progress text with safety checks
-        const progressText = document.getElementById('progressText');
+        const progressText = modeScreen ? modeScreen.querySelector('#progressText') : document.getElementById('progressText');
         if (progressText) {
             progressText.textContent = `${this.gameState.completedSeals.length}/7 Seals Broken`;
         } else {
@@ -1321,7 +1347,8 @@ class GameController {
         const minutes = Math.floor(elapsed / 60000);
         const seconds = Math.floor((elapsed % 60000) / 1000);
         
-        const timerDisplay = document.getElementById('timer');
+        const modeScreen = this.getModeScreenElement();
+        const timerDisplay = modeScreen ? modeScreen.querySelector('#timer') : document.getElementById('timer');
         if (timerDisplay) {
             timerDisplay.textContent = 
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
@@ -1597,7 +1624,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🎯 Hybrid renderSeals called');
         
         // If GameController is available and we have a sealsGrid, use GameController for the grid
-        if (window.gameController && document.getElementById('sealsGrid')) {
+        if (window.gameController && (window.gameController.getModeScreenElement() ? window.gameController.getModeScreenElement().querySelector('#sealsGrid') : document.getElementById('sealsGrid'))) {
             console.log('🎯 Using GameController.renderSeals for seal grid');
             return window.gameController.renderSeals();
         } 
