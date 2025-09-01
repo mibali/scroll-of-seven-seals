@@ -3363,7 +3363,7 @@
         // Make completeSeal available globally for the enhanced challenge system
         window.completeSeal = completeSeal;
 
-        // Intelligent Bible knowledge validation function
+        // Intelligent Bible knowledge validation function  
         function checkIntelligentBibleKnowledge(keyword) {
             console.log('🧠 Checking intelligent Bible knowledge answers...');
             
@@ -3372,17 +3372,33 @@
             let total = questions.length;
             
             questions.forEach((questionDiv, index) => {
-                const input = questionDiv.querySelector('.knowledge-input');
-                const correctAnswer = input.getAttribute('data-correct');
-                const userAnswer = input.value.trim();
+                let userAnswer = '';
+                let correctAnswer = '';
+                
+                // Check if it's multiple choice or text input
+                const optionsContainer = questionDiv.querySelector('.options-container');
+                const textInput = questionDiv.querySelector('.knowledge-input');
+                
+                if (optionsContainer) {
+                    // Multiple choice question
+                    const selectedOption = optionsContainer.querySelector('input[type="radio"]:checked');
+                    userAnswer = selectedOption ? selectedOption.value : '';
+                    correctAnswer = optionsContainer.getAttribute('data-correct');
+                } else if (textInput) {
+                    // Text input question
+                    userAnswer = textInput.value.trim();
+                    correctAnswer = textInput.getAttribute('data-correct');
+                }
                 
                 if (userAnswer && isAnswerCorrect(userAnswer, correctAnswer)) {
                     correct++;
                     questionDiv.classList.add('correct');
-                    input.style.borderColor = '#4CAF50';
+                    if (textInput) textInput.style.borderColor = '#4CAF50';
+                    if (optionsContainer) optionsContainer.style.borderColor = '#4CAF50';
                 } else {
                     questionDiv.classList.add('incorrect');
-                    input.style.borderColor = '#f44336';
+                    if (textInput) textInput.style.borderColor = '#f44336';
+                    if (optionsContainer) optionsContainer.style.borderColor = '#f44336';
                 }
             });
             

@@ -324,33 +324,67 @@ class BibleGameAI {
         randomVerses.forEach((verse, index) => {
             const questionTypes = [
                 {
-                    question: `Which book contains this verse: "${verse.text.substring(0, 60)}..."?`,
+                    question: `Which book contains this verse: "${verse.text.substring(0, 50)}..."?`,
                     answer: verse.book,
-                    hint: `This verse speaks about ${this.getVerseTheme(verse.text)}`
+                    hint: `This verse speaks about ${this.getVerseTheme(verse.text)}`,
+                    options: this.generateBookOptions(verse.book)
                 },
                 {
-                    question: `Complete this verse: "${verse.text.split(' ').slice(0, -4).join(' ')}" ___?`,
-                    answer: verse.text.split(' ').slice(-4).join(' '),
-                    hint: `From ${verse.book} ${verse.chapter}:${verse.verse}`
+                    question: `Who said: "${verse.text}"?`,
+                    answer: this.getVerseSpeaker(verse),
+                    hint: `This is from ${verse.book}`,
+                    options: this.generateCharacterOptions(this.getVerseSpeaker(verse))
                 },
                 {
-                    question: `What is the reference for: "${verse.text}"?`,
-                    answer: verse.reference,
-                    hint: `This is from the book of ${verse.book}`
+                    question: `Complete this famous verse: "${verse.text.split(' ').slice(0, -3).join(' ')}" ___?`,
+                    answer: verse.text.split(' ').slice(-3).join(' '),
+                    hint: `This is a well-known verse from ${verse.book}`,
+                    type: 'fill-in'
+                },
+                {
+                    question: `This verse teaches us about which theme: "${verse.text}"?`,
+                    answer: this.getVerseTheme(verse.text),
+                    hint: `Think about the main message of this verse`,
+                    options: ['love', 'faith', 'hope', 'salvation', 'peace', 'wisdom']
                 }
             ];
 
-            const questionType = questionTypes[Math.floor((seed + index) * questionTypes.length) % questionTypes.length];
+            // Choose easier question types for better user experience
+            const easyQuestionTypes = questionTypes.filter(qt => qt.options || qt.type === 'fill-in');
+            const questionType = easyQuestionTypes[Math.floor((seed + index) * easyQuestionTypes.length) % easyQuestionTypes.length] || questionTypes[0];
 
-            questionsHtml += `
-                <div class="knowledge-question" data-question="${index + 1}">
-                    <div class="question-header">Question ${index + 1}:</div>
-                    <div class="question-text">${questionType.question}</div>
-                    <div class="hint-text">💡 ${questionType.hint}</div>
-                    <input type="text" class="knowledge-input" id="answer${index + 1}" 
-                           placeholder="Enter your answer" data-correct="${questionType.answer}">
-                </div>
-            `;
+            // Generate different UI based on question type
+            if (questionType.options) {
+                // Multiple choice format
+                const optionsHtml = questionType.options.map(option => 
+                    `<label class="option-label">
+                        <input type="radio" name="question${index + 1}" value="${option}" />
+                        <span class="option-text">${option}</span>
+                    </label>`
+                ).join('');
+                
+                questionsHtml += `
+                    <div class="knowledge-question" data-question="${index + 1}">
+                        <div class="question-header">Question ${index + 1}:</div>
+                        <div class="question-text">${questionType.question}</div>
+                        <div class="hint-text">💡 ${questionType.hint}</div>
+                        <div class="options-container" data-correct="${questionType.answer}">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Text input format
+                questionsHtml += `
+                    <div class="knowledge-question" data-question="${index + 1}">
+                        <div class="question-header">Question ${index + 1}:</div>
+                        <div class="question-text">${questionType.question}</div>
+                        <div class="hint-text">💡 ${questionType.hint}</div>
+                        <input type="text" class="knowledge-input" id="answer${index + 1}" 
+                               placeholder="Enter your answer" data-correct="${questionType.answer}">
+                    </div>
+                `;
+            }
         });
 
         questionsHtml += `
@@ -405,6 +439,58 @@ class BibleGameAI {
         }
 
         return 'biblical truth';
+    }
+
+    // Generate multiple choice options for Bible books
+    generateBookOptions(correctBook) {
+        const allBooks = window.BibleBooks || ['Genesis', 'Exodus', 'Matthew', 'John', 'Romans'];
+        const options = [correctBook];
+        
+        // Add 3 random other books
+        while (options.length < 4) {
+            const randomBook = allBooks[Math.floor(Math.random() * allBooks.length)];
+            if (!options.includes(randomBook)) {
+                options.push(randomBook);
+            }
+        }
+        
+        // Shuffle options
+        return options.sort(() => Math.random() - 0.5);
+    }
+
+    // Generate character options for biblical speakers
+    generateCharacterOptions(correctCharacter) {
+        const characters = ['Jesus', 'God', 'Moses', 'David', 'Paul', 'Peter', 'John', 'Joshua', 'Isaiah', 'Jeremiah'];
+        const options = [correctCharacter];
+        
+        // Add 3 random other characters
+        while (options.length < 4) {
+            const randomChar = characters[Math.floor(Math.random() * characters.length)];
+            if (!options.includes(randomChar)) {
+                options.push(randomChar);
+            }
+        }
+        
+        return options.sort(() => Math.random() - 0.5);
+    }
+
+    // Determine who likely spoke the verse
+    getVerseSpeaker(verse) {
+        const text = verse.text.toLowerCase();
+        
+        if (text.includes('jesus') || text.includes('i am') || verse.book === 'Matthew' || verse.book === 'Mark' || verse.book === 'Luke' || verse.book === 'John') {
+            return 'Jesus';
+        } else if (text.includes('moses') || verse.book === 'Exodus' || verse.book === 'Deuteronomy') {
+            return 'Moses';
+        } else if (verse.book === 'Psalms') {
+            return 'David';
+        } else if (verse.book === 'Romans' || verse.book === '1 Corinthians' || verse.book === 'Ephesians') {
+            return 'Paul';
+        } else if (text.includes('god said') || text.includes('declares the lord')) {
+            return 'God';
+        } else {
+            return 'Biblical Author';
+        }
     }
 
     async ensureInitialized() {
