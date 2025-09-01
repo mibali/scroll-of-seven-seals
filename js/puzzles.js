@@ -9,14 +9,32 @@ class EnhancedPuzzleManager {
         this.hintsUsed = 0;
     }
 
-    // Generate challenge content for a specific seal
+    // Generate challenge content for a specific seal with GUARANTEED fresh content
     async generatePuzzleContent(sealId, puzzleType) {
-        // Always try dynamic generation first if AI engine is available
+        console.log(`🎯 Generating FRESH content for Seal ${sealId}, type: ${puzzleType}`);
+        
+        // FORCE fresh content by clearing any cached content for this seal
+        delete this.currentPuzzles[puzzleType];
+        this.gameSessionId = Date.now(); // Force new session for fresh content
+        
+        // Try UniqueContentEngine first for guaranteed unique content
+        if (window.UniqueContentEngine && window.UniqueContentEngine.generateUniqueSealContent) {
+            try {
+                const dynamicContent = window.UniqueContentEngine.generateUniqueSealContent(sealId, puzzleType, Date.now());
+                if (dynamicContent) {
+                    console.log(`🌟 UniqueContentEngine: Generated FRESH ${puzzleType} content for seal ${sealId}`);
+                    return this.renderDynamicContent(dynamicContent, puzzleType);
+                }
+            } catch (error) {
+                console.warn('UniqueContentEngine failed, trying AI engine:', error);
+            }
+        }
+        
+        // Try AI engine for dynamic generation
         if (window.BibleGameAI && window.gameState?.complexity?.level) {
             const dynamicContent = await this.generateDynamicContent(sealId, puzzleType);
             if (dynamicContent) {
                 console.log(`🤖 AI-Generated FRESH content for ${puzzleType} - Seal ${sealId}`);
-                // Don't cache AI content - generate fresh each time for uniqueness
                 return this.renderDynamicContent(dynamicContent, puzzleType);
             }
         }

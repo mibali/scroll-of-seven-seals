@@ -300,6 +300,13 @@ class UniqueContentEngine {
     }
 
     generateUniqueQuestion(type, difficulty, seed) {
+        // Try to use Bible content first for more dynamic questions
+        if (window.BibleVerses && window.BibleVerses.length > 0 && Math.random() > 0.5) {
+            const verse = this.pickRandomVerse(null, seed);
+            return this.generateBibleBasedQuestion(verse, difficulty, seed);
+        }
+        
+        // Fallback to content pools
         const pool = this.contentPools[type][difficulty.ageGroup === 'kids' ? 'beginner' : 
                      difficulty.ageGroup === 'teenagers' ? 'intermediate' :
                      difficulty.ageGroup === 'adults' ? 'advanced' : 'expert'];
@@ -317,6 +324,27 @@ class UniqueContentEngine {
             hint: difficulty.complexity <= 2 ? this.generateContextualHint(selectedContent, type) : null,
             difficulty: difficulty.complexity,
             encouragement: this.selectTimestampBasedContent(this.contentPools.encouragement[difficulty.ageGroup], seed * 3)
+        };
+    }
+    
+    // Generate Bible-based questions for dynamic content
+    generateBibleBasedQuestion(verse, difficulty, seed) {
+        const questionTypes = [
+            { type: 'book', question: `Which book contains this verse: "${verse.text.substring(0, 50)}..."?`, answer: verse.book },
+            { type: 'completion', question: `Complete this verse: "${verse.text.split(' ').slice(0, -3).join(' ')} ___"`, answer: verse.text.split(' ').slice(-3).join(' ') },
+            { type: 'reference', question: `What is the reference for: "${verse.text}"?`, answer: verse.reference }
+        ];
+        
+        const selectedType = questionTypes[seed % questionTypes.length];
+        
+        return {
+            question: selectedType.question,
+            correctAnswer: selectedType.answer,
+            type: difficulty.answerFlexibility,
+            hint: difficulty.complexity <= 2 ? `This verse is from ${verse.book}` : null,
+            difficulty: difficulty.complexity,
+            encouragement: `Excellent knowledge of ${verse.book}!`,
+            verse: verse
         };
     }
 

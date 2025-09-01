@@ -1221,9 +1221,17 @@ window.AGE_STYLES = {
     scholars: manager.getAgeAppropriateStyles('scholars')
 };
 
+// Export validation engines if they exist
+if (typeof AnswerValidationEngine !== 'undefined') {
+    window.AnswerValidationEngine = AnswerValidationEngine;
+}
+if (typeof VisualEffectsEngine !== 'undefined') {
+    window.VisualEffectsEngine = VisualEffectsEngine;
+}
+if (typeof AudioFeedbackEngine !== 'undefined') {
+    window.AudioFeedbackEngine = AudioFeedbackEngine;
+}
+
 } // End of conditional declaration
-window.AnswerValidationEngine = AnswerValidationEngine;
-window.VisualEffectsEngine = VisualEffectsEngine;
-window.AudioFeedbackEngine = AudioFeedbackEngine;
 
 console.log('🚀 Enhanced Puzzle Manager loaded with answer flexibility and age adaptation!');

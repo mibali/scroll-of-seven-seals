@@ -943,11 +943,15 @@ class GameController {
                 teamId: window.MultiplayerManager.currentTeam.id
             });
             
-            await window.MultiplayerManager.updateTeamProgress(
-                this.gameState.gameId,
-                window.MultiplayerManager.currentTeam.id,
-                this.gameState.progress
-            );
+            try {
+                await window.MultiplayerManager.updateTeamProgress(
+                    this.gameState.gameId,
+                    window.MultiplayerManager.currentTeam.id,
+                    this.gameState.progress
+                );
+            } catch (error) {
+                console.error('❌ Error updating multiplayer progress:', error);
+            }
         }
 
         // 4. notifications
