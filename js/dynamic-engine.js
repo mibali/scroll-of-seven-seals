@@ -478,28 +478,28 @@ class BibleGameAI {
         selectedEvents.forEach((event, index) => {
             const questionTypes = [
                 {
-                    question: `What happened in the event: "${event.name}"?`,
+                    question: `According to ${event.reference}, what happened in "${event.name}"?`,
                     answer: event.description,
                     hint: `This event is found in ${event.reference}`,
-                    options: this.generateEventDescriptionOptions(event.description)
+                    options: this.generateSpecificBibleOptions(event)
                 },
                 {
-                    question: `Where in the Bible do we read about "${event.name}"?`,
+                    question: `Which book of the Bible records the event: "${event.name}"?`,
                     answer: event.reference.split(' ')[0], // Get just the book name
-                    hint: `This is an Old Testament book`,
+                    hint: `This is an Old Testament book that records early biblical history`,
                     options: this.generateOldTestamentBookOptions(event.reference.split(' ')[0])
                 },
                 {
-                    question: `What is the main lesson from "${event.name}"?`,
-                    answer: this.getEventLesson(event),
-                    hint: `Think about what this event teaches us about God`,
-                    options: ['God\'s Power', 'God\'s Love', 'God\'s Justice', 'God\'s Faithfulness']
+                    question: `Who were the key people involved in "${event.name}"?`,
+                    answer: this.getEventMainCharacters(event),
+                    hint: `Think about the main biblical figures in this account`,
+                    options: this.generateCharacterOptions(event)
                 },
                 {
-                    question: `In which order did this happen: "${event.name}"?`,
-                    answer: this.getEventOrder(event, sealTheme.events),
-                    hint: `This happened ${this.getEventOrder(event, sealTheme.events) <= 10 ? 'early' : 'later'} in biblical history`,
-                    options: ['Very Early', 'Early', 'Middle', 'Later']
+                    question: `What was God's purpose in "${event.name}"?`,
+                    answer: this.getEventPurpose(event),
+                    hint: `Consider what this reveals about God's character and plan`,
+                    options: this.generatePurposeOptions(event)
                 }
             ];
 
@@ -513,16 +513,17 @@ class BibleGameAI {
                         ${questionType.hint ? `<div class="question-hint">💡 ${questionType.hint}</div>` : ''}
                     </div>
                     <div class="options-container">
-                        ${questionType.options.map((option, optionIndex) => {
-                            const safeOption = option.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-                            const safeAnswer = questionType.answer.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
-                            return `
-                            <div class="beautiful-option" onclick="selectAnswer('q${index + 1}', '${safeOption}', '${safeAnswer}')">
+                        ${questionType.options.map((option, optionIndex) => 
+                            `<div class="beautiful-option" 
+                                 data-question="q${index + 1}" 
+                                 data-option="${option.replace(/"/g, '&quot;')}" 
+                                 data-correct="${questionType.answer.replace(/"/g, '&quot;')}"
+                                 onclick="selectAnswerSafe(this)">
                                 <div class="option-letter">${String.fromCharCode(65 + optionIndex)}</div>
                                 <div class="option-content">${option}</div>
                                 <div class="option-indicator">○</div>
-                            </div>
-                        `}).join('')}
+                            </div>`
+                        ).join('')}
                     </div>
                     <div class="answer-feedback" id="feedback-${index + 1}" style="display: none;"></div>
                 </div>
@@ -546,49 +547,77 @@ class BibleGameAI {
         return questionsHtml;
     }
 
-    // SEAL 2: BIBLE STORIES/PSALMS/PROVERBS - Fill-in-the-Verse Game
+    // SEAL 2: BIBLE STORIES/PSALMS/PROVERBS - Interactive Fill-in-the-Verse Game
     generateSeal2_FillInVerses(timestamp, seed) {
         const sealTheme = window.SealThemes[2];
         if (!sealTheme) {
             return '<p style="color: red;">Wisdom content not loaded</p>';
         }
 
-        const keywords = ['WISDOM', 'GUIDANCE', 'WORSHIP', 'TRUST', 'PRAISE'];
-        const keyword = keywords[Math.floor(seed * keywords.length)];
+        const keywordData = [
+            { word: 'WISDOM', meaning: 'God\'s wisdom guides us through Psalms and Proverbs for daily living' },
+            { word: 'GUIDANCE', meaning: 'Scripture provides divine direction for life\'s decisions and challenges' },
+            { word: 'WORSHIP', meaning: 'The Psalms teach us how to praise and worship God with our whole heart' },
+            { word: 'TRUST', meaning: 'Biblical wisdom calls us to trust in the Lord rather than our own understanding' },
+            { word: 'PRAISE', meaning: 'Worship and praise are central themes throughout the Psalms' }
+        ];
+        const keywordObj = keywordData[Math.floor(seed * keywordData.length)];
 
-        // Select 5 wisdom verses for fill-in-the-blank
-        const selectedVerses = this.getRandomItems(sealTheme.wisdomVerses, 5, seed);
+        // Create fresh wisdom verses with missing key words for fill-in
+        const wisdomVerses = [
+            { text: 'Trust in the Lord with all your _____, and lean not on your own understanding', missing: 'heart', reference: 'Proverbs 3:5', options: ['heart', 'mind', 'soul', 'strength'] },
+            { text: 'Be _____ and know that I am God', missing: 'still', reference: 'Psalm 46:10', options: ['still', 'quiet', 'calm', 'peaceful'] },
+            { text: 'The Lord is my _____, I lack nothing', missing: 'shepherd', reference: 'Psalm 23:1', options: ['shepherd', 'father', 'king', 'guide'] },
+            { text: 'Delight yourself in the Lord and he will give you the _____ of your heart', missing: 'desires', reference: 'Psalm 37:4', options: ['desires', 'wants', 'wishes', 'dreams'] },
+            { text: 'Your word is a _____ for my feet, a light on my path', missing: 'lamp', reference: 'Psalm 119:105', options: ['lamp', 'candle', 'torch', 'fire'] },
+            { text: 'In all your ways _____ to him, and he will make your paths straight', missing: 'submit', reference: 'Proverbs 3:6', options: ['submit', 'listen', 'obey', 'follow'] },
+            { text: 'The fear of the Lord is the beginning of _____', missing: 'wisdom', reference: 'Proverbs 9:10', options: ['wisdom', 'knowledge', 'understanding', 'learning'] },
+            { text: 'Cast all your _____ on him because he cares for you', missing: 'anxiety', reference: '1 Peter 5:7', options: ['anxiety', 'worries', 'fears', 'troubles'] }
+        ];
+
+        // Select 5 random verses for this game session
+        const selectedVerses = this.getRandomItems(wisdomVerses, 5, seed);
 
         let fillInHtml = `
             <div class="fill-in-verse-challenge">
                 <div class="challenge-header">
                     <h3>📖 WISDOM VERSES COMPLETION</h3>
-                    <p><strong>FILL-IN-THE-BLANK:</strong> Complete these beloved Bible verses!</p>
-                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                    <p><strong>FILL-IN-THE-BLANK GAME:</strong> Complete these beloved Bible verses!</p>
+                    <div class="keyword-display">
+                        <div class="keyword-main">Seal Keyword: <span class="keyword-target">${keywordObj.word}</span></div>
+                        <div class="keyword-meaning">💡 ${keywordObj.meaning}</div>
+                    </div>
                 </div>
                 <div class="verses-container">
         `;
 
         selectedVerses.forEach((verse, index) => {
-            const [text, reference] = verse.split(' - ');
-            const blankedVerse = this.createFillInBlank(text);
-            const missingWords = this.extractMissingWords(text, blankedVerse.blankedText);
-
             fillInHtml += `
-                <div class="fill-in-verse" data-verse="${index + 1}">
+                <div class="fill-in-verse-card" data-verse="${index + 1}">
                     <div class="verse-header">
                         <h4>Verse ${index + 1}/5</h4>
-                        <div class="verse-reference">${reference}</div>
+                        <div class="verse-reference">${verse.reference}</div>
                     </div>
-                    <div class="verse-text-container">
-                        <div class="verse-text">${blankedVerse.blankedText}</div>
-                        <div class="word-options">
-                            ${this.shuffleArray([...missingWords, ...this.generateDistractorWords(missingWords)]).map(word => `
-                                <button class="word-option" onclick="fillInWord(${index + 1}, '${word}')">${word}</button>
-                            `).join('')}
-                        </div>
+                    <div class="verse-text-display">
+                        <div class="verse-text">${verse.text}</div>
+                        <div class="missing-word-info">Missing word: <strong>${verse.missing}</strong></div>
                     </div>
-                    <div class="verse-feedback" id="verse-feedback-${index + 1}" style="display: none;"></div>
+                    <div class="word-options-beautiful">
+                        ${verse.options.map((word, optIndex) => 
+                            `<div class="word-option-button" 
+                                 data-verse="v${index + 1}" 
+                                 data-word="${word}" 
+                                 data-correct="${verse.missing}"
+                                 onclick="selectVerseWordSafe(this)">
+                                <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span>
+                                <span class="option-word">${word}</span>
+                            </div>`
+                        ).join('')}
+                    </div>
+                    <div class="verse-status" id="verse-status-${index + 1}">
+                        <span class="status-icon">⭕</span>
+                        <span class="status-text">Select the missing word</span>
+                    </div>
                 </div>
             `;
         });
@@ -601,7 +630,7 @@ class BibleGameAI {
                         <div class="progress-bar-fill" id="verse-progress-bar" style="width: 0%;"></div>
                     </div>
                 </div>
-                <button class="submit-challenge" onclick="completeSeal2FillInVerse()" disabled>
+                <button class="submit-challenge wisdom-submit" onclick="completeSeal2FillIn('${keywordObj.word}')" disabled>
                     🏆 Complete Wisdom Challenge
                 </button>
             </div>
@@ -928,38 +957,127 @@ class BibleGameAI {
         return shuffled;
     }
 
-    generateEventDescriptionOptions(correctDescription) {
-        const distractors = [
-            'God shows His power through miracles',
-            'People learn to trust in God\'s plan',
-            'A covenant is made between God and humanity',
-            'Divine judgment comes upon the wicked'
-        ];
-        return this.shuffleArray([correctDescription, ...distractors]).slice(0, 4);
+    generateSpecificBibleOptions(event) {
+        const eventName = event.name.toLowerCase();
+        
+        // Create specific, relevant distractor options based on the event
+        let distractors = [];
+        if (eventName.includes('creation')) {
+            distractors = [
+                'God creates heavens and earth',
+                'God forms man from dust and breathes life into him',
+                'God plants a garden in Eden and places man there',
+                'God sees all He made and declares it very good'
+            ];
+        } else if (eventName.includes('flood') || eventName.includes('noah')) {
+            distractors = [
+                'God instructs Noah to build an ark',
+                'Rain falls for forty days and nights',
+                'Noah sends out a dove that returns with an olive leaf',
+                'God makes a covenant and sets a rainbow as a sign'
+            ];
+        } else if (eventName.includes('abraham') || eventName.includes('abram')) {
+            distractors = [
+                'God calls Abraham to leave his country',
+                'Abraham believes God and it is counted as righteousness',
+                'God promises Abraham descendants like the stars',
+                'Abraham prepares to sacrifice Isaac but God provides a ram'
+            ];
+        } else if (eventName.includes('moses')) {
+            distractors = [
+                'Baby Moses hidden from Pharaoh',
+                'Moses sees the burning bush and receives his calling',
+                'Moses confronts Pharaoh with ten plagues',
+                'Moses leads Israel through the Red Sea'
+            ];
+        } else {
+            // Generic biblical options
+            distractors = [
+                'God reveals His covenant promises to His people',
+                'The people experience God\'s miraculous provision',
+                'God delivers His people from their enemies',
+                'A prophet speaks God\'s word to the nation'
+            ];
+        }
+        
+        // Ensure the correct description is included and shuffle
+        const correct = event.description;
+        if (!distractors.includes(correct)) {
+            distractors[0] = correct; // Replace first option with correct answer
+        }
+        
+        return this.shuffleArray(distractors).slice(0, 4);
     }
 
     generateOldTestamentBookOptions(correctBook) {
-        const otBooks = ['Genesis', 'Exodus', 'Leviticus', 'Numbers', 'Deuteronomy', 'Joshua', 'Judges', 'Ruth', '1 Samuel', '2 Samuel', '1 Kings', '2 Kings'];
-        const distractors = otBooks.filter(book => book !== correctBook).slice(0, 3);
-        return this.shuffleArray([correctBook, ...distractors]);
-    }
-
-    getEventLesson(event) {
-        const lessons = {
-            'Creation': 'God\'s Power',
-            'Flood': 'God\'s Justice',
-            'Abraham': 'God\'s Faithfulness',
-            'Moses': 'God\'s Deliverance'
+        // Group books by similar themes/periods for more meaningful distractors
+        const bookGroups = {
+            'Genesis': ['Genesis', 'Exodus', 'Leviticus', 'Numbers'],
+            'Exodus': ['Exodus', 'Genesis', 'Leviticus', 'Deuteronomy'],
+            '1 Samuel': ['1 Samuel', '2 Samuel', '1 Kings', '2 Kings'],
+            '2 Samuel': ['2 Samuel', '1 Samuel', '1 Kings', '2 Kings'],
+            'Joshua': ['Joshua', 'Judges', 'Ruth', '1 Samuel'],
+            'Judges': ['Judges', 'Joshua', 'Ruth', '1 Samuel']
         };
-        return lessons[event.name.split(' ')[0]] || 'God\'s Love';
+        
+        const group = bookGroups[correctBook] || ['Genesis', 'Exodus', '1 Samuel', '2 Kings'];
+        return this.shuffleArray(group).slice(0, 4);
     }
 
-    getEventOrder(event, allEvents) {
-        const index = allEvents.findIndex(e => e.name === event.name);
-        if (index < 5) return 'Very Early';
-        if (index < 10) return 'Early';
-        if (index < 15) return 'Middle';
-        return 'Later';
+    getEventMainCharacters(event) {
+        const eventName = event.name.toLowerCase();
+        
+        if (eventName.includes('creation')) return 'Adam and Eve';
+        if (eventName.includes('flood') || eventName.includes('noah')) return 'Noah and his family';
+        if (eventName.includes('abraham') || eventName.includes('abram')) return 'Abraham and Sarah';
+        if (eventName.includes('moses')) return 'Moses and Aaron';
+        if (eventName.includes('david')) return 'David and Jonathan';
+        if (eventName.includes('daniel')) return 'Daniel and his friends';
+        
+        return 'God\'s chosen servants';
+    }
+
+    generateCharacterOptions(event) {
+        const characters = [
+            'Adam and Eve', 'Noah and his family', 'Abraham and Sarah', 
+            'Moses and Aaron', 'David and Jonathan', 'Daniel and his friends',
+            'Joshua and Caleb', 'Ruth and Naomi'
+        ];
+        
+        const correct = this.getEventMainCharacters(event);
+        const distractors = characters.filter(char => char !== correct).slice(0, 3);
+        
+        return this.shuffleArray([correct, ...distractors]);
+    }
+
+    getEventPurpose(event) {
+        const eventName = event.name.toLowerCase();
+        
+        if (eventName.includes('creation')) return 'To establish His perfect creation and relationship with mankind';
+        if (eventName.includes('flood')) return 'To judge sin while preserving righteousness through Noah';
+        if (eventName.includes('abraham')) return 'To establish an everlasting covenant with His chosen people';
+        if (eventName.includes('moses')) return 'To deliver His people from slavery and give them His law';
+        if (eventName.includes('david')) return 'To establish a righteous kingdom and promise the Messiah';
+        
+        return 'To reveal His character and fulfill His redemptive plan';
+    }
+
+    generatePurposeOptions(event) {
+        const purposes = [
+            'To establish His perfect creation and relationship with mankind',
+            'To judge sin while preserving righteousness through His servants',
+            'To establish an everlasting covenant with His chosen people',
+            'To deliver His people from bondage and give them His law',
+            'To reveal His character and fulfill His redemptive plan',
+            'To demonstrate His power over the forces of evil',
+            'To prepare the way for the coming Messiah',
+            'To teach His people dependence and faithful obedience'
+        ];
+        
+        const correct = this.getEventPurpose(event);
+        const distractors = purposes.filter(purpose => purpose !== correct).slice(0, 3);
+        
+        return this.shuffleArray([correct, ...distractors]);
     }
 
     createFillInBlank(text) {
