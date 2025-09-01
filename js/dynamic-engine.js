@@ -412,6 +412,517 @@ class BibleGameAI {
         return questionsHtml;
     }
 
+    // Generate intelligent Logical Reasoning (Seal 2)
+    generateIntelligentLogical(timestamp, seed) {
+        const keywords = ['WISDOM', 'UNDERSTANDING', 'DISCERNMENT', 'INSIGHT', 'KNOWLEDGE'];
+        const keyword = keywords[Math.floor(seed * keywords.length)];
+
+        const logicalChallenges = [
+            {
+                type: 'sequence',
+                question: 'Complete the biblical pattern: Creation → Fall → Flood → ___',
+                options: ['Babel', 'Abraham', 'Moses', 'David'],
+                answer: 'Babel',
+                explanation: 'The Tower of Babel follows the flood in biblical chronology'
+            },
+            {
+                type: 'deduction',
+                question: 'If all apostles were disciples, but not all disciples were apostles, and Peter was chosen as an apostle, what can we conclude?',
+                options: ['Peter was definitely a disciple', 'Peter was not a disciple', 'Peter was neither', 'Cannot determine'],
+                answer: 'Peter was definitely a disciple',
+                explanation: 'All apostles were first disciples of Jesus'
+            },
+            {
+                type: 'pattern',
+                question: 'What connects these biblical leaders: Moses (Delivered from Egypt), Joshua (Entered Promised Land), David (United Kingdom), Jesus (___)?',
+                options: ['Founded Church', 'Eternal Salvation', 'Built Temple', 'Wrote Scripture'],
+                answer: 'Eternal Salvation',
+                explanation: 'Jesus provided eternal salvation for all mankind'
+            }
+        ];
+
+        const selectedChallenges = this.getRandomItems(logicalChallenges, 3, seed);
+
+        let html = `
+            <div class="logical-reasoning-challenge">
+                <div class="challenge-header">
+                    <h3>🧠 COVENANT LOGIC PUZZLE</h3>
+                    <p>Solve biblical logic puzzles using Scripture-based reasoning!</p>
+                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                </div>
+                <div class="puzzles-container">
+        `;
+
+        selectedChallenges.forEach((challenge, index) => {
+            const optionsHtml = challenge.options.map(option => 
+                `<label class="option-label">
+                    <input type="radio" name="logical${index + 1}" value="${option}" />
+                    <span class="option-text">${option}</span>
+                </label>`
+            ).join('');
+
+            html += `
+                <div class="logical-puzzle" data-question="${index + 1}">
+                    <div class="puzzle-type">${challenge.type.toUpperCase()}</div>
+                    <div class="puzzle-question">${challenge.question}</div>
+                    <div class="options-container" data-correct="${challenge.answer}">
+                        ${optionsHtml}
+                    </div>
+                    <div class="explanation" style="display: none;">${challenge.explanation}</div>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+                <div class="challenge-actions">
+                    <button onclick="checkIntelligentLogical('${keyword}')" class="btn-primary large">
+                        ✓ Check Logic
+                    </button>
+                    <button onclick="resetChallenge('logicalReasoning')" class="btn-secondary">
+                        ↺ New Puzzles
+                    </button>
+                </div>
+                <div id="logicalResult" class="result-comprehensive"></div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // Generate intelligent Team Communication (Seal 3)
+    generateIntelligentTeamwork(timestamp, seed) {
+        const keywords = ['UNITY', 'FELLOWSHIP', 'COOPERATION', 'HARMONY', 'BROTHERHOOD'];
+        const keyword = keywords[Math.floor(seed * keywords.length)];
+
+        const teamChallenges = [
+            {
+                title: 'Trinity Formation',
+                description: 'Complete the Trinity aspects',
+                parts: [
+                    { role: 'Father', attribute: 'Creator', hint: 'Who made all things?' },
+                    { role: 'Son', attribute: 'Redeemer', hint: 'Who died for our sins?' },
+                    { role: 'Holy Spirit', attribute: 'Comforter', hint: 'Who guides us today?' }
+                ]
+            },
+            {
+                title: 'Apostle Network',
+                description: 'Match apostles with their roles',
+                parts: [
+                    { role: 'Rock of Church', attribute: 'Peter', hint: 'Who walked on water?' },
+                    { role: 'Beloved Disciple', attribute: 'John', hint: 'Who wrote about love?' },
+                    { role: 'Apostle to Gentiles', attribute: 'Paul', hint: 'Who was converted on Damascus road?' }
+                ]
+            }
+        ];
+
+        const selectedChallenge = teamChallenges[Math.floor(seed * teamChallenges.length)];
+
+        let html = `
+            <div class="team-communication-challenge">
+                <div class="challenge-header">
+                    <h3>🤝 UNITY COMMUNICATION MATRIX</h3>
+                    <p>${selectedChallenge.description}</p>
+                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                </div>
+                <div class="team-parts">
+        `;
+
+        selectedChallenge.parts.forEach((part, index) => {
+            html += `
+                <div class="team-part" data-part="${index + 1}">
+                    <div class="part-role">${part.role}:</div>
+                    <div class="part-hint">💡 ${part.hint}</div>
+                    <input type="text" class="team-input" id="teamAnswer${index + 1}" 
+                           placeholder="Enter answer" data-correct="${part.attribute}">
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+                <div class="challenge-actions">
+                    <button onclick="checkIntelligentTeamwork('${keyword}')" class="btn-primary large">
+                        ✓ Check Unity
+                    </button>
+                    <button onclick="resetChallenge('teamCommunication')" class="btn-secondary">
+                        ↺ New Challenge
+                    </button>
+                </div>
+                <div id="teamworkResult" class="result-comprehensive"></div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // Generate intelligent Code Breaking (Seal 4) - Testament Sorting
+    generateIntelligentCodeBreaking(timestamp, seed) {
+        const keywords = ['TESTAMENT', 'COVENANT', 'REVELATION', 'MYSTERY', 'CIPHER'];
+        const keyword = keywords[Math.floor(seed * keywords.length)];
+
+        const biblicalEvents = [
+            { event: 'Creation of Adam and Eve', testament: 'Old Testament', book: 'Genesis' },
+            { event: 'Noah\'s Ark and the Flood', testament: 'Old Testament', book: 'Genesis' },
+            { event: 'Moses receives Ten Commandments', testament: 'Old Testament', book: 'Exodus' },
+            { event: 'David defeats Goliath', testament: 'Old Testament', book: '1 Samuel' },
+            { event: 'Solomon builds the Temple', testament: 'Old Testament', book: '1 Kings' },
+            { event: 'Jesus\' birth in Bethlehem', testament: 'New Testament', book: 'Matthew' },
+            { event: 'Jesus\' crucifixion and resurrection', testament: 'New Testament', book: 'Matthew' },
+            { event: 'Paul\'s conversion on Damascus road', testament: 'New Testament', book: 'Acts' },
+            { event: 'Pentecost and the Holy Spirit', testament: 'New Testament', book: 'Acts' },
+            { event: 'John\'s vision of Revelation', testament: 'New Testament', book: 'Revelation' }
+        ];
+
+        const selectedEvents = this.getRandomItems(biblicalEvents, 6, seed);
+
+        let html = `
+            <div class="code-breaking-challenge">
+                <div class="challenge-header">
+                    <h3>🔐 ANCIENT CIPHER OF SOLOMON</h3>
+                    <p>Sort these biblical events into Old Testament (before Jesus) or New Testament (Jesus and after)</p>
+                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                </div>
+                
+                <div class="sorting-area">
+                    <div class="drop-zones">
+                        <div class="drop-zone old-testament" data-category="Old Testament">
+                            <h4>📜 Old Testament</h4>
+                            <p>Before Jesus was born</p>
+                        </div>
+                        <div class="drop-zone new-testament" data-category="New Testament">
+                            <h4>✝️ New Testament</h4>
+                            <p>Jesus' time and after</p>
+                        </div>
+                    </div>
+                    
+                    <div class="draggable-events">
+        `;
+
+        selectedEvents.forEach((event, index) => {
+            html += `
+                <div class="draggable-event" draggable="true" data-event="${event.event}" 
+                     data-correct="${event.testament}" data-book="${event.book}">
+                    ${event.event}
+                    <small>(from ${event.book})</small>
+                </div>
+            `;
+        });
+
+        html += `
+                    </div>
+                </div>
+                
+                <div class="challenge-actions">
+                    <button onclick="checkIntelligentCodeBreaking('${keyword}')" class="btn-primary large">
+                        ✓ Check Sorting
+                    </button>
+                    <button onclick="resetChallenge('codeBreaking')" class="btn-secondary">
+                        ↺ New Events
+                    </button>
+                </div>
+                <div id="codeBreakingResult" class="result-comprehensive"></div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // Generate intelligent Chronological Order (Seal 5)
+    generateIntelligentChronology(timestamp, seed) {
+        const keywords = ['TIMELINE', 'HISTORY', 'SEQUENCE', 'ORDER', 'PROGRESSION'];
+        const keyword = keywords[Math.floor(seed * keywords.length)];
+
+        const chronologicalEvents = [
+            { name: 'Creation of the World', order: 1, book: 'Genesis 1' },
+            { name: 'The Great Flood', order: 2, book: 'Genesis 6-9' },
+            { name: 'Abraham\'s Call', order: 3, book: 'Genesis 12' },
+            { name: 'Moses and the Exodus', order: 4, book: 'Exodus' },
+            { name: 'David becomes King', order: 5, book: '2 Samuel 5' },
+            { name: 'Solomon builds Temple', order: 6, book: '1 Kings 6' },
+            { name: 'Babylonian Exile', order: 7, book: '2 Kings 25' },
+            { name: 'Return from Exile', order: 8, book: 'Ezra 1' },
+            { name: 'Jesus\' Birth', order: 9, book: 'Luke 2' },
+            { name: 'Jesus\' Crucifixion', order: 10, book: 'Matthew 27' },
+            { name: 'Pentecost', order: 11, book: 'Acts 2' },
+            { name: 'Paul\'s Missionary Journeys', order: 12, book: 'Acts 13+' }
+        ];
+
+        const selectedEvents = this.getRandomItems(chronologicalEvents, 5, seed).sort(() => Math.random() - 0.5);
+
+        let html = `
+            <div class="chronological-challenge">
+                <div class="challenge-header">
+                    <h3>⏰ CHRONOLOGICAL ORDER CHALLENGE</h3>
+                    <p>Arrange these biblical events in the correct historical order</p>
+                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                </div>
+                
+                <div class="chronology-container">
+                    <div class="timeline-slots">
+        `;
+
+        for (let i = 1; i <= selectedEvents.length; i++) {
+            html += `
+                <div class="timeline-slot" data-order="${i}">
+                    <div class="slot-number">${i}</div>
+                    <div class="slot-content">Drop event here</div>
+                </div>
+            `;
+        }
+
+        html += `
+                    </div>
+                    
+                    <div class="draggable-events-chrono">
+        `;
+
+        selectedEvents.forEach((event, index) => {
+            html += `
+                <div class="draggable-event-chrono" draggable="true" 
+                     data-event="${event.name}" data-order="${event.order}" data-book="${event.book}">
+                    <strong>${event.name}</strong>
+                    <small>${event.book}</small>
+                </div>
+            `;
+        });
+
+        html += `
+                    </div>
+                </div>
+                
+                <div class="challenge-actions">
+                    <button onclick="checkIntelligentChronology('${keyword}')" class="btn-primary large">
+                        ✓ Check Timeline
+                    </button>
+                    <button onclick="resetChallenge('chronologicalOrder')" class="btn-secondary">
+                        ↺ New Timeline
+                    </button>
+                </div>
+                <div id="chronologyResult" class="result-comprehensive"></div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // Generate intelligent Scripture Topics (Seal 6)
+    generateIntelligentTopics(timestamp, seed) {
+        if (!window.BibleVerses || window.BibleVerses.length === 0) {
+            return '<p style="color: red;">Bible content not loaded</p>';
+        }
+
+        const keywords = ['ORGANIZATION', 'THEMES', 'CATEGORIES', 'TOPICS', 'CLASSIFICATION'];
+        const keyword = keywords[Math.floor(seed * keywords.length)];
+
+        const themes = [
+            { name: 'Love', color: '#e74c3c' },
+            { name: 'Faith', color: '#3498db' }, 
+            { name: 'Hope', color: '#f39c12' },
+            { name: 'Salvation', color: '#27ae60' },
+            { name: 'Peace', color: '#9b59b6' },
+            { name: 'Wisdom', color: '#34495e' }
+        ];
+
+        const selectedVerses = this.getRandomVerses(6, seed);
+
+        let html = `
+            <div class="scripture-topics-challenge">
+                <div class="challenge-header">
+                    <h3>📋 SCRIPTURE TOPIC NETWORK</h3>
+                    <p>Categorize these Bible verses by their main theme</p>
+                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                </div>
+                
+                <div class="topic-sorting">
+                    <div class="theme-categories">
+        `;
+
+        themes.forEach(theme => {
+            html += `
+                <div class="theme-category" data-theme="${theme.name.toLowerCase()}" 
+                     style="border-color: ${theme.color};">
+                    <h4 style="color: ${theme.color};">${theme.name}</h4>
+                    <div class="category-verses"></div>
+                </div>
+            `;
+        });
+
+        html += `
+                    </div>
+                    
+                    <div class="draggable-verses">
+        `;
+
+        selectedVerses.forEach((verse, index) => {
+            const theme = this.getVerseTheme(verse.text);
+            html += `
+                <div class="draggable-verse" draggable="true" 
+                     data-verse="${verse.text}" data-theme="${theme}" data-reference="${verse.reference}">
+                    <div class="verse-text">"${verse.text.substring(0, 80)}..."</div>
+                    <div class="verse-ref">${verse.reference}</div>
+                </div>
+            `;
+        });
+
+        html += `
+                    </div>
+                </div>
+                
+                <div class="challenge-actions">
+                    <button onclick="checkIntelligentTopics('${keyword}')" class="btn-primary large">
+                        ✓ Check Categories
+                    </button>
+                    <button onclick="resetChallenge('scriptureTopics')" class="btn-secondary">
+                        ↺ New Verses
+                    </button>
+                </div>
+                <div id="topicsResult" class="result-comprehensive"></div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // Generate intelligent Biblical Wisdom (Seal 7)
+    generateIntelligentWisdom(timestamp, seed) {
+        if (!window.BibleVerses || window.BibleVerses.length === 0) {
+            return '<p style="color: red;">Bible content not loaded</p>';
+        }
+
+        const keywords = ['MASTERY', 'WISDOM', 'COMPLETION', 'UNDERSTANDING', 'ENLIGHTENMENT'];
+        const keyword = keywords[Math.floor(seed * keywords.length)];
+
+        const wisdomVerses = this.getRandomVerses(3, seed);
+
+        let html = `
+            <div class="biblical-wisdom-challenge">
+                <div class="challenge-header">
+                    <h3>👑 BIBLICAL WISDOM CHALLENGE</h3>
+                    <p>Apply biblical wisdom to real-life scenarios</p>
+                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                </div>
+                <div class="wisdom-scenarios">
+        `;
+
+        wisdomVerses.forEach((verse, index) => {
+            const scenarios = [
+                `How would this verse: "${verse.text}" apply to modern decision-making?`,
+                `What practical wisdom does this verse offer: "${verse.text}"?`,
+                `How does this verse guide daily Christian living: "${verse.text}"?`
+            ];
+
+            const scenario = scenarios[index % scenarios.length];
+
+            html += `
+                <div class="wisdom-scenario" data-scenario="${index + 1}">
+                    <div class="scenario-header">Wisdom Question ${index + 1}:</div>
+                    <div class="scenario-text">${scenario}</div>
+                    <div class="verse-reference">${verse.reference}</div>
+                    <textarea class="wisdom-input" id="wisdomAnswer${index + 1}" 
+                              placeholder="Share your insight..." rows="3"></textarea>
+                </div>
+            `;
+        });
+
+        html += `
+                </div>
+                <div class="challenge-actions">
+                    <button onclick="checkIntelligentWisdom('${keyword}')" class="btn-primary large">
+                        ✓ Submit Wisdom
+                    </button>
+                    <button onclick="resetChallenge('biblicalWisdom')" class="btn-secondary">
+                        ↺ New Scenarios
+                    </button>
+                </div>
+                <div id="wisdomResult" class="result-comprehensive"></div>
+            </div>
+        `;
+
+        return html;
+    }
+
+    // Generate placeholder for other seals using enhanced content
+    generateIntelligentTeamwork(timestamp, seed) {
+        return this.generateEnhancedFallback(3, 'teamCommunication', seed);
+    }
+
+    generateIntelligentCodeBreaking(timestamp, seed) {
+        return this.generateEnhancedFallback(4, 'codeBreaking', seed);
+    }
+
+    generateIntelligentChronology(timestamp, seed) {
+        return this.generateEnhancedFallback(5, 'chronologicalOrder', seed);
+    }
+
+    generateIntelligentTopics(timestamp, seed) {
+        return this.generateEnhancedFallback(6, 'scriptureTopics', seed);
+    }
+
+    generateIntelligentWisdom(timestamp, seed) {
+        return this.generateEnhancedFallback(7, 'biblicalWisdom', seed);
+    }
+
+    // Enhanced fallback that still provides dynamic content
+    generateEnhancedFallback(sealId, puzzleType, seed) {
+        console.log(`🔄 Using enhanced fallback for Seal ${sealId}`);
+        
+        // Try UniqueContentEngine first
+        if (window.UniqueContentEngine && window.UniqueContentEngine.generateUniqueSealContent) {
+            try {
+                const content = window.UniqueContentEngine.generateUniqueSealContent(sealId, puzzleType, Date.now());
+                if (content) {
+                    return this.renderDynamicFallback(content, puzzleType);
+                }
+            } catch (error) {
+                console.warn('UniqueContentEngine fallback failed:', error);
+            }
+        }
+        
+        // Final fallback to game data with randomization
+        if (window.GameData && window.GameData.puzzleVariations && window.GameData.puzzleVariations[puzzleType]) {
+            const variations = window.GameData.puzzleVariations[puzzleType];
+            const randomVariation = variations[Math.floor(seed * variations.length)];
+            
+            if (window.PuzzleManager && window.PuzzleManager['generate' + puzzleType.charAt(0).toUpperCase() + puzzleType.slice(1) + 'Content']) {
+                return window.PuzzleManager['generate' + puzzleType.charAt(0).toUpperCase() + puzzleType.slice(1) + 'Content'](randomVariation);
+            }
+        }
+        
+        return `<p>Seal ${sealId} challenge loading...</p>`;
+    }
+
+    // Render dynamic content in a consistent format
+    renderDynamicFallback(content, type) {
+        if (typeof content === 'string') {
+            return content;
+        }
+        
+        // If content is an object, try to render it appropriately
+        if (content && content.questions) {
+            // Handle question-based content
+            let html = `<div class="${type}-challenge">`;
+            content.questions.forEach((q, i) => {
+                html += `
+                    <div class="question" data-question="${i + 1}">
+                        <p>${q.question}</p>
+                        <input type="text" placeholder="Your answer" data-correct="${q.correctAnswer}">
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            return html;
+        }
+        
+        return JSON.stringify(content);
+    }
+
+    // Helper method to get random items from array
+    getRandomItems(array, count, seed) {
+        const shuffled = array.sort(() => (seed + Math.random()) - 0.5);
+        return shuffled.slice(0, Math.min(count, array.length));
+    }
+
     // Get random verses from Bible content
     getRandomVerses(count, seed) {
         if (!window.BibleVerses || window.BibleVerses.length === 0) {

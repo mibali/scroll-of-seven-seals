@@ -3465,6 +3465,126 @@
 
         window.isAnswerCorrect = isAnswerCorrect;
 
+        // Validation functions for all intelligent seals
+        function checkIntelligentLogical(keyword) {
+            const puzzles = document.querySelectorAll('.logical-puzzle');
+            let correct = 0;
+            
+            puzzles.forEach(puzzle => {
+                const selected = puzzle.querySelector('input[type="radio"]:checked');
+                const correctAnswer = puzzle.querySelector('.options-container').getAttribute('data-correct');
+                
+                if (selected && selected.value === correctAnswer) {
+                    correct++;
+                    puzzle.classList.add('correct');
+                } else {
+                    puzzle.classList.add('incorrect');
+                }
+            });
+            
+            const score = (correct / puzzles.length) * 100;
+            const resultDiv = document.getElementById('logicalResult');
+            
+            if (score >= 60) {
+                resultDiv.innerHTML = `
+                    <div class="result-success">
+                        <h4>✅ Excellent Logical Reasoning!</h4>
+                        <p>You solved ${correct} out of ${puzzles.length} puzzles correctly!</p>
+                        <button onclick="window.gameController.completeSeal(2, '${keyword}')" class="btn-complete">
+                            🔓 Break the Second Seal
+                        </button>
+                    </div>`;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-retry">
+                        <h4>🧠 Think Deeper!</h4>
+                        <p>You got ${correct} out of ${puzzles.length} correct. Try again!</p>
+                        <button onclick="resetChallenge('logicalReasoning')" class="btn-retry">↺ New Puzzles</button>
+                    </div>`;
+            }
+        }
+
+        function checkIntelligentTeamwork(keyword) {
+            const parts = document.querySelectorAll('.team-part');
+            let correct = 0;
+            
+            parts.forEach(part => {
+                const input = part.querySelector('.team-input');
+                const userAnswer = input.value.trim();
+                const correctAnswer = input.getAttribute('data-correct');
+                
+                if (isAnswerCorrect(userAnswer, correctAnswer)) {
+                    correct++;
+                    part.classList.add('correct');
+                } else {
+                    part.classList.add('incorrect');
+                }
+            });
+            
+            const score = (correct / parts.length) * 100;
+            const resultDiv = document.getElementById('teamworkResult');
+            
+            if (score >= 60) {
+                resultDiv.innerHTML = `
+                    <div class="result-success">
+                        <h4>✅ Perfect Unity!</h4>
+                        <p>You completed ${correct} out of ${parts.length} unity tasks!</p>
+                        <button onclick="window.gameController.completeSeal(3, '${keyword}')" class="btn-complete">
+                            🔓 Break the Third Seal
+                        </button>
+                    </div>`;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-retry">
+                        <h4>🤝 Work Together!</h4>
+                        <p>You got ${correct} out of ${parts.length} correct. Try again!</p>
+                        <button onclick="resetChallenge('teamCommunication')" class="btn-retry">↺ New Challenge</button>
+                    </div>`;
+            }
+        }
+
+        function checkIntelligentCodeBreaking(keyword) {
+            // Simple validation - check if events are in correct zones
+            const oldEvents = document.querySelectorAll('.old-testament .draggable-event');
+            const newEvents = document.querySelectorAll('.new-testament .draggable-event');
+            let correct = 0;
+            let total = oldEvents.length + newEvents.length;
+            
+            oldEvents.forEach(event => {
+                if (event.getAttribute('data-correct') === 'Old Testament') correct++;
+            });
+            
+            newEvents.forEach(event => {
+                if (event.getAttribute('data-correct') === 'New Testament') correct++;
+            });
+            
+            const score = (correct / total) * 100;
+            const resultDiv = document.getElementById('codeBreakingResult');
+            
+            if (score >= 60) {
+                resultDiv.innerHTML = `
+                    <div class="result-success">
+                        <h4>✅ Cipher Decoded!</h4>
+                        <p>You correctly sorted ${correct} out of ${total} events!</p>
+                        <button onclick="window.gameController.completeSeal(4, '${keyword}')" class="btn-complete">
+                            🔓 Break the Fourth Seal
+                        </button>
+                    </div>`;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-retry">
+                        <h4>🔐 Try Again!</h4>
+                        <p>You got ${correct} out of ${total} correct. Keep sorting!</p>
+                        <button onclick="resetChallenge('codeBreaking')" class="btn-retry">↺ New Events</button>
+                    </div>`;
+            }
+        }
+
+        // Add all validation functions to global scope
+        window.checkIntelligentLogical = checkIntelligentLogical;
+        window.checkIntelligentTeamwork = checkIntelligentTeamwork; 
+        window.checkIntelligentCodeBreaking = checkIntelligentCodeBreaking;
+
         function submitAnswer() {
             // Check if game is still active
             if (!gameState.isGameActive) {
