@@ -79,16 +79,147 @@
     padding: 20px;
 }
 
-/* Multiple Choice Options Styling */
+/* Beautiful Multiple Choice UI */
+.multiple-choice-question {
+    background: linear-gradient(135deg, rgba(139, 69, 19, 0.3), rgba(160, 82, 45, 0.2));
+    border: 2px solid rgba(212, 175, 55, 0.4);
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(10px);
+}
+
+.question-header h4 {
+    color: #d4af37;
+    font-size: 1.3em;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.question-text {
+    color: #f4f1e8;
+    font-size: 1.2em;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.question-hint {
+    color: #d4af37;
+    font-style: italic;
+    margin-bottom: 20px;
+    opacity: 0.9;
+}
+
+.keyword-display {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(184, 134, 11, 0.1));
+    border: 1px solid rgba(212, 175, 55, 0.3);
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.keyword-main {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #d4af37;
+}
+
+.keyword-meaning {
+    font-size: 0.9em;
+    color: #f4f1e8;
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+.beautiful-option {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(69, 26, 3, 0.3));
+    border: 2px solid rgba(107, 77, 55, 0.6);
+    border-radius: 15px;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.beautiful-option:hover {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(184, 134, 11, 0.1));
+    border-color: #d4af37;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+}
+
+.beautiful-option.selected {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.4), rgba(184, 134, 11, 0.3));
+    border-color: #f4e976;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.beautiful-option.correct {
+    background: linear-gradient(135deg, rgba(34, 139, 34, 0.4), rgba(46, 125, 50, 0.3));
+    border-color: #4caf50;
+}
+
+.beautiful-option.incorrect {
+    background: linear-gradient(135deg, rgba(244, 67, 54, 0.4), rgba(211, 47, 47, 0.3));
+    border-color: #f44336;
+}
+
+.option-letter {
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, #d4af37, #b8860b);
+    color: #1a0f0f;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-right: 15px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 10px rgba(212, 175, 55, 0.3);
+}
+
+.option-content {
+    flex: 1;
+    color: #f4f1e8;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.option-indicator {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d4af37;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d4af37;
+    font-size: 1.2em;
+    transition: all 0.3s ease;
+}
+
+.beautiful-option.selected .option-indicator {
+    background: #d4af37;
+    color: #1a0f0f;
+}
+
+.beautiful-option.selected .option-indicator:before {
+    content: '●';
+}
+
 .options-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-    padding: 10px;
-    border: 2px solid #6b4d37;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.2);
+    gap: 8px;
+    margin-top: 15px;
 }
 
 .option-label {

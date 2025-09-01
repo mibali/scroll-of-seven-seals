@@ -450,8 +450,14 @@ class BibleGameAI {
             return '<p style="color: red;">Old Testament content not loaded</p>';
         }
 
-        const keywords = ['FOUNDATION', 'COVENANT', 'CREATION', 'DELIVERANCE', 'PROMISE'];
-        const keyword = keywords[Math.floor(seed * keywords.length)];
+        const keywordData = [
+            { word: 'FOUNDATION', meaning: 'The Old Testament forms the foundation of God\'s revelation to humanity' },
+            { word: 'COVENANT', meaning: 'God establishes covenants throughout the Old Testament with His people' },  
+            { word: 'CREATION', meaning: 'God\'s creative power is displayed throughout the Old Testament' },
+            { word: 'DELIVERANCE', meaning: 'God repeatedly delivers His people from bondage and danger' },
+            { word: 'PROMISE', meaning: 'God\'s promises in the Old Testament point to Jesus Christ' }
+        ];
+        const keywordObj = keywordData[Math.floor(seed * keywordData.length)];
 
         // Select 5 random Old Testament events for multiple choice questions
         const selectedEvents = this.getRandomItems(sealTheme.events, 5, seed);
@@ -461,7 +467,10 @@ class BibleGameAI {
                 <div class="challenge-header">
                     <h3>📜 OLD TESTAMENT FOUNDATIONS</h3>
                     <p><strong>MULTIPLE CHOICE GAME:</strong> Test your knowledge of foundational Old Testament events!</p>
-                    <div class="keyword-display">Target Keyword: <span class="keyword-target">${keyword}</span></div>
+                    <div class="keyword-display">
+                        <div class="keyword-main">Seal Keyword: <span class="keyword-target">${keywordObj.word}</span></div>
+                        <div class="keyword-meaning">💡 ${keywordObj.meaning}</div>
+                    </div>
                 </div>
                 <div class="questions-container">
         `;
@@ -504,11 +513,16 @@ class BibleGameAI {
                         ${questionType.hint ? `<div class="question-hint">💡 ${questionType.hint}</div>` : ''}
                     </div>
                     <div class="options-container">
-                        ${questionType.options.map((option, optionIndex) => `
-                            <button class="option-button" data-answer="${option}" onclick="selectMultipleChoiceAnswer(${index + 1}, '${option}', '${questionType.answer}')">
-                                ${String.fromCharCode(65 + optionIndex)}. ${option}
-                            </button>
-                        `).join('')}
+                        ${questionType.options.map((option, optionIndex) => {
+                            const safeOption = option.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                            const safeAnswer = questionType.answer.replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                            return `
+                            <div class="beautiful-option" onclick="selectAnswer('q${index + 1}', '${safeOption}', '${safeAnswer}')">
+                                <div class="option-letter">${String.fromCharCode(65 + optionIndex)}</div>
+                                <div class="option-content">${option}</div>
+                                <div class="option-indicator">○</div>
+                            </div>
+                        `}).join('')}
                     </div>
                     <div class="answer-feedback" id="feedback-${index + 1}" style="display: none;"></div>
                 </div>
