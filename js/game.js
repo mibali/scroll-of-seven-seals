@@ -806,6 +806,70 @@ class GameController {
         
         console.log(`📊 Completed Seals: ${this.gameState.completedSeals.length}`);
 
+        // Continue with completeSeal logic that should be here
+        // Save state to localStorage for persistence
+        this.saveProgress();
+
+        // Refresh UI
+        this.updateProgress();
+        this.renderSeals();
+
+        // Multiplayer sync
+        if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
+            // CRITICAL: Ensure progress is fully updated before syncing to Firebase
+            this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
+            this.gameState.progress.keywords = [...this.gameState.keywords];
+            this.gameState.progress.lastUpdated = Date.now();
+            
+            console.log('🔥 Syncing multiplayer progress:', {
+                sealsCompleted: this.gameState.progress.sealsCompleted.length,
+                teamId: window.MultiplayerManager.currentTeam.id
+            });
+            
+            try {
+                await window.MultiplayerManager.updateTeamProgress(
+                    this.gameState.gameId,
+                    window.MultiplayerManager.currentTeam.id,
+                    this.gameState.progress
+                );
+            } catch (error) {
+                console.error('❌ Error updating multiplayer progress:', error);
+            }
+        }
+
+        // Auto-advance to next seal or return to selection
+        const nextSeal = this.getNextAvailableSeal();
+        if (nextSeal) {
+            console.log('🔄 Auto-advancing to next seal:', nextSeal.id);
+            setTimeout(() => {
+                this.closePuzzle(); // Exit current seal
+                setTimeout(() => {
+                    this.openSeal(nextSeal.id);
+                }, 500);
+            }, 3000); // Give time to see the completion notification
+        } else if (this.gameState.completedSeals.length < 7) {
+            console.log('🔄 No next seal available, returning to seal selection');
+            setTimeout(() => {
+                this.closePuzzle();
+                this.showSealSelection();
+            }, 3000);
+        }
+
+        // Notifications
+        showNotification(`🎉 Seal ${sealId} broken! Keyword: ${keyword}`, 'success');
+
+        // Final challenge?
+        if (this.gameState.completedSeals.length === 7) {
+            // Small delay to ensure all state updates, UI refreshes, and async operations complete
+            setTimeout(() => {
+                console.log('🎉 All 7 seals completed! Final state check before celebration:');
+                console.log('📊 Completed Seals:', this.gameState.completedSeals.length);
+                console.log('🔑 Keywords:', this.gameState.keywords.length);
+                this.showFinalChallenge();
+            }, 200); // Slightly longer delay to ensure all updates complete
+        }
+    }
+
     // Extract team update logic to separate method
     updatePlayerTeamScore(sealId) {
         // 🔥 UNIVERSAL FIX: Update player team score in ALL modes
@@ -922,71 +986,7 @@ class GameController {
                 console.log('🔥 CRITICAL: Triggered HTML updateLeaderboard() for single mode');
             }
         }
-
-        // 3. Save state to localStorage for persistence
-        this.saveProgress();
-
-        // 4. refresh UI
-        this.updateProgress();
-        this.renderSeals();
-
-        // 5. multiplayer sync
-        if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
-            // CRITICAL: Ensure progress is fully updated before syncing to Firebase
-            this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
-            this.gameState.progress.keywords = [...this.gameState.keywords];
-            this.gameState.progress.lastUpdated = Date.now();
-            
-            console.log('🔥 Syncing multiplayer progress:', {
-                sealsCompleted: this.gameState.progress.sealsCompleted.length,
-                teamId: window.MultiplayerManager.currentTeam.id
-            });
-            
-            try {
-                await window.MultiplayerManager.updateTeamProgress(
-                    this.gameState.gameId,
-                    window.MultiplayerManager.currentTeam.id,
-                    this.gameState.progress
-                );
-            } catch (error) {
-                console.error('❌ Error updating multiplayer progress:', error);
-            }
-        }
-
-        // 4. Auto-advance to next seal or return to selection
-        const nextSeal = this.getNextAvailableSeal();
-        if (nextSeal) {
-            console.log('🔄 Auto-advancing to next seal:', nextSeal.id);
-            setTimeout(() => {
-                this.closePuzzle(); // Exit current seal
-                setTimeout(() => {
-                    this.openSeal(nextSeal.id);
-                }, 500);
-            }, 3000); // Give time to see the completion notification
-        } else if (this.gameState.completedSeals.length < 7) {
-            console.log('🔄 No next seal available, returning to seal selection');
-            setTimeout(() => {
-                this.closePuzzle();
-                this.showSealSelection();
-            }, 3000);
-        }
-
-        // 5. notifications
-        showNotification(`🎉 Seal ${sealId} broken! Keyword: ${keyword}`, 'success');
-
-        // 6. final challenge?
-        if (this.gameState.completedSeals.length === 7) {
-            // Small delay to ensure all state updates, UI refreshes, and async operations complete
-            setTimeout(() => {
-                console.log('🎉 All 7 seals completed! Final state check before celebration:');
-                console.log('📊 Completed Seals:', this.gameState.completedSeals.length);
-                console.log('🔑 Keywords:', this.gameState.keywords.length);
-                this.showFinalChallenge();
-            }, 200); // Slightly longer delay to ensure all updates complete
-        }
     }
-
-
 
     // Update progress bar
     updateProgress() {
