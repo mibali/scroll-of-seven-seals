@@ -604,8 +604,19 @@ class GameController {
 
     // Open a seal puzzle in full-screen mode
     async openSeal(sealId) {
+        // Prevent seals from opening too quickly after game start
+        const timeSinceStart = Date.now() - (this.gameState.startTime || 0);
+        if (timeSinceStart < 1000) { // Wait at least 1 second after game start
+            console.log('⏰ Preventing seal from opening too quickly after game start');
+            return;
+        }
+        
+        console.log(`🔍 openSeal called for seal ${sealId}`);
         const seal = window.GameData.seals.find(s => s.id === sealId);
-        if (!seal || !this.canOpenSeal(seal)) return;
+        if (!seal || !this.canOpenSeal(seal)) {
+            console.log(`❌ Cannot open seal ${sealId}:`, !seal ? 'Seal not found' : 'Cannot open seal');
+            return;
+        }
         
         this.gameState.currentSeal = seal;
         
