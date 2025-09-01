@@ -2866,6 +2866,9 @@
             const leaderboardContainer = document.querySelector('.leaderboard');
             if (leaderboardContainer) leaderboardContainer.style.display = 'block';
             
+            // Reset seal-specific progress
+            resetSealProgress();
+            
             document.getElementById('lobby').style.display = 'none';
             document.getElementById('gameContainer').style.display = 'block';
 
@@ -2886,6 +2889,9 @@
             gameState.mode = 'single';
             gameState.teams = [];
             gameState.completedSeals = [];
+            
+            // Reset seal-specific progress
+            resetSealProgress();
             
             // Hide leaderboard immediately for single-player mode
             const leaderboardContainer = document.querySelector('.leaderboard');
@@ -2988,6 +2994,9 @@
             gameState.completedSeals = [];
             gameState.aiTeams = [];
             gameState.aiTimers = [];
+            
+            // Reset seal-specific progress
+            resetSealProgress();
             
             // CRITICAL: Show leaderboard for AI mode
             const leaderboardContainer = document.querySelector('.leaderboard');
@@ -3584,6 +3593,459 @@
         window.checkIntelligentLogical = checkIntelligentLogical;
         window.checkIntelligentTeamwork = checkIntelligentTeamwork; 
         window.checkIntelligentCodeBreaking = checkIntelligentCodeBreaking;
+
+        // SEAL-SPECIFIC VALIDATION FUNCTIONS FOR UNIQUE GAME MECHANICS
+        
+        // Global variables to track game progress
+        let seal1Progress = 0;
+        let seal2Progress = 0; 
+        let seal3Progress = 0;
+        let seal4Progress = 0;
+        let seal5Progress = 0;
+        let seal6Progress = 0;
+        let seal7Progress = 0;
+
+        // SEAL 1: Multiple Choice Validation
+        function selectMultipleChoiceAnswer(questionNum, selectedAnswer, correctAnswer) {
+            const feedback = document.getElementById(`feedback-${questionNum}`);
+            const allOptions = document.querySelectorAll(`[data-question="${questionNum}"] .option-button`);
+            
+            // Disable all options for this question
+            allOptions.forEach(btn => btn.disabled = true);
+            
+            if (selectedAnswer === correctAnswer) {
+                feedback.innerHTML = '✅ Correct! Well done.';
+                feedback.className = 'answer-feedback correct';
+                seal1Progress++;
+            } else {
+                feedback.innerHTML = `❌ Incorrect. The correct answer is: ${correctAnswer}`;
+                feedback.className = 'answer-feedback incorrect';
+            }
+            
+            feedback.style.display = 'block';
+            
+            // Update progress
+            document.getElementById('mcq-progress').textContent = `${seal1Progress}/5`;
+            document.getElementById('mcq-progress-bar').style.width = `${(seal1Progress/5)*100}%`;
+            
+            // Enable completion if all answered
+            if (seal1Progress >= 5) {
+                document.querySelector('[onclick="completeSeal1MultipleChoice()"]').disabled = false;
+            }
+        }
+
+        function completeSeal1MultipleChoice() {
+            showAlert('🏆 Seal 1: Old Testament Foundations unlocked!', 'success');
+            gameState.completedSeals.push(1);
+            const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+            if (currentTeam) {
+                currentTeam.score = gameState.completedSeals.length;
+                currentTeam.completedSeals = [...gameState.completedSeals];
+            }
+            closePuzzle();
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            // Check for completion
+            if (gameState.completedSeals.length === 7) {
+                handleGameCompletion();
+            }
+        }
+
+        // SEAL 2: Fill-in-the-Verse Validation
+        function fillInWord(verseNum, word) {
+            const verseContainer = document.querySelector(`[data-verse="${verseNum}"]`);
+            const blanks = verseContainer.querySelectorAll('.verse-text');
+            const wordButtons = verseContainer.querySelectorAll('.word-option');
+            
+            // Find first empty blank and fill it
+            const verseText = blanks[0];
+            if (verseText.innerHTML.includes('_____')) {
+                verseText.innerHTML = verseText.innerHTML.replace('_____', `<strong>${word}</strong>`);
+                
+                // Disable the word button
+                wordButtons.forEach(btn => {
+                    if (btn.textContent === word) btn.disabled = true;
+                });
+                
+                // Check if verse is complete
+                if (!verseText.innerHTML.includes('_____')) {
+                    seal2Progress++;
+                    const feedback = document.getElementById(`verse-feedback-${verseNum}`);
+                    feedback.innerHTML = '✅ Verse completed!';
+                    feedback.className = 'verse-feedback correct';
+                    feedback.style.display = 'block';
+                    
+                    // Update progress
+                    document.getElementById('verse-progress').textContent = `${seal2Progress}/5`;
+                    document.getElementById('verse-progress-bar').style.width = `${(seal2Progress/5)*100}%`;
+                    
+                    // Enable completion if all done
+                    if (seal2Progress >= 5) {
+                        document.querySelector('[onclick="completeSeal2FillInVerse()"]').disabled = false;
+                    }
+                }
+            }
+        }
+
+        function completeSeal2FillInVerse() {
+            showAlert('🏆 Seal 2: Wisdom Verses unlocked!', 'success');
+            gameState.completedSeals.push(2);
+            const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+            if (currentTeam) {
+                currentTeam.score = gameState.completedSeals.length;
+                currentTeam.completedSeals = [...gameState.completedSeals];
+            }
+            closePuzzle();
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            if (gameState.completedSeals.length === 7) {
+                handleGameCompletion();
+            }
+        }
+
+        // SEAL 3: Drag-and-Drop Faith Principles
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function dropFaithPrinciple(ev) {
+            ev.preventDefault();
+            const draggedData = ev.dataTransfer.getData("text");
+            const dropZone = ev.target;
+            
+            if (dropZone.classList.contains('drop-zone') && !dropZone.hasChildNodes()) {
+                const draggedElement = document.getElementById(draggedData);
+                dropZone.appendChild(draggedElement);
+                dropZone.classList.add('filled');
+                
+                seal3Progress++;
+                
+                // Update progress
+                document.getElementById('faith-progress').textContent = `${seal3Progress}/5`;
+                document.getElementById('faith-progress-bar').style.width = `${(seal3Progress/5)*100}%`;
+                
+                if (seal3Progress >= 5) {
+                    document.querySelector('[onclick="completeSeal3FaithDragDrop()"]').disabled = false;
+                }
+            }
+        }
+
+        function completeSeal3FaithDragDrop() {
+            showAlert('🏆 Seal 3: Spiritual Growth unlocked!', 'success');
+            gameState.completedSeals.push(3);
+            const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+            if (currentTeam) {
+                currentTeam.score = gameState.completedSeals.length;
+                currentTeam.completedSeals = [...gameState.completedSeals];
+            }
+            closePuzzle();
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            if (gameState.completedSeals.length === 7) {
+                handleGameCompletion();
+            }
+        }
+
+        // SEAL 4: Kingdom Scenario Choices
+        function selectKingdomChoice(scenarioNum, choiceIndex, correctChoice) {
+            const scenarioContainer = document.querySelector(`[data-scenario="${scenarioNum}"]`);
+            const allChoices = scenarioContainer.querySelectorAll('.choice-button');
+            const feedback = document.getElementById(`scenario-feedback-${scenarioNum}`);
+            
+            // Disable all choices
+            allChoices.forEach(btn => btn.disabled = true);
+            
+            if (choiceIndex === correctChoice) {
+                feedback.innerHTML = '✅ Wise choice! This reflects Kingdom principles.';
+                feedback.className = 'scenario-feedback correct';
+                seal4Progress++;
+            } else {
+                feedback.innerHTML = '❌ Consider how this aligns with Jesus\' teaching.';
+                feedback.className = 'scenario-feedback incorrect';
+            }
+            
+            feedback.style.display = 'block';
+            
+            // Update progress
+            document.getElementById('scenario-progress').textContent = `${seal4Progress}/5`;
+            document.getElementById('scenario-progress-bar').style.width = `${(seal4Progress/5)*100}%`;
+            
+            if (seal4Progress >= 5) {
+                document.querySelector('[onclick="completeSeal4KingdomScenarios()"]').disabled = false;
+            }
+        }
+
+        function completeSeal4KingdomScenarios() {
+            showAlert('🏆 Seal 4: Kingdom Affairs unlocked!', 'success');
+            gameState.completedSeals.push(4);
+            const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+            if (currentTeam) {
+                currentTeam.score = gameState.completedSeals.length;
+                currentTeam.completedSeals = [...gameState.completedSeals];
+            }
+            closePuzzle();
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            if (gameState.completedSeals.length === 7) {
+                handleGameCompletion();
+            }
+        }
+
+        // SEAL 5: Church Letters Matching
+        function dropChurchSolution(ev) {
+            ev.preventDefault();
+            const draggedData = ev.dataTransfer.getData("text");
+            const dropZone = ev.target;
+            
+            if (dropZone.classList.contains('problem-drop-zone') && !dropZone.hasChildNodes()) {
+                const draggedElement = document.getElementById(draggedData);
+                dropZone.appendChild(draggedElement);
+                dropZone.classList.add('filled');
+                
+                seal5Progress++;
+                
+                // Update progress
+                document.getElementById('church-progress').textContent = `${seal5Progress}/5`;
+                document.getElementById('church-progress-bar').style.width = `${(seal5Progress/5)*100}%`;
+                
+                if (seal5Progress >= 5) {
+                    document.querySelector('[onclick="completeSeal5ChurchMatching()"]').disabled = false;
+                }
+            }
+        }
+
+        function completeSeal5ChurchMatching() {
+            showAlert('🏆 Seal 5: Church Letters unlocked!', 'success');
+            gameState.completedSeals.push(5);
+            const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+            if (currentTeam) {
+                currentTeam.score = gameState.completedSeals.length;
+                currentTeam.completedSeals = [...gameState.completedSeals];
+            }
+            closePuzzle();
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            if (gameState.completedSeals.length === 7) {
+                handleGameCompletion();
+            }
+        }
+
+        // SEAL 6: Wellness Verse Matching
+        function selectWellnessVerse(stepNum, selectedVerse, correctVerse) {
+            const stepContainer = document.querySelector(`[data-step="${stepNum}"]`);
+            const allOptions = stepContainer.querySelectorAll('.verse-option');
+            const feedback = document.getElementById(`wellness-feedback-${stepNum}`);
+            
+            // Disable all options
+            allOptions.forEach(btn => btn.disabled = true);
+            
+            if (selectedVerse === correctVerse) {
+                feedback.innerHTML = '✅ Perfect match! This verse supports biblical wellness.';
+                feedback.className = 'step-feedback correct';
+                seal6Progress++;
+            } else {
+                feedback.innerHTML = `❌ Not quite right. The correct verse was: ${correctVerse}`;
+                feedback.className = 'step-feedback incorrect';
+            }
+            
+            feedback.style.display = 'block';
+            
+            // Update progress
+            document.getElementById('wellness-progress').textContent = `${seal6Progress}/6`;
+            document.getElementById('wellness-progress-bar').style.width = `${(seal6Progress/6)*100}%`;
+            
+            if (seal6Progress >= 6) {
+                document.querySelector('[onclick="completeSeal6WellnessJourney()"]').disabled = false;
+            }
+        }
+
+        function completeSeal6WellnessJourney() {
+            showAlert('🏆 Seal 6: Biblical Wellness unlocked!', 'success');
+            gameState.completedSeals.push(6);
+            const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+            if (currentTeam) {
+                currentTeam.score = gameState.completedSeals.length;
+                currentTeam.completedSeals = [...gameState.completedSeals];
+            }
+            closePuzzle();
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            if (gameState.completedSeals.length === 7) {
+                handleGameCompletion();
+            }
+        }
+
+        // SEAL 7: Revelation Symbol Decoder
+        function decodeSymbol(symbol, correctMeaning, categoryNum) {
+            const categoryContainer = document.querySelector(`[data-category="${categoryNum}"]`);
+            const meaningOptions = categoryContainer.querySelectorAll('.meaning-option');
+            const feedback = document.getElementById(`revelation-feedback-${categoryNum}`);
+            
+            // Make meaning options clickable for this symbol
+            meaningOptions.forEach(option => {
+                option.onclick = function() {
+                    const selectedMeaning = this.dataset.meaning;
+                    
+                    // Disable all options
+                    meaningOptions.forEach(btn => btn.disabled = true);
+                    
+                    if (selectedMeaning === correctMeaning) {
+                        feedback.innerHTML = `✅ Correct! ${symbol} represents ${correctMeaning}.`;
+                        feedback.className = 'category-feedback correct';
+                        seal7Progress++;
+                    } else {
+                        feedback.innerHTML = `❌ Incorrect. ${symbol} represents ${correctMeaning}.`;
+                        feedback.className = 'category-feedback incorrect';
+                    }
+                    
+                    feedback.style.display = 'block';
+                    
+                    // Update progress
+                    document.getElementById('revelation-progress').textContent = `${seal7Progress}/7`;
+                    document.getElementById('revelation-progress-bar').style.width = `${(seal7Progress/7)*100}%`;
+                    
+                    if (seal7Progress >= 7) {
+                        document.querySelector('[onclick="completeSeal7RevelationDecoding()"]').disabled = false;
+                    }
+                };
+            });
+            
+            showAlert(`Click the correct meaning for: ${symbol}`, 'info');
+        }
+
+        function completeSeal7RevelationDecoding() {
+            showAlert('🏆 Seal 7: Final Seal unlocked! All seals are complete!', 'success');
+            gameState.completedSeals.push(7);
+            const currentTeam = gameState.teams.find(team => team.name === gameState.currentTeam);
+            if (currentTeam) {
+                currentTeam.score = gameState.completedSeals.length;
+                currentTeam.completedSeals = [...gameState.completedSeals];
+            }
+            closePuzzle();
+            renderSeals();
+            updateProgress();
+            updateLeaderboard();
+            
+            // Game completion
+            handleGameCompletion();
+        }
+
+        // Enhanced drag functionality
+        document.addEventListener('dragstart', function(e) {
+            if (e.target.classList.contains('drag-item')) {
+                e.target.id = e.target.id || 'drag-' + Date.now();
+                e.dataTransfer.setData('text', e.target.id);
+                e.target.classList.add('dragging');
+            }
+        });
+
+        document.addEventListener('dragend', function(e) {
+            if (e.target.classList.contains('drag-item')) {
+                e.target.classList.remove('dragging');
+            }
+        });
+
+        document.addEventListener('dragover', function(e) {
+            if (e.target.classList.contains('drop-zone') || e.target.classList.contains('problem-drop-zone')) {
+                e.preventDefault();
+                e.target.classList.add('drag-over');
+            }
+        });
+
+        document.addEventListener('dragleave', function(e) {
+            if (e.target.classList.contains('drop-zone') || e.target.classList.contains('problem-drop-zone')) {
+                e.target.classList.remove('drag-over');
+            }
+        });
+
+        // Global function to handle game completion
+        function handleGameCompletion() {
+            if (gameState.completedSeals.length === 7) {
+                const elapsed = Date.now() - gameState.startTime;
+                
+                if (gameState.mode === 'ai') {
+                    // Stop AI timers
+                    if (gameState.aiTimers) {
+                        gameState.aiTimers.forEach(timer => clearTimeout(timer));
+                        gameState.aiTimers = [];
+                    }
+                    
+                    const playerTeam = gameState.teams.find(team => !team.isAI) || { 
+                        name: gameState.currentTeam, 
+                        isAI: false, 
+                        score: 7,
+                        completedSeals: [...gameState.completedSeals],
+                        lastSealTime: Date.now()
+                    };
+                    
+                    const finalRankings = gameState.teams.map(team => ({
+                        teamName: team.name,
+                        sealsCompleted: team.name === gameState.currentTeam ? 7 : (team.score || 0),
+                        completionTime: team.name === gameState.currentTeam ? elapsed : null,
+                        lastSealTime: team.lastSealTime || Date.now(),
+                        completed: team.name === gameState.currentTeam,
+                        isAI: team.isAI || false,
+                        rank: 0
+                    })).sort((a, b) => {
+                        if (a.completed && !b.completed) return -1;
+                        if (!a.completed && b.completed) return 1;
+                        if (a.sealsCompleted !== b.sealsCompleted) return b.sealsCompleted - a.sealsCompleted;
+                        return (a.completionTime || 999999) - (b.completionTime || 999999);
+                    }).map((team, index) => ({ ...team, rank: index + 1 }));
+                    
+                    showWinnerModalWithRankings(gameState.currentTeam, elapsed, finalRankings, true);
+                } else if (gameState.mode === 'multiplayer') {
+                    checkForGameWinner(elapsed);
+                } else {
+                    // Single player completion
+                    showCompletionModal(elapsed);
+                }
+                
+                gameState.isGameActive = false;
+            }
+        }
+
+        // Reset seal progress when starting a new game
+        function resetSealProgress() {
+            seal1Progress = 0;
+            seal2Progress = 0;
+            seal3Progress = 0;
+            seal4Progress = 0;
+            seal5Progress = 0;
+            seal6Progress = 0;
+            seal7Progress = 0;
+        }
+
+        // Make functions globally available
+        window.selectMultipleChoiceAnswer = selectMultipleChoiceAnswer;
+        window.completeSeal1MultipleChoice = completeSeal1MultipleChoice;
+        window.fillInWord = fillInWord;
+        window.completeSeal2FillInVerse = completeSeal2FillInVerse;
+        window.allowDrop = allowDrop;
+        window.dropFaithPrinciple = dropFaithPrinciple;
+        window.completeSeal3FaithDragDrop = completeSeal3FaithDragDrop;
+        window.selectKingdomChoice = selectKingdomChoice;
+        window.completeSeal4KingdomScenarios = completeSeal4KingdomScenarios;
+        window.dropChurchSolution = dropChurchSolution;
+        window.completeSeal5ChurchMatching = completeSeal5ChurchMatching;
+        window.selectWellnessVerse = selectWellnessVerse;
+        window.completeSeal6WellnessJourney = completeSeal6WellnessJourney;
+        window.decodeSymbol = decodeSymbol;
+        window.completeSeal7RevelationDecoding = completeSeal7RevelationDecoding;
+        window.handleGameCompletion = handleGameCompletion;
+        window.resetSealProgress = resetSealProgress;
 
         function submitAnswer() {
             // Check if game is still active
