@@ -3363,6 +3363,92 @@
         // Make completeSeal available globally for the enhanced challenge system
         window.completeSeal = completeSeal;
 
+        // Intelligent Bible knowledge validation function
+        function checkIntelligentBibleKnowledge(keyword) {
+            console.log('🧠 Checking intelligent Bible knowledge answers...');
+            
+            const questions = document.querySelectorAll('.knowledge-question');
+            let correct = 0;
+            let total = questions.length;
+            
+            questions.forEach((questionDiv, index) => {
+                const input = questionDiv.querySelector('.knowledge-input');
+                const correctAnswer = input.getAttribute('data-correct');
+                const userAnswer = input.value.trim();
+                
+                if (userAnswer && isAnswerCorrect(userAnswer, correctAnswer)) {
+                    correct++;
+                    questionDiv.classList.add('correct');
+                    input.style.borderColor = '#4CAF50';
+                } else {
+                    questionDiv.classList.add('incorrect');
+                    input.style.borderColor = '#f44336';
+                }
+            });
+            
+            const score = (correct / total) * 100;
+            const resultDiv = document.getElementById('bibleKnowledgeResult');
+            
+            if (score >= 60) {
+                resultDiv.innerHTML = `
+                    <div class="result-success">
+                        <h4>✅ Excellent Biblical Knowledge!</h4>
+                        <p>You got ${correct} out of ${total} questions correct (${Math.round(score)}%)</p>
+                        <p>You have earned the keyword: <strong>${keyword}</strong></p>
+                        <button onclick="completeSeal(1, '${keyword}')" class="btn-complete">
+                            🔓 Break the First Seal
+                        </button>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = `
+                    <div class="result-retry">
+                        <h4>📚 Keep Studying!</h4>
+                        <p>You got ${correct} out of ${total} questions correct (${Math.round(score)}%)</p>
+                        <p>You need at least 60% to break the seal. Try again!</p>
+                        <button onclick="resetChallenge('bibleKnowledge')" class="btn-retry">
+                            ↺ Try Different Questions
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Add to global scope
+        window.checkIntelligentBibleKnowledge = checkIntelligentBibleKnowledge;
+
+        // Answer checking function with flexible matching
+        function isAnswerCorrect(userAnswer, correctAnswer) {
+            if (!userAnswer || !correctAnswer) return false;
+            
+            const user = userAnswer.toLowerCase().trim();
+            const correct = correctAnswer.toLowerCase().trim();
+            
+            // Exact match
+            if (user === correct) return true;
+            
+            // Partial match for longer answers
+            if (correct.length > 10 && user.includes(correct.substring(0, 5))) return true;
+            if (user.length > 10 && correct.includes(user.substring(0, 5))) return true;
+            
+            // Common biblical name variations
+            const variations = {
+                'matthew': ['matt', 'matthew'],
+                'john': ['john', 'jn'],
+                'romans': ['romans', 'rom'],
+                'genesis': ['genesis', 'gen'],
+                'psalms': ['psalms', 'psalm', 'ps']
+            };
+            
+            for (const [key, variants] of Object.entries(variations)) {
+                if (variants.includes(user) && variants.includes(correct)) return true;
+            }
+            
+            return false;
+        }
+
+        window.isAnswerCorrect = isAnswerCorrect;
+
         function submitAnswer() {
             // Check if game is still active
             if (!gameState.isGameActive) {
@@ -5004,6 +5090,23 @@
         let worshipPlaying = false;
         let radioPlaying = false;
         let radioAudio = null;
+
+        // Initialize intelligent Bible system
+        async function initializeBibleSystem() {
+            if (!window.BibleGameAI) {
+                window.BibleGameAI = new BibleGameAI();
+            }
+            
+            try {
+                await window.BibleGameAI.initialize();
+                console.log('🧠 Bible AI system fully initialized and ready!');
+            } catch (error) {
+                console.warn('Bible AI initialization failed:', error);
+            }
+        }
+
+        // Call initialization
+        initializeBibleSystem();
 
         function updateSpiritualContent() {
             // Update Scripture motivation
