@@ -23,7 +23,7 @@
     <script src="js/security-utils.js"></script>
     <script src="js/dynamic-engine.js"></script>
     <script src="js/unique-content-engine.js"></script>
-    <script src="js/enhanced-puzzle-manager.js"></script>
+    <!-- <script src="js/enhanced-puzzle-manager.js"></script> -->
     <script src="js/flexible-answer-engine.js"></script>
     <script src="js/learning-journey-manager.js"></script>
     <script src="js/immersion-engine.js"></script>
@@ -2285,6 +2285,13 @@
         
         // Make showAlert globally available
         window.showAlert = showAlert;
+        
+        // Global error handler for unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            console.error('🚨 Unhandled Promise Rejection:', e.reason);
+            showNotification('Puzzle load failed, please try again.', 'error');
+            e.preventDefault(); // Prevent default behavior
+        });
         
         // Initialize mode selection event listeners when DOM is ready
         document.addEventListener('DOMContentLoaded', function() {

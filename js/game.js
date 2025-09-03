@@ -456,9 +456,27 @@ class GameController {
         }
     }
 
+    // Wait for PuzzleManager to be ready
+    async waitForPuzzleManager(maxRetries = 20) {
+        let tries = 0;
+        while (
+            (!window.PuzzleManager ||
+             typeof window.PuzzleManager.generatePuzzleContent !== 'function') &&
+            tries < maxRetries) {
+            await new Promise(r => setTimeout(r, 150));
+            tries++;
+        }
+        if (!window.PuzzleManager || !window.PuzzleManager.generatePuzzleContent) {
+            throw new Error('Puzzle system failed to initialise');
+        }
+    }
+
     // Start multiplayer game
     async startMultiplayerGame() {
         try {
+            // Ensure PuzzleManager is ready before starting
+            await this.waitForPuzzleManager();
+            
             if (window.MultiplayerManager.isHost) {
                 await window.MultiplayerManager.startGame(this.gameState.gameId);
             }
@@ -624,7 +642,17 @@ class GameController {
                     questionEl.innerHTML = '<p style="color: red; padding: 20px;">Puzzle system not available. Please refresh the page.</p>';
                     return;
                 }
-                const puzzleContent = await window.PuzzleManager.generatePuzzleContent(seal.id, seal.puzzle);
+                
+                // Capture PuzzleManager reference before await to detect mid-air replacement
+                const activePM = window.PuzzleManager;
+                const puzzleContent = await activePM.generatePuzzleContent(seal.id, seal.puzzle);
+                
+                // Check if PuzzleManager was replaced during the await
+                if (window.PuzzleManager !== activePM) {
+                    console.warn('🔄 PuzzleManager swapped during content generation, regenerating content...');
+                    return this.openSeal(sealId); // Retry once with new PuzzleManager
+                }
+                
                 console.log(`✅ Generated puzzle content length:`, puzzleContent?.length || 0);
                 questionEl.innerHTML = puzzleContent || '<p style="color: red; padding: 20px;">Failed to generate puzzle content.</p>';
             } catch (error) {
