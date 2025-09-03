@@ -97,18 +97,27 @@ class UnifiedGameState {
     updateAvailableSeals() {
         const availableSeals = [1]; // Seal 1 is always available
         
-        // Check which seals are unlocked based on completed seals
-        window.GameData.seals.forEach(seal => {
-            const hasRequiredSeals = seal.requiredSeals.every(required => 
-                this.state.completedSeals.includes(required)
-            );
-            
-            if (hasRequiredSeals && !availableSeals.includes(seal.id)) {
-                availableSeals.push(seal.id);
-            }
-        });
+        // Use GameData if available, otherwise skip (seals will be available based on canOpenSeal)
+        const sealsData = window.GameData?.seals || [];
+        if (sealsData.length > 0) {
+            // Check which seals are unlocked based on completed seals
+            sealsData.forEach(seal => {
+                const hasRequiredSeals = seal.requiredSeals.every(required => 
+                    this.state.completedSeals.includes(required)
+                );
+                
+                if (hasRequiredSeals && !availableSeals.includes(seal.id)) {
+                    availableSeals.push(seal.id);
+                }
+            });
+        } else {
+            // Fallback: make all seals available for now
+            console.warn('⚠️ GameData not available, making all seals available');
+            availableSeals.push(2, 3, 4, 5, 6, 7);
+        }
 
         this.state.availableSeals = availableSeals.sort((a, b) => a - b);
+        console.log('🔐 Available seals updated:', this.state.availableSeals);
     }
 
     notifyListeners(previousState) {
@@ -126,9 +135,23 @@ class UnifiedGameState {
 class SealEngine {
     constructor(gameState) {
         this.gameState = gameState;
-        this.sealData = window.GameData.seals;
+        this.sealData = window.GameData?.seals || [];
         
-        console.log('🔐 SealEngine initialized');
+        if (!this.sealData.length) {
+            console.warn('⚠️ SealEngine: GameData.seals not available, using fallback');
+            // Provide fallback seal data
+            this.sealData = [
+                { id: 1, title: "Scripture Knowledge Trial", requiredSeals: [], challengeType: "Bible Knowledge" },
+                { id: 2, title: "Covenant Logic Puzzle", requiredSeals: [1], challengeType: "Logical Reasoning" },
+                { id: 3, title: "Unity Communication Matrix", requiredSeals: [2], challengeType: "Team Communication" },
+                { id: 4, title: "Ancient Cipher of Solomon", requiredSeals: [3], challengeType: "Code Breaking" },
+                { id: 5, title: "Chronological Order Challenge", requiredSeals: [4], challengeType: "Timeline Ordering" },
+                { id: 6, title: "Scripture Topic Network", requiredSeals: [5], challengeType: "Topic Organization" },
+                { id: 7, title: "Biblical Wisdom Challenge", requiredSeals: [6], challengeType: "Comprehensive Knowledge" }
+            ];
+        }
+        
+        console.log('🔐 SealEngine initialized with', this.sealData.length, 'seals');
     }
 
     // Check if a seal can be opened
@@ -741,7 +764,14 @@ class UnifiedGameController {
             sealElement.setAttribute('data-seal-id', seal.id);
             
             if (seal.canOpen) {
-                sealElement.onclick = () => window.unifiedGameController.openSeal(seal.id);
+                sealElement.onclick = () => {
+                    console.log(`🎯 Seal ${seal.id} clicked - attempting to open`);
+                    window.unifiedGameController.openSeal(seal.id);
+                };
+                sealElement.style.cursor = 'pointer';
+            } else {
+                console.log(`🔒 Seal ${seal.id} not clickable - canOpen: ${seal.canOpen}, status: ${seal.status}`);
+                sealElement.style.cursor = 'not-allowed';
             }
 
             const completedBadgeHtml = isCompleted ? '<div class="completed-badge">✅ Completed</div>' : '';

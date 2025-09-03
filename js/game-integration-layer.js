@@ -419,13 +419,13 @@ class GameIntegrationLayer {
             }
         });
         
-        const gameScreen = document.getElementById('gameScreen');
-        if (gameScreen) {
-            gameScreen.style.display = 'block';
-            gameScreen.classList.add('active');
-            console.log('🎮 Game screen shown and activated');
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.style.display = 'block';
+            gameContainer.classList.add('active');
+            console.log('🎮 Game container shown and activated');
         } else {
-            console.error('🎮 gameScreen element not found!');
+            console.error('🎮 gameContainer element not found!');
         }
         
         // Check if sealsGrid exists
