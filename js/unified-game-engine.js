@@ -211,6 +211,9 @@ class SealEngine {
         }
 
         console.log(`✅ Seal ${sealId} completed with keyword: ${keyword}`);
+        console.log(`🔐 Completed seals now:`, newCompletedSeals);
+        console.log(`🔐 Available seals should be:`, this.gameState.getState().availableSeals);
+        
         return true;
     }
 
@@ -732,6 +735,13 @@ class UnifiedGameController {
             }
 
             console.log(`✅ Seal ${sealId} completed with keyword: ${keyword}`);
+            
+            // Immediately re-render seals to show progression
+            setTimeout(() => {
+                this.renderSeals();
+                console.log('🎯 Triggered seal re-render after completion');
+            }, 100);
+            
             return true;
         } catch (error) {
             console.error('Error completing seal:', error);

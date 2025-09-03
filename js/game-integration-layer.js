@@ -215,10 +215,20 @@ class GameIntegrationLayer {
         const originalRenderSeals = window.renderSeals;
         window.renderSeals = () => {
             try {
-                // Only render if game container is visible (prevents home screen rendering)
+                // Only render if game container is visible AND we're not on mode selection
                 const gameContainer = document.getElementById('gameContainer');
+                const modeSelection = document.getElementById('modeSelection');
+                const mainMenu = document.getElementById('mainMenu');
+                
                 if (!gameContainer || gameContainer.style.display === 'none') {
                     console.log('🎯 Skipping seal render - game container not visible');
+                    return;
+                }
+                
+                // Don't render if mode selection or main menu is visible
+                if ((modeSelection && modeSelection.classList.contains('active')) || 
+                    (mainMenu && mainMenu.classList.contains('active'))) {
+                    console.log('🎯 Skipping seal render - still on mode selection/main menu');
                     return;
                 }
                 
@@ -602,13 +612,16 @@ class GameIntegrationLayer {
     }
 
     notifySystemReady() {
-        // Ensure game container is hidden initially
+        // Ensure game container is hidden initially and stays hidden
         const gameContainer = document.getElementById('gameContainer');
         if (gameContainer) {
             gameContainer.style.display = 'none';
             gameContainer.classList.remove('active');
             console.log('🎮 Ensured game container is hidden on system ready');
         }
+        
+        // Also ensure we're showing the correct screen
+        this.showMainMenu();
         
         // Dispatch custom event to notify other parts of the system
         const event = new CustomEvent('enhancedGameSystemReady', {

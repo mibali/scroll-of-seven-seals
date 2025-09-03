@@ -149,9 +149,17 @@ class SealMechanicsManager {
             // Show completion animation
             this.showCompletionAnimation(sealId, keyword);
             
-            // Exit after animation
+            // Exit after animation and re-render seals
             setTimeout(() => {
                 this.exitSealFullScreen();
+                
+                // Re-render seals to show newly unlocked ones
+                setTimeout(() => {
+                    if (window.renderSeals) {
+                        window.renderSeals();
+                        console.log('🎯 Re-rendered seals after seal completion');
+                    }
+                }, 500);
             }, 3000);
         }
     }
