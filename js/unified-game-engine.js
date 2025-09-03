@@ -720,31 +720,42 @@ class UnifiedGameController {
     // Render seals with unified state
     renderSeals() {
         const sealsGrid = document.getElementById('sealsGrid');
-        if (!sealsGrid) return;
+        if (!sealsGrid) {
+            console.warn('🎯 sealsGrid element not found - game screen may not be visible');
+            return;
+        }
 
         const sealsData = this.sealEngine.getSealsViewModel();
-        let sealsHtml = '';
+        console.log('🎯 Rendering seals data:', sealsData.map(s => ({id: s.id, status: s.status, canOpen: s.canOpen})));
 
+        // Clear existing content first
+        sealsGrid.innerHTML = '';
+        
+        // Use DOM creation like the original to maintain compatibility
         sealsData.forEach(seal => {
-            const statusClass = `seal-${seal.status}`;
-            const clickHandler = seal.canOpen ? `onclick="unifiedGameController.openSeal(${seal.id})"` : '';
-            const lockIcon = seal.status === 'locked' ? '🔒' : '';
-            const completedIcon = seal.status === 'completed' ? '✅' : '';
+            const sealElement = document.createElement('div');
+            const isCompleted = seal.status === 'completed';
             
-            sealsHtml += `
-                <div class="seal-card ${statusClass} ${seal.isActive ? 'active' : ''}" 
-                     ${clickHandler}>
-                    <div class="seal-number">${seal.id}</div>
-                    <div class="seal-title">${seal.title}</div>
-                    <div class="seal-status">
-                        ${lockIcon}${completedIcon}
-                    </div>
-                    <div class="seal-description">${seal.description}</div>
-                </div>
-            `;
-        });
+            sealElement.className = `seal ${isCompleted ? 'opened' : ''}`;
+            sealElement.setAttribute('data-challenge-type', seal.challengeType || 'Biblical Challenge');
+            sealElement.setAttribute('data-seal-id', seal.id);
+            
+            if (seal.canOpen) {
+                sealElement.onclick = () => window.unifiedGameController.openSeal(seal.id);
+            }
 
-        sealsGrid.innerHTML = sealsHtml;
+            const completedBadgeHtml = isCompleted ? '<div class="completed-badge">✅ Completed</div>' : '';
+            
+            sealElement.innerHTML = `
+                <div class="seal-number">${seal.id}</div>
+                <div class="seal-title">${seal.title}</div>
+                <div class="seal-theme">${seal.theme}</div>
+                <div class="challenge-type-indicator">${seal.challengeType || 'Biblical Challenge'}</div>
+                ${completedBadgeHtml}
+            `;
+
+            sealsGrid.appendChild(sealElement);
+        });
     }
 
     // Update score/team display

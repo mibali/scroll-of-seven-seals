@@ -170,16 +170,19 @@ class GameIntegrationLayer {
         // Enhanced game mode initialization
         window.startSinglePlayerGame = async () => {
             try {
+                console.log('🎮 Enhanced startSinglePlayerGame called');
                 await this.unifiedController.initializeMode('single', { 
                     teamName: this.getTeamNameInput() 
                 });
                 await this.unifiedController.startGame();
                 this.showGameInterface();
+                console.log('🎮 Enhanced single player game started and interface shown');
                 
             } catch (error) {
                 console.error('Enhanced single player start failed:', error);
                 // Fallback to original
                 if (window.gameController?.startSinglePlayerGame) {
+                    console.log('🎮 Falling back to original single player start');
                     return window.gameController.startSinglePlayerGame();
                 }
             }
@@ -404,23 +407,42 @@ class GameIntegrationLayer {
     }
 
     showGameInterface() {
+        console.log('🎮 showGameInterface called');
+        
         // Hide menus and show game interface
         const screens = ['mainMenu', 'singlePlayerSetup', 'multiPlayerSetup'];
         screens.forEach(screenId => {
             const screen = document.getElementById(screenId);
-            if (screen) screen.style.display = 'none';
+            if (screen) {
+                screen.style.display = 'none';
+                console.log(`🎮 Hidden screen: ${screenId}`);
+            }
         });
         
         const gameScreen = document.getElementById('gameScreen');
         if (gameScreen) {
             gameScreen.style.display = 'block';
             gameScreen.classList.add('active');
+            console.log('🎮 Game screen shown and activated');
+        } else {
+            console.error('🎮 gameScreen element not found!');
+        }
+        
+        // Check if sealsGrid exists
+        const sealsGrid = document.getElementById('sealsGrid');
+        if (sealsGrid) {
+            console.log('🎮 sealsGrid found, ready for rendering');
+        } else {
+            console.error('🎮 sealsGrid element not found!');
         }
         
         // Render seals with new system
         setTimeout(() => {
+            console.log('🎮 Attempting to render seals...');
             if (window.renderSeals) {
                 window.renderSeals();
+            } else {
+                console.error('🎮 renderSeals function not available');
             }
         }, 100);
     }
