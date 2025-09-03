@@ -340,31 +340,48 @@ class SealOneMechanic extends BaseSealMechanic {
         const eventsContainer = document.querySelector('.events-container');
         const slotsContainer = document.querySelector('.timeline-slots');
         
+        if (!eventsContainer || !slotsContainer) {
+            console.error('Timeline containers not found for drag and drop setup');
+            return;
+        }
+        
         eventsContainer.addEventListener('dragstart', (e) => {
-            if (e.target.classList.contains('timeline-event')) {
+            if (e.target && e.target.classList && e.target.classList.contains('timeline-event')) {
                 e.dataTransfer.setData('text/plain', e.target.dataset.eventId);
                 e.target.classList.add('dragging');
             }
         });
         
         eventsContainer.addEventListener('dragend', (e) => {
-            e.target.classList.remove('dragging');
+            if (e.target && e.target.classList) {
+                e.target.classList.remove('dragging');
+            }
         });
         
         slotsContainer.addEventListener('dragover', (e) => {
             e.preventDefault();
-            e.target.classList.add('drag-over');
+            if (e.target && e.target.classList) {
+                e.target.classList.add('drag-over');
+            }
         });
         
         slotsContainer.addEventListener('dragleave', (e) => {
-            e.target.classList.remove('drag-over');
+            if (e.target && e.target.classList) {
+                e.target.classList.remove('drag-over');
+            }
         });
         
         slotsContainer.addEventListener('drop', (e) => {
             e.preventDefault();
-            e.target.classList.remove('drag-over');
+            if (e.target && e.target.classList) {
+                e.target.classList.remove('drag-over');
+            }
             
-            if (e.target.classList.contains('timeline-slot') || e.target.parentElement.classList.contains('timeline-slot')) {
+            if (e.target && e.target.classList && 
+                (e.target.classList.contains('timeline-slot') || 
+                 (e.target.parentElement && e.target.parentElement.classList && 
+                  e.target.parentElement.classList.contains('timeline-slot')))) {
+                
                 const slot = e.target.classList.contains('timeline-slot') ? e.target : e.target.parentElement;
                 const eventId = e.dataTransfer.getData('text/plain');
                 const eventElement = document.querySelector(`[data-event-id="${eventId}"]`);
