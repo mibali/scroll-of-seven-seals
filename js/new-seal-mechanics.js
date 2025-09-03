@@ -769,7 +769,17 @@ class SealThreeMechanic extends BaseSealMechanic {
         }
 
         const stage = this.stages[this.currentStage];
+        if (!stage) {
+            console.error(`Cannot find stage ${this.currentStage}, completing journey`);
+            this.completeJourney();
+            return;
+        }
+        
         const stageContainer = document.getElementById('journeyStage');
+        if (!stageContainer) {
+            console.error('Stage container not found');
+            return;
+        }
         
         stageContainer.innerHTML = `
             <div class="stage-content">
@@ -794,7 +804,16 @@ class SealThreeMechanic extends BaseSealMechanic {
 
     makeChoice(choiceIndex) {
         const stage = this.stages[this.currentStage];
-        const choice = stage.choices[choiceIndex];
+        if (!stage) {
+            console.error(`Stage ${this.currentStage} not found in stages:`, this.stages);
+            return;
+        }
+        
+        const choice = stage.choices && stage.choices[choiceIndex];
+        if (!choice) {
+            console.error(`Choice ${choiceIndex} not found in stage ${this.currentStage}:`, stage);
+            return;
+        }
         
         this.userChoices.push({
             stage: this.currentStage,
@@ -856,16 +875,24 @@ class SealThreeMechanic extends BaseSealMechanic {
                 <div class="growth-summary">
                     <h4>Your Spiritual Growth Pattern:</h4>
                     <ul>
-                        ${this.userChoices.map((choice, index) => `
-                            <li>${this.stages[index].title}: ${this.getOutcomeDescription(choice.outcome)}</li>
-                        `).join('')}
+                        ${this.userChoices.map((choice, index) => {
+                            const stage = this.stages[index];
+                            if (!stage) {
+                                console.warn(`Stage ${index} not found for choice summary`);
+                                return `<li>Stage ${index + 1}: ${this.getOutcomeDescription(choice.outcome)}</li>`;
+                            }
+                            return `<li>${stage.title}: ${this.getOutcomeDescription(choice.outcome)}</li>`;
+                        }).join('')}
                     </ul>
                 </div>
             </div>
         `;
 
         // Update progress to 100%
-        document.getElementById('journeyProgress').style.width = '100%';
+        const progressElement = document.getElementById('journeyProgress');
+        if (progressElement) {
+            progressElement.style.width = '100%';
+        }
 
         setTimeout(() => {
             this.complete('GROWTH');
