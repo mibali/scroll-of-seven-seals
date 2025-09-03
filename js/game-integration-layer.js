@@ -207,6 +207,19 @@ class GameIntegrationLayer {
         const originalRenderSeals = window.renderSeals;
         window.renderSeals = () => {
             try {
+                // Only render seals if game is active
+                if (!this.unifiedController?.gameState.getState().isGameActive) {
+                    console.log('🎯 Skipping seal render - game not active');
+                    return;
+                }
+                
+                // Only render if game container is visible
+                const gameContainer = document.getElementById('gameContainer');
+                if (!gameContainer || gameContainer.style.display === 'none') {
+                    console.log('🎯 Skipping seal render - game container not visible');
+                    return;
+                }
+                
                 if (this.unifiedController) {
                     console.log('🎯 Using enhanced renderSeals');
                     this.unifiedController.renderSeals();
@@ -409,12 +422,22 @@ class GameIntegrationLayer {
     showGameInterface() {
         console.log('🎮 showGameInterface called');
         
-        // Hide menus and show game interface
-        const screens = ['mainMenu', 'singlePlayerSetup', 'multiPlayerSetup'];
-        screens.forEach(screenId => {
+        // Hide ALL other screens first
+        const screens = document.querySelectorAll('.screen, .mode-selection, .setup-container');
+        screens.forEach(screen => {
+            if (screen.style) {
+                screen.style.display = 'none';
+            }
+            screen.classList.remove('active');
+        });
+
+        // Also hide specific screens by ID
+        const screenIds = ['mainMenu', 'singlePlayerSetup', 'multiPlayerSetup', 'modeSelection'];
+        screenIds.forEach(screenId => {
             const screen = document.getElementById(screenId);
             if (screen) {
                 screen.style.display = 'none';
+                screen.classList.remove('active');
                 console.log(`🎮 Hidden screen: ${screenId}`);
             }
         });
@@ -428,6 +451,19 @@ class GameIntegrationLayer {
             console.error('🎮 gameContainer element not found!');
         }
         
+        // Hide leaderboard for single player mode
+        if (this.unifiedController?.gameState.getState().mode === 'single') {
+            const leaderboard = document.querySelector('.leaderboard');
+            const leaderboardList = document.getElementById('leaderboardList');
+            if (leaderboard) {
+                leaderboard.style.display = 'none';
+                console.log('🎮 Hidden leaderboard for single player mode');
+            }
+            if (leaderboardList) {
+                leaderboardList.style.display = 'none';
+            }
+        }
+        
         // Check if sealsGrid exists
         const sealsGrid = document.getElementById('sealsGrid');
         if (sealsGrid) {
@@ -436,18 +472,33 @@ class GameIntegrationLayer {
             console.error('🎮 sealsGrid element not found!');
         }
         
-        // Render seals with new system
+        // Render seals with new system - but only if game is active
         setTimeout(() => {
-            console.log('🎮 Attempting to render seals...');
-            if (window.renderSeals) {
-                window.renderSeals();
+            if (this.unifiedController?.gameState.getState().isGameActive) {
+                console.log('🎮 Attempting to render seals for active game...');
+                if (window.renderSeals) {
+                    window.renderSeals();
+                } else {
+                    console.error('🎮 renderSeals function not available');
+                }
             } else {
-                console.error('🎮 renderSeals function not available');
+                console.log('🎮 Game not active yet, skipping seal render');
             }
         }, 100);
     }
 
     showMainMenu() {
+        console.log('🎮 showMainMenu called - hiding game container');
+        
+        // Hide game container
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.style.display = 'none';
+            gameContainer.classList.remove('active');
+            console.log('🎮 Game container hidden');
+        }
+        
+        // Hide all screens
         const screens = document.querySelectorAll('.screen');
         screens.forEach(screen => screen.classList.remove('active'));
         
@@ -455,6 +506,7 @@ class GameIntegrationLayer {
         if (mainMenu) {
             mainMenu.classList.add('active');
             mainMenu.style.display = 'block';
+            console.log('🎮 Main menu shown');
         }
     }
 
@@ -538,6 +590,14 @@ class GameIntegrationLayer {
     }
 
     notifySystemReady() {
+        // Ensure game container is hidden initially
+        const gameContainer = document.getElementById('gameContainer');
+        if (gameContainer) {
+            gameContainer.style.display = 'none';
+            gameContainer.classList.remove('active');
+            console.log('🎮 Ensured game container is hidden on system ready');
+        }
+        
         // Dispatch custom event to notify other parts of the system
         const event = new CustomEvent('enhancedGameSystemReady', {
             detail: {
