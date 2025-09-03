@@ -1439,7 +1439,14 @@ class SealFiveMechanic extends BaseSealMechanic {
     }
 
     completeLetterSorting() {
-        const storyContainer = document.getElementById('parableStory');
+        const storyContainer = document.getElementById('parableStory') || document.getElementById('sealContent') || document.querySelector('.seal-content');
+        
+        if (!storyContainer) {
+            console.error('Could not find story container for seal completion');
+            // Fallback - complete anyway
+            this.complete('GOSPEL');
+            return;
+        }
         
         storyContainer.innerHTML = `
             <div class="sorting-completion">
