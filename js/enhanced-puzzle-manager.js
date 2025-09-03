@@ -1206,9 +1206,9 @@ class AudioFeedbackEngine {
 
 // Export the enhanced manager
 window.EnhancedPuzzleManager = EnhancedPuzzleManager;
-} // End of conditional declaration
 window.AnswerValidationEngine = AnswerValidationEngine;
 window.VisualEffectsEngine = VisualEffectsEngine;
 window.AudioFeedbackEngine = AudioFeedbackEngine;
+} // End of conditional declaration
 
 console.log('🚀 Enhanced Puzzle Manager loaded with answer flexibility and age adaptation!');

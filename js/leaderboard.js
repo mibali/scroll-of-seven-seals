@@ -527,6 +527,24 @@ class LeaderboardManager {
         this.currentGameId = null;
     }
 
+    // Refresh leaderboard (called by unified game engine)
+    refresh() {
+        console.log('🔄 Refreshing leaderboard...');
+        if (this.currentGameId) {
+            // Refresh live leaderboard during active game
+            this.updateTimeElapsed();
+            this.renderLiveLeaderboard();
+            
+            // Trigger legacy HTML update if available
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+            }
+        } else {
+            // Refresh global leaderboard when not in active game
+            this.loadGlobalLeaderboard('all');
+        }
+    }
+
     // Clean up when game ends
     cleanup() {
         this.stopUpdates();

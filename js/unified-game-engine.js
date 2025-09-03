@@ -710,8 +710,10 @@ class UnifiedGameController {
         this.updateTimerDisplay();
         
         // Update leaderboard
-        if (window.LeaderboardManager) {
+        if (window.LeaderboardManager && typeof window.LeaderboardManager.refresh === 'function') {
             window.LeaderboardManager.refresh();
+        } else if (window.LeaderboardManager) {
+            console.log('⚠️ LeaderboardManager exists but refresh method not available');
         }
     }
 
