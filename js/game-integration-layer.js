@@ -190,11 +190,13 @@ class GameIntegrationLayer {
 
         window.startAIArenaGame = async () => {
             try {
+                console.log('🎮 Enhanced startAIArenaGame called');
                 await this.unifiedController.initializeMode('ai', { 
                     teamName: this.getTeamNameInput() 
                 });
                 await this.unifiedController.startGame();
                 this.showGameInterface();
+                console.log('🎮 Enhanced AI arena game started and interface shown');
                 
             } catch (error) {
                 console.error('Enhanced AI arena start failed:', error);
@@ -203,29 +205,32 @@ class GameIntegrationLayer {
             }
         };
 
+        // Also handle the HTML's startAIGame function
+        window.startAIGame = async () => {
+            console.log('🎮 startAIGame called - delegating to startAIArenaGame');
+            return window.startAIArenaGame();
+        };
+
         // Enhanced render seals function
         const originalRenderSeals = window.renderSeals;
         window.renderSeals = () => {
             try {
-                // Only render seals if game is active
-                if (!this.unifiedController?.gameState.getState().isGameActive) {
-                    console.log('🎯 Skipping seal render - game not active');
-                    return;
-                }
-                
-                // Only render if game container is visible
+                // Only render if game container is visible (prevents home screen rendering)
                 const gameContainer = document.getElementById('gameContainer');
                 if (!gameContainer || gameContainer.style.display === 'none') {
                     console.log('🎯 Skipping seal render - game container not visible');
                     return;
                 }
                 
-                if (this.unifiedController) {
-                    console.log('🎯 Using enhanced renderSeals');
+                // If we have a unified controller and it has a game mode, use it
+                if (this.unifiedController && this.unifiedController.gameState.getState().mode) {
+                    console.log('🎯 Using enhanced renderSeals for mode:', this.unifiedController.gameState.getState().mode);
                     this.unifiedController.renderSeals();
                 } else if (originalRenderSeals) {
                     console.log('🎯 Using fallback renderSeals');
                     originalRenderSeals();
+                } else {
+                    console.log('🎯 No renderSeals method available');
                 }
             } catch (error) {
                 console.error('Error in enhanced renderSeals:', error);
@@ -451,16 +456,27 @@ class GameIntegrationLayer {
             console.error('🎮 gameContainer element not found!');
         }
         
-        // Hide leaderboard for single player mode
-        if (this.unifiedController?.gameState.getState().mode === 'single') {
-            const leaderboard = document.querySelector('.leaderboard');
-            const leaderboardList = document.getElementById('leaderboardList');
+        // Hide leaderboard ONLY for single player mode, show for AI/multiplayer
+        const currentMode = this.unifiedController?.gameState.getState().mode;
+        const leaderboard = document.querySelector('.leaderboard');
+        const leaderboardList = document.getElementById('leaderboardList');
+        
+        if (currentMode === 'single') {
             if (leaderboard) {
                 leaderboard.style.display = 'none';
                 console.log('🎮 Hidden leaderboard for single player mode');
             }
             if (leaderboardList) {
                 leaderboardList.style.display = 'none';
+            }
+        } else {
+            // Show leaderboard for AI and multiplayer modes
+            if (leaderboard) {
+                leaderboard.style.display = 'block';
+                console.log('🎮 Showing leaderboard for', currentMode, 'mode');
+            }
+            if (leaderboardList) {
+                leaderboardList.style.display = 'block';
             }
         }
         
@@ -472,17 +488,13 @@ class GameIntegrationLayer {
             console.error('🎮 sealsGrid element not found!');
         }
         
-        // Render seals with new system - but only if game is active
+        // Render seals with new system - since game interface is being shown, we should render
         setTimeout(() => {
-            if (this.unifiedController?.gameState.getState().isGameActive) {
-                console.log('🎮 Attempting to render seals for active game...');
-                if (window.renderSeals) {
-                    window.renderSeals();
-                } else {
-                    console.error('🎮 renderSeals function not available');
-                }
+            console.log('🎮 Attempting to render seals...');
+            if (window.renderSeals) {
+                window.renderSeals();
             } else {
-                console.log('🎮 Game not active yet, skipping seal render');
+                console.error('🎮 renderSeals function not available');
             }
         }, 100);
     }
