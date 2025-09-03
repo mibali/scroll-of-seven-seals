@@ -29,6 +29,12 @@
     <script src="js/immersion-engine.js"></script>
     <script src="js/worship-audio.js"></script>
     <script src="js/game-integration.js"></script>
+    
+    <!-- NEW UNIFIED GAME ARCHITECTURE -->
+    <script src="js/bible-content-generator.js"></script>
+    <script src="js/unified-game-engine.js"></script>
+    <script src="js/new-seal-mechanics.js"></script>
+    <script src="js/game-integration-layer.js"></script>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -36,6 +42,7 @@
     <!-- Additional CSS Files -->
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="age-adaptive-styles.css">
+    <link rel="stylesheet" href="seal-mechanics.css">
 
     <script>
         tailwind.config = {
@@ -5480,6 +5487,29 @@
                 location.reload(); // Fallback
             }
         }
+
+        // Enhanced System Status
+        let enhancedSystemReady = false;
+        
+        // Listen for enhanced system ready event
+        document.addEventListener('enhancedGameSystemReady', (event) => {
+            enhancedSystemReady = true;
+            console.log('✨ Enhanced game system is ready!', event.detail);
+            
+            // Show system status
+            const statusElement = document.getElementById('systemStatus');
+            if (statusElement) {
+                statusElement.innerHTML = '✨ Enhanced Biblical Content System Active';
+                statusElement.className = 'system-status active';
+            }
+            
+            // Enable full-screen button
+            const fullScreenBtn = document.getElementById('fullScreenToggle');
+            if (fullScreenBtn) {
+                fullScreenBtn.disabled = false;
+                fullScreenBtn.title = 'Toggle full-screen mode for immersive seal experiences';
+            }
+        });
 
         // Initialize options when DOM loads
         document.addEventListener('DOMContentLoaded', () => {

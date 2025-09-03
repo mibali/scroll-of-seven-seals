@@ -1,0 +1,793 @@
+/* Enhanced Seal Mechanics Styles */
+
+/* Full-Screen Seal Container */
+.seal-fullscreen-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, 
+        rgba(25, 25, 112, 0.95) 0%, 
+        rgba(70, 130, 180, 0.9) 50%, 
+        rgba(25, 25, 112, 0.95) 100%
+    );
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.seal-overlay {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.seal-content {
+    flex: 1;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+}
+
+.seal-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 10001;
+}
+
+.seal-exit-btn,
+.seal-fullscreen-btn {
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.seal-fullscreen-btn {
+    background: rgba(0, 150, 255, 0.8);
+}
+
+.seal-exit-btn:hover {
+    background: rgba(255, 0, 0, 1);
+    transform: scale(1.05);
+}
+
+.seal-fullscreen-btn:hover {
+    background: rgba(0, 150, 255, 1);
+    transform: scale(1.05);
+}
+
+/* Seal Completion Animation */
+.seal-completion-animation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    position: relative;
+}
+
+.completion-glow {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.6) 0%, transparent 70%);
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+.completion-title {
+    font-size: 3em;
+    color: #FFD700;
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    margin-bottom: 30px;
+    font-family: 'Cinzel', serif;
+    position: relative;
+    z-index: 2;
+}
+
+.completion-keyword {
+    font-size: 1.5em;
+    color: #FFFFFF;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 2;
+}
+
+.completion-keyword .keyword {
+    color: #FFD700;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+}
+
+@keyframes glow {
+    0% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+    100% { transform: scale(1.1) rotate(5deg); opacity: 1; }
+}
+
+/* SEAL 1: Timeline Styles */
+.seal-one-timeline {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.seal-one-timeline h2 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.instruction {
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 1.2em;
+    margin-bottom: 30px;
+}
+
+.timeline-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.events-pool {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.events-pool h3 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.events-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.timeline-event {
+    background: rgba(70, 130, 180, 0.8);
+    border-radius: 10px;
+    padding: 15px;
+    cursor: grab;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(100, 149, 237, 0.5);
+}
+
+.timeline-event:active {
+    cursor: grabbing;
+}
+
+.timeline-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.timeline-event.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+.event-title {
+    color: #FFFFFF;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.event-period {
+    color: #B0C4DE;
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.event-hint {
+    color: #98FB98;
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.timeline-path {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.timeline-path h3 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.timeline-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.timeline-slot {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed rgba(255, 215, 0, 0.5);
+    border-radius: 8px;
+    padding: 10px;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.timeline-slot.drag-over {
+    background: rgba(255, 215, 0, 0.2);
+    border-style: solid;
+}
+
+.timeline-slot.filled {
+    background: rgba(34, 139, 34, 0.3);
+    border-color: #32CD32;
+    border-style: solid;
+}
+
+.timeline-slot.correct {
+    background: rgba(34, 139, 34, 0.5);
+    border-color: #32CD32;
+    box-shadow: 0 0 15px rgba(50, 205, 50, 0.4);
+}
+
+.timeline-slot.incorrect {
+    background: rgba(220, 20, 60, 0.3);
+    border-color: #DC143C;
+    box-shadow: 0 0 15px rgba(220, 20, 60, 0.4);
+}
+
+.slot-number {
+    background: #FFD700;
+    color: #000;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.slot-content {
+    color: #FFFFFF;
+    flex: 1;
+}
+
+.timeline-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.timeline-result {
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.timeline-result.success {
+    background: rgba(34, 139, 34, 0.3);
+    color: #32CD32;
+    border: 2px solid #32CD32;
+}
+
+.timeline-result.error {
+    background: rgba(220, 20, 60, 0.3);
+    color: #FF6B6B;
+    border: 2px solid #DC143C;
+}
+
+.timeline-result.warning {
+    background: rgba(255, 193, 7, 0.3);
+    color: #FFC107;
+    border: 2px solid #FFC107;
+}
+
+/* SEAL 2: Memory Game Styles */
+.seal-two-memory {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.seal-two-memory h2 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.memory-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 30px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat .label {
+    color: #B0C4DE;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.stat .value {
+    color: #FFD700;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    margin-bottom: 30px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.memory-card {
+    aspect-ratio: 1;
+    position: relative;
+    cursor: pointer;
+    perspective: 1000px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-front,
+.card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    box-sizing: border-box;
+    transition: transform 0.6s ease-in-out;
+}
+
+.card-front {
+    background: linear-gradient(135deg, #4169E1, #6495ED);
+    border: 2px solid #87CEEB;
+    transform: rotateY(0deg);
+}
+
+.card-back {
+    background: linear-gradient(135deg, #32CD32, #98FB98);
+    border: 2px solid #90EE90;
+    transform: rotateY(-180deg);
+    color: #000;
+    font-weight: bold;
+}
+
+.memory-card.flipped .card-front {
+    transform: rotateY(180deg);
+}
+
+.memory-card.flipped .card-back {
+    transform: rotateY(0deg);
+}
+
+.memory-card.matched {
+    opacity: 0.7;
+}
+
+.memory-card.matched .card-front,
+.memory-card.matched .card-back {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border-color: #FFD700;
+    color: #000;
+}
+
+.card-icon {
+    font-size: 2em;
+}
+
+.card-content {
+    font-size: 0.9em;
+    line-height: 1.2;
+}
+
+.memory-controls {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.memory-result {
+    text-align: center;
+    padding: 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
+.memory-result.success {
+    background: rgba(34, 139, 34, 0.3);
+    color: #32CD32;
+    border: 2px solid #32CD32;
+}
+
+/* SEAL 3: Faith Journey Styles */
+.seal-three-journey {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.seal-three-journey h2 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.journey-progress {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.progress-bar {
+    background: rgba(255, 255, 255, 0.2);
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    background: linear-gradient(90deg, #32CD32, #98FB98);
+    height: 100%;
+    width: 0%;
+    transition: width 0.5s ease;
+    border-radius: 10px;
+}
+
+.stage-indicator {
+    color: #FFD700;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.journey-stage {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.stage-content h3 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.stage-description {
+    color: #FFFFFF;
+    text-align: center;
+    font-size: 1.1em;
+    margin-bottom: 30px;
+    line-height: 1.6;
+}
+
+.stage-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.choice-btn {
+    background: rgba(70, 130, 180, 0.8);
+    color: #FFFFFF;
+    border: 2px solid rgba(100, 149, 237, 0.5);
+    border-radius: 10px;
+    padding: 15px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.choice-btn:hover {
+    background: rgba(100, 149, 237, 0.9);
+    border-color: #6495ED;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.journey-result {
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stage-result {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.outcome-message {
+    color: #FFD700;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.lesson {
+    color: #FFFFFF;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+.journey-completion {
+    text-align: center;
+}
+
+.journey-completion h3 {
+    color: #FFD700;
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.faith-level {
+    color: #32CD32;
+    font-size: 1.3em;
+    font-weight: bold;
+    margin-bottom: 30px;
+}
+
+.growth-summary {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.growth-summary h4 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+.growth-summary ul {
+    list-style: none;
+    padding: 0;
+}
+
+.growth-summary li {
+    color: #FFFFFF;
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Common Button Styles */
+.btn-primary,
+.btn-secondary {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #32CD32, #98FB98);
+    color: #000;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #98FB98, #32CD32);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #4169E1, #6495ED);
+    color: #FFFFFF;
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #6495ED, #4169E1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Placeholder Seal Styles */
+.seal-placeholder {
+    text-align: center;
+    padding: 50px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+}
+
+.seal-placeholder h2 {
+    color: #FFD700;
+    margin-bottom: 20px;
+    font-size: 2em;
+}
+
+.seal-placeholder p {
+    color: #FFFFFF;
+    margin-bottom: 30px;
+    font-size: 1.1em;
+}
+
+.seal-placeholder button {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.seal-placeholder button:hover {
+    background: linear-gradient(135deg, #FFA500, #FFD700);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .seal-content {
+        padding: 10px;
+        margin: 10px;
+    }
+    
+    .timeline-workspace {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .memory-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    
+    .stage-choices {
+        max-width: 100%;
+    }
+    
+    .seal-controls {
+        position: relative;
+        top: auto;
+        right: auto;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .memory-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .completion-title {
+        font-size: 2em;
+    }
+    
+    .seal-one-timeline h2,
+    .seal-two-memory h2,
+    .seal-three-journey h2 {
+        font-size: 1.8em;
+    }
+}
+
+/* Full-screen mode adjustments */
+body.seal-fullscreen-active {
+    overflow: hidden;
+}
+
+body.seal-fullscreen-active .container,
+body.seal-fullscreen-active #gameContainer {
+    display: none !important;
+}
+
+/* Animation keyframes */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40%, 43% {
+        transform: translateY(-30px);
+    }
+    70% {
+        transform: translateY(-15px);
+    }
+    90% {
+        transform: translateY(-4px);
+    }
+}
+
+.seal-content > * {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.completion-content {
+    animation: bounce 2s ease-in-out infinite;
+}
