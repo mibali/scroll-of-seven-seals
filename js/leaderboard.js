@@ -94,23 +94,40 @@ class LeaderboardManager {
             finalCount: playerSeals
         });
         
-        // Generate AI teams based on player progress
-        const aiTeams = this.generateAITeams(playerSeals);
+        // Use existing teams if in AI mode, otherwise generate new ones
+        let allTeams;
         
-        // Add player to the mix
-        const playerTeam = {
-            id: 'player',
-            name: 'Your Team',
-            status: playerSeals === 7 ? 'completed' : 'playing',
-            progress: {
-                sealsCompleted: gameState.sealsCompleted || gameState.completedSeals || gameState.progress?.sealsCompleted || [],
-                startTime: gameState.startTime || Date.now(),
-                completionTime: playerSeals === 7 ? Date.now() - gameState.startTime : null
-            }
-        };
-        
-        // Combine all teams and update leaderboard
-        const allTeams = [playerTeam, ...aiTeams];
+        if (gameState.mode === 'ai' && gameState.teams && gameState.teams.length > 0) {
+            // Use existing AI game teams
+            allTeams = gameState.teams.map(team => ({
+                id: team.isAI ? `ai-${team.name}` : 'player',
+                name: team.name,
+                status: team.completedSeals?.length === 7 ? 'completed' : 'playing',
+                progress: {
+                    sealsCompleted: team.completedSeals || [],
+                    startTime: gameState.startTime || Date.now(),
+                    completionTime: team.completedSeals?.length === 7 ? team.lastSealTime : null
+                }
+            }));
+            console.log('🤖 Using existing AI game teams:', allTeams.length);
+        } else {
+            // Generate AI teams for single player mode
+            const aiTeams = this.generateAITeams(playerSeals);
+            
+            const playerTeam = {
+                id: 'player',
+                name: 'Your Team',
+                status: playerSeals === 7 ? 'completed' : 'playing',
+                progress: {
+                    sealsCompleted: gameState.sealsCompleted || gameState.completedSeals || gameState.progress?.sealsCompleted || [],
+                    startTime: gameState.startTime || Date.now(),
+                    completionTime: playerSeals === 7 ? Date.now() - gameState.startTime : null
+                }
+            };
+            
+            allTeams = [playerTeam, ...aiTeams];
+            console.log('📊 Generated leaderboard teams:', allTeams.length);
+        }
         this.liveLeaderboard = allTeams
             .sort((a, b) => {
                 // First by seals completed
@@ -203,7 +220,11 @@ class LeaderboardManager {
             'Divine Defenders 🙏'
         ];
         
-        return aiTeamNames.map((name, index) => {
+        // Get the actual AI team count from gameState or use default
+        const requestedCount = gameState.aiTeams ? gameState.aiTeams.length : aiTeamNames.length;
+        const teamsToGenerate = aiTeamNames.slice(0, requestedCount);
+        
+        return teamsToGenerate.map((name, index) => {
             // AI teams have slightly different progress to create challenge
             let aiSeals = playerSeals;
             if (index === 0) aiSeals = Math.min(7, playerSeals + Math.floor(Math.random() * 2)); // Ahead
