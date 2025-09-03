@@ -447,6 +447,13 @@ class AIArenaStrategy extends GameModeStrategy {
         });
 
         console.log(`🤖 AI Arena mode initialized: ${teamName} vs AI competitors`);
+        
+        // Immediately sync with global gameState for leaderboard compatibility
+        if (window.gameState) {
+            window.gameState.teams = teams;
+            window.gameState.mode = 'ai';
+            console.log('🤖 Synced AI teams with global gameState for leaderboard');
+        }
     }
 
     async startGame() {
@@ -463,6 +470,9 @@ class AIArenaStrategy extends GameModeStrategy {
         // Start AI simulation
         this.startAISimulation();
         console.log('🚀 AI Arena game started with competition');
+        
+        // Trigger initial leaderboard update
+        this.updateProgress();
     }
 
     startAISimulation() {
@@ -516,8 +526,26 @@ class AIArenaStrategy extends GameModeStrategy {
     }
 
     async updateProgress() {
+        const state = this.gameState.getState();
+        
         if (window.LeaderboardManager) {
-            window.LeaderboardManager.updateSinglePlayerProgress(this.gameState.getState());
+            window.LeaderboardManager.updateSinglePlayerProgress(state);
+        }
+        
+        // For AI mode, also update the HTML leaderboard system 
+        if (state.mode === 'ai') {
+            // Set the global gameState.teams for compatibility with HTML leaderboard
+            if (window.gameState) {
+                window.gameState.teams = state.teams;
+                window.gameState.mode = 'ai';
+                console.log('🤖 Updated global gameState.teams for AI mode:', state.teams.length, 'teams');
+            }
+            
+            // Trigger the HTML leaderboard update
+            if (typeof window.updateLeaderboard === 'function') {
+                window.updateLeaderboard();
+                console.log('🤖 Triggered HTML leaderboard update for AI mode');
+            }
         }
     }
 
@@ -667,13 +695,21 @@ class UnifiedGameController {
     // Open a seal
     async openSeal(sealId) {
         try {
+            console.log(`🎯 UnifiedGameController.openSeal called for seal ${sealId}`);
             const seal = this.sealEngine.openSeal(sealId);
             
             // Generate fresh content for this seal
             const content = await this.contentEngine.generateSealContent(sealId, seal.puzzle);
             
-            // Show puzzle modal (existing UI logic)
-            this.showPuzzleModal(seal, content);
+            // Use the new full-screen seal mechanics system
+            if (window.sealMechanicsManager) {
+                console.log(`🎯 Launching seal mechanic for seal ${sealId}`);
+                await window.sealMechanicsManager.launchSealMechanic(sealId, content);
+            } else {
+                // Fallback to existing puzzle modal system
+                console.log(`🎯 Fallback to puzzle modal for seal ${sealId}`);
+                this.showPuzzleModal(seal, content);
+            }
             
             return seal;
         } catch (error) {
