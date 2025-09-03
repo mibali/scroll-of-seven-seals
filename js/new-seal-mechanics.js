@@ -124,6 +124,14 @@ class SealMechanicsManager {
         
         document.body.classList.remove('seal-fullscreen-active');
         
+        // Re-render seals to show current progress
+        setTimeout(() => {
+            if (window.renderSeals) {
+                window.renderSeals();
+                console.log('🎯 Re-rendered seals on exit to show current progress');
+            }
+        }, 200);
+        
         console.log('🚪 Exited seal full-screen mode');
     }
 
@@ -356,6 +364,12 @@ class SealOneMechanic extends BaseSealMechanic {
         const slotContent = slot.querySelector('.slot-content');
         const eventTitle = eventElement.querySelector('.event-title').textContent;
         
+        // Clear previous content if any
+        if (slotContent.dataset.eventId) {
+            // Return previous event to pool
+            this.returnEventToPool(slotContent.dataset.eventId);
+        }
+        
         slotContent.textContent = eventTitle;
         slotContent.dataset.eventId = eventElement.dataset.eventId;
         slot.classList.add('filled');
@@ -363,6 +377,14 @@ class SealOneMechanic extends BaseSealMechanic {
         // Remove from events pool
         eventElement.style.opacity = '0.3';
         eventElement.draggable = false;
+    }
+
+    returnEventToPool(eventId) {
+        const eventElement = document.querySelector(`[data-event-id="${eventId}"]`);
+        if (eventElement) {
+            eventElement.style.opacity = '1';
+            eventElement.draggable = true;
+        }
     }
 
     checkOrder() {
@@ -1047,6 +1069,28 @@ class SealFourMechanic extends BaseSealMechanic {
         const storyContainer = document.getElementById('parableStory');
         const finalWisdomLevel = this.getFinalWisdomLevel();
         
+        // Require minimum wisdom score to pass (at least 10/15)
+        if (this.wisdomScore < 10) {
+            storyContainer.innerHTML = `
+                <div class="parable-retry">
+                    <h3>🤔 More Kingdom Understanding Needed</h3>
+                    <p><strong>Your Score:</strong> ${this.wisdomScore}/15</p>
+                    <p class="retry-message">You need at least 10 wisdom points to unlock this seal. The kingdom requires deeper understanding!</p>
+                    <p><strong>Lesson:</strong> <em>"But seek first his kingdom and his righteousness, and all these things will be given to you as well."</em> - Matthew 6:33</p>
+                    
+                    <div class="retry-controls">
+                        <button class="btn-primary" onclick="sealMechanicsManager.mechanicsRegistry[4].retryParable()">
+                            🔄 Try Again with New Parable
+                        </button>
+                        <button class="btn-secondary" onclick="sealMechanicsManager.exitSealFullScreen()">
+                            ← Return to Seals
+                        </button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
         storyContainer.innerHTML = `
             <div class="parable-completion">
                 <h3>🎉 Kingdom Wisdom Unlocked!</h3>
@@ -1065,6 +1109,19 @@ class SealFourMechanic extends BaseSealMechanic {
         setTimeout(() => {
             this.complete('KINGDOM');
         }, 4000);
+    }
+
+    retryParable() {
+        // Reset and try with a different parable
+        this.currentParable.currentStage = 0;
+        this.playerChoices = [];
+        this.wisdomScore = 0;
+        
+        // Update score display
+        document.getElementById('wisdomScore').textContent = '0';
+        
+        // Setup new parable content
+        this.setupKingdomParable();
     }
 
     getFinalWisdomLevel() {
@@ -1223,11 +1280,21 @@ class SealFiveMechanic extends BaseSealMechanic {
                 box.classList.remove('drag-over');
                 
                 const letterId = e.dataTransfer.getData('text/plain');
+                console.log('🎯 Letter ID from drag data:', letterId);
+                
+                // Validate letterId is a number
+                if (!letterId || isNaN(letterId)) {
+                    console.error('Invalid letter ID:', letterId);
+                    return;
+                }
+                
                 const letterElement = document.querySelector(`[data-letter-id="${letterId}"]`);
                 const categoryId = box.dataset.category;
                 
                 if (letterElement) {
                     this.placeLetter(letterElement, box, categoryId);
+                } else {
+                    console.error('Letter element not found for ID:', letterId);
                 }
             });
         });
@@ -1236,6 +1303,7 @@ class SealFiveMechanic extends BaseSealMechanic {
     placeLetter(letterElement, categoryBox, categoryId) {
         // Move letter to category
         categoryBox.appendChild(letterElement);
+        letterElement.classList.remove('correct', 'incorrect');
         letterElement.classList.add('placed');
         
         // Check if correct
@@ -1246,11 +1314,56 @@ class SealFiveMechanic extends BaseSealMechanic {
             letterElement.classList.add('correct');
             this.correctMatches++;
             this.updateStats();
+            letterElement.draggable = false; // Lock correct answers
         } else {
             letterElement.classList.add('incorrect');
+            letterElement.draggable = true; // Keep incorrect items draggable
+            letterElement.style.cursor = 'grab';
+            
+            // Add ability to drag back to pool
+            this.makeReturnableToPool(letterElement);
         }
+    }
+
+    makeReturnableToPool(letterElement) {
+        // Add event listeners to allow dragging back to pool
+        letterElement.addEventListener('dragstart', (e) => {
+            e.dataTransfer.setData('text/plain', letterElement.dataset.letterId);
+            letterElement.classList.add('dragging');
+        });
         
-        letterElement.draggable = false; // Can't move once placed
+        // Add pool as drop target
+        const lettersContainer = document.querySelector('.letters-container');
+        if (lettersContainer && !lettersContainer.hasAttribute('data-pool-drop-setup')) {
+            lettersContainer.setAttribute('data-pool-drop-setup', 'true');
+            
+            lettersContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                lettersContainer.classList.add('returning-drag-over');
+            });
+            
+            lettersContainer.addEventListener('dragleave', (e) => {
+                lettersContainer.classList.remove('returning-drag-over');
+            });
+            
+            lettersContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                lettersContainer.classList.remove('returning-drag-over');
+                
+                const letterId = e.dataTransfer.getData('text/plain');
+                const letterElement = document.querySelector(`[data-letter-id="${letterId}"]`);
+                
+                if (letterElement && letterElement.classList.contains('incorrect')) {
+                    // Return to pool
+                    lettersContainer.appendChild(letterElement);
+                    letterElement.classList.remove('placed', 'incorrect');
+                    letterElement.draggable = true;
+                    letterElement.style.cursor = 'grab';
+                    
+                    console.log('🔄 Letter returned to pool for correction');
+                }
+            });
+        }
     }
 
     checkSorting() {

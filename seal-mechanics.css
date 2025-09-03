@@ -879,6 +879,35 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
+.letters-container.returning-drag-over {
+    background: rgba(255, 215, 0, 0.2);
+    border: 2px dashed #FFD700;
+}
+
+.letter-card.incorrect {
+    position: relative;
+}
+
+.letter-card.incorrect:after {
+    content: '🔄 Drag back to pool to retry';
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 20, 60, 0.9);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.letter-card.incorrect:hover:after {
+    opacity: 1;
+}
+
 .sorting-stats {
     text-align: center;
     margin: 20px 0;
