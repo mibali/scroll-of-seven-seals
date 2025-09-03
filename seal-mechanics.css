@@ -1,5 +1,41 @@
 /* Enhanced Seal Mechanics Styles */
 
+/* Letter return animation */
+@keyframes returnToPool {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.8;
+        background-color: rgba(255, 255, 0, 0.3);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Visual feedback for returning letters */
+.letters-container.returning-drag-over {
+    background-color: rgba(255, 255, 0, 0.1);
+    border: 2px dashed #FFD700;
+    border-radius: 10px;
+}
+
+.letters-container.returning-drag-over::before {
+    content: "Drop here to return letter";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #FFD700;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 1000;
+}
+
 /* Full-Screen Seal Container */
 .seal-fullscreen-container {
     position: fixed;

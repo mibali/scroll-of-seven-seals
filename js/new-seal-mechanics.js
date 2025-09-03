@@ -149,9 +149,18 @@ class SealMechanicsManager {
         if (this.activeMechanic) {
             const sealId = this.activeMechanic.sealId;
             
+            console.log(`🎯 Completing seal ${sealId} with keyword: ${keyword}`);
+            
             // Notify unified controller
             if (window.unifiedGameController) {
-                window.unifiedGameController.completeSeal(sealId, keyword);
+                try {
+                    window.unifiedGameController.completeSeal(sealId, keyword);
+                    console.log(`✅ Unified controller notified of seal ${sealId} completion`);
+                } catch (error) {
+                    console.error('Error notifying unified controller:', error);
+                }
+            } else {
+                console.warn('Unified controller not available');
             }
             
             // Show completion animation
@@ -159,15 +168,19 @@ class SealMechanicsManager {
             
             // Exit after animation and re-render seals
             setTimeout(() => {
+                console.log(`🚪 Exiting seal ${sealId} after completion`);
                 this.exitSealFullScreen();
                 
-                // Re-render seals to show newly unlocked ones
+                // Force a re-render of seals to show progress
                 setTimeout(() => {
-                    if (window.renderSeals) {
+                    if (window.unifiedGameController) {
+                        window.unifiedGameController.renderSeals();
+                        console.log('🎯 Unified controller re-rendered seals after completion');
+                    } else if (window.renderSeals) {
                         window.renderSeals();
-                        console.log('🎯 Re-rendered seals after seal completion');
+                        console.log('🎯 Fallback re-rendered seals after completion');
                     }
-                }, 500);
+                }, 100);
             }, 3000);
         }
     }
@@ -183,6 +196,9 @@ class SealMechanicsManager {
                         <h1 class="completion-title">🎉 SEAL ${sealId} UNLOCKED! 🎉</h1>
                         <div class="completion-keyword">Keyword: <span class="keyword">${keyword}</span></div>
                         <div class="completion-particles"></div>
+                        <button class="continue-btn" onclick="sealMechanicsManager.exitSealFullScreen(); if (window.unifiedGameController) window.unifiedGameController.renderSeals();">
+                            Continue to Next Seal
+                        </button>
                     </div>
                 </div>
             `;
@@ -1331,11 +1347,15 @@ class SealFiveMechanic extends BaseSealMechanic {
                         this.updateStats();
                     }
                     
-                    // Return to pool
+                    // Return to pool with visual feedback
                     lettersContainer.appendChild(letterElement);
                     letterElement.classList.remove('placed', 'correct', 'incorrect');
                     letterElement.draggable = true;
                     letterElement.style.cursor = 'grab';
+                    letterElement.style.animation = 'returnToPool 0.3s ease-out';
+                    
+                    // Clear result message to allow for new attempts
+                    this.showResult('', 'info');
                     
                     console.log('✅ Letter successfully returned to pool');
                 }
@@ -1390,7 +1410,12 @@ class SealFiveMechanic extends BaseSealMechanic {
     }
 
     updateStats() {
-        document.getElementById('correctMatches').textContent = this.correctMatches;
+        const statsElement = document.getElementById('correctMatches');
+        if (statsElement) {
+            statsElement.textContent = this.correctMatches;
+        } else {
+            console.warn('Stats element not found - correctMatches');
+        }
     }
 
     highlightErrors() {
@@ -1436,8 +1461,14 @@ class SealFiveMechanic extends BaseSealMechanic {
 
     showResult(message, type) {
         const result = document.getElementById('sortingResult');
-        result.textContent = message;
-        result.className = `sorting-result ${type}`;
+        if (result) {
+            result.textContent = message;
+            result.className = `sorting-result ${type}`;
+        } else {
+            console.warn('Sorting result element not found');
+            // Fallback - show in console or create temporary element
+            console.log(`Result: ${message} (${type})`);
+        }
     }
 }
 
