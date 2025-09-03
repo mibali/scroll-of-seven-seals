@@ -1249,22 +1249,23 @@ class SealFiveMechanic extends BaseSealMechanic {
     }
 
     setupDragAndDrop() {
-        const lettersContainer = document.querySelector('.letters-container');
-        const categoryBoxes = document.querySelectorAll('.category-letters');
-        
-        // Drag start
-        lettersContainer.addEventListener('dragstart', (e) => {
+        // Use document-level event delegation for better handling
+        document.addEventListener('dragstart', (e) => {
             if (e.target.classList.contains('letter-card')) {
                 e.dataTransfer.setData('text/plain', e.target.dataset.letterId);
                 e.target.classList.add('dragging');
+                console.log('🎯 Drag started for letter:', e.target.dataset.letterId);
             }
         });
         
-        lettersContainer.addEventListener('dragend', (e) => {
-            e.target.classList.remove('dragging');
+        document.addEventListener('dragend', (e) => {
+            if (e.target.classList.contains('letter-card')) {
+                e.target.classList.remove('dragging');
+            }
         });
         
-        // Drop zones
+        // Set up drop zones for categories
+        const categoryBoxes = document.querySelectorAll('.category-letters');
         categoryBoxes.forEach(box => {
             box.addEventListener('dragover', (e) => {
                 e.preventDefault();
@@ -1272,7 +1273,9 @@ class SealFiveMechanic extends BaseSealMechanic {
             });
             
             box.addEventListener('dragleave', (e) => {
-                box.classList.remove('drag-over');
+                if (!box.contains(e.relatedTarget)) {
+                    box.classList.remove('drag-over');
+                }
             });
             
             box.addEventListener('drop', (e) => {
@@ -1280,9 +1283,8 @@ class SealFiveMechanic extends BaseSealMechanic {
                 box.classList.remove('drag-over');
                 
                 const letterId = e.dataTransfer.getData('text/plain');
-                console.log('🎯 Letter ID from drag data:', letterId);
+                console.log('🎯 Dropping letter ID:', letterId, 'into category:', box.dataset.category);
                 
-                // Validate letterId is a number
                 if (!letterId || isNaN(letterId)) {
                     console.error('Invalid letter ID:', letterId);
                     return;
@@ -1298,6 +1300,47 @@ class SealFiveMechanic extends BaseSealMechanic {
                 }
             });
         });
+        
+        // Set up return-to-pool functionality
+        const lettersContainer = document.querySelector('.letters-container');
+        if (lettersContainer) {
+            lettersContainer.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                lettersContainer.classList.add('returning-drag-over');
+            });
+            
+            lettersContainer.addEventListener('dragleave', (e) => {
+                if (!lettersContainer.contains(e.relatedTarget)) {
+                    lettersContainer.classList.remove('returning-drag-over');
+                }
+            });
+            
+            lettersContainer.addEventListener('drop', (e) => {
+                e.preventDefault();
+                lettersContainer.classList.remove('returning-drag-over');
+                
+                const letterId = e.dataTransfer.getData('text/plain');
+                const letterElement = document.querySelector(`[data-letter-id="${letterId}"]`);
+                
+                if (letterElement && letterElement.classList.contains('placed')) {
+                    console.log('🔄 Returning letter to pool:', letterId);
+                    
+                    // Update correct matches count if returning a correct answer
+                    if (letterElement.classList.contains('correct')) {
+                        this.correctMatches--;
+                        this.updateStats();
+                    }
+                    
+                    // Return to pool
+                    lettersContainer.appendChild(letterElement);
+                    letterElement.classList.remove('placed', 'correct', 'incorrect');
+                    letterElement.draggable = true;
+                    letterElement.style.cursor = 'grab';
+                    
+                    console.log('✅ Letter successfully returned to pool');
+                }
+            });
+        }
     }
 
     placeLetter(letterElement, categoryBox, categoryId) {
@@ -1314,56 +1357,17 @@ class SealFiveMechanic extends BaseSealMechanic {
             letterElement.classList.add('correct');
             this.correctMatches++;
             this.updateStats();
-            letterElement.draggable = false; // Lock correct answers
         } else {
             letterElement.classList.add('incorrect');
-            letterElement.draggable = true; // Keep incorrect items draggable
-            letterElement.style.cursor = 'grab';
-            
-            // Add ability to drag back to pool
-            this.makeReturnableToPool(letterElement);
+            // Show visual feedback for incorrect placement
+            setTimeout(() => {
+                letterElement.style.animation = 'shake 0.5s ease-in-out';
+            }, 100);
         }
-    }
-
-    makeReturnableToPool(letterElement) {
-        // Add event listeners to allow dragging back to pool
-        letterElement.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', letterElement.dataset.letterId);
-            letterElement.classList.add('dragging');
-        });
         
-        // Add pool as drop target
-        const lettersContainer = document.querySelector('.letters-container');
-        if (lettersContainer && !lettersContainer.hasAttribute('data-pool-drop-setup')) {
-            lettersContainer.setAttribute('data-pool-drop-setup', 'true');
-            
-            lettersContainer.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                lettersContainer.classList.add('returning-drag-over');
-            });
-            
-            lettersContainer.addEventListener('dragleave', (e) => {
-                lettersContainer.classList.remove('returning-drag-over');
-            });
-            
-            lettersContainer.addEventListener('drop', (e) => {
-                e.preventDefault();
-                lettersContainer.classList.remove('returning-drag-over');
-                
-                const letterId = e.dataTransfer.getData('text/plain');
-                const letterElement = document.querySelector(`[data-letter-id="${letterId}"]`);
-                
-                if (letterElement && letterElement.classList.contains('incorrect')) {
-                    // Return to pool
-                    lettersContainer.appendChild(letterElement);
-                    letterElement.classList.remove('placed', 'incorrect');
-                    letterElement.draggable = true;
-                    letterElement.style.cursor = 'grab';
-                    
-                    console.log('🔄 Letter returned to pool for correction');
-                }
-            });
-        }
+        // All letters remain draggable for corrections
+        letterElement.draggable = true;
+        letterElement.style.cursor = 'grab';
     }
 
     checkSorting() {
