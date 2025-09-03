@@ -720,6 +720,7 @@ class SealThreeMechanic extends BaseSealMechanic {
     }
 
     setupFaithJourney() {
+        console.log('🔧 Setting up faith journey stages...');
         this.stages = [
             {
                 id: 1,
@@ -777,10 +778,17 @@ class SealThreeMechanic extends BaseSealMechanic {
                 lesson: 'Mature faith recognizes growth while remaining humble.'
             }
         ];
+        console.log(`✅ Faith journey stages set up: ${this.stages.length} stages`);
+        this.stages.forEach((stage, index) => {
+            console.log(`  Stage ${index}: ${stage.title} (${stage.choices.length} choices)`);
+        });
     }
 
     showCurrentStage() {
+        console.log(`📊 Showing stage ${this.currentStage}, stages length: ${this.stages ? this.stages.length : 'undefined'}`);
+        
         if (this.currentStage >= this.stages.length) {
+            console.log(`🏁 Current stage ${this.currentStage} >= stages length ${this.stages.length}, completing journey`);
             this.completeJourney();
             return;
         }
@@ -791,6 +799,9 @@ class SealThreeMechanic extends BaseSealMechanic {
             this.completeJourney();
             return;
         }
+        
+        console.log(`📖 Displaying stage: ${stage.title}`);
+        console.log(`🔍 Stage has ${stage.choices ? stage.choices.length : 'no'} choices`);
         
         const stageContainer = document.getElementById('journeyStage');
         if (!stageContainer) {
@@ -820,6 +831,9 @@ class SealThreeMechanic extends BaseSealMechanic {
     }
 
     makeChoice(choiceIndex) {
+        console.log(`🎯 Making choice ${choiceIndex} for stage ${this.currentStage}`);
+        console.log(`🎯 Stages array length: ${this.stages ? this.stages.length : 'undefined'}`);
+        
         const stage = this.stages[this.currentStage];
         if (!stage) {
             console.error(`Stage ${this.currentStage} not found in stages:`, this.stages);
