@@ -662,43 +662,502 @@
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* Placeholder Seal Styles */
-.seal-placeholder {
+/* SEAL 4: Kingdom Parables Styles */
+.seal-four-parables {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.seal-four-parables h2 {
+    color: #FFD700;
     text-align: center;
-    padding: 50px;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.parable-story {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    min-height: 200px;
+}
+
+.parable-intro {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.parable-intro h3 {
+    color: #32CD32;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.story-text {
+    color: #FFFFFF;
+    font-style: italic;
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.story-reference {
+    color: #FFD700;
+    font-size: 0.9em;
+}
+
+.parable-question h4 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+.parable-question p {
+    color: #FFFFFF;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+}
+
+.parable-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.parable-choice-btn {
+    background: rgba(70, 130, 180, 0.8);
+    color: #FFFFFF;
+    border: 2px solid rgba(100, 149, 237, 0.5);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.parable-choice-btn:hover {
+    background: rgba(100, 149, 237, 0.9);
+    border-color: #6495ED;
+    transform: translateY(-2px);
+}
+
+.wisdom-score {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 1.2em;
+    color: #FFD700;
+    font-weight: bold;
+}
+
+/* SEAL 5: Letter Sorting Styles */
+.seal-five-letters {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.seal-five-letters h2 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.sorting-workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.letters-pool, .category-boxes {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 20px;
     border: 2px solid rgba(255, 215, 0, 0.3);
 }
 
-.seal-placeholder h2 {
-    color: #FFD700;
-    margin-bottom: 20px;
-    font-size: 2em;
+.letters-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
-.seal-placeholder p {
-    color: #FFFFFF;
-    margin-bottom: 30px;
-    font-size: 1.1em;
-}
-
-.seal-placeholder button {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    color: #000;
-    border: none;
-    padding: 15px 30px;
+.letter-card {
+    background: rgba(32, 178, 170, 0.8);
     border-radius: 8px;
-    font-size: 1.1em;
+    padding: 12px;
+    cursor: grab;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(72, 209, 204, 0.5);
+}
+
+.letter-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.letter-card.dragging {
+    opacity: 0.5;
+    transform: rotate(3deg);
+}
+
+.letter-card.placed.correct {
+    background: rgba(34, 139, 34, 0.8);
+    border-color: #32CD32;
+}
+
+.letter-card.placed.incorrect {
+    background: rgba(220, 20, 60, 0.8);
+    border-color: #DC143C;
+}
+
+.letter-book {
     font-weight: bold;
+    color: #FFFFFF;
+    margin-bottom: 5px;
+}
+
+.letter-theme {
+    color: #B0E0E6;
+    font-size: 0.9em;
+    margin-bottom: 3px;
+}
+
+.letter-audience {
+    color: #98FB98;
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.categories-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.category-box {
+    border: 2px solid;
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 120px;
+}
+
+.category-header {
+    padding: 8px;
+    text-align: center;
+    color: #FFFFFF;
+}
+
+.category-header h4 {
+    margin: 0;
+    font-size: 1em;
+}
+
+.category-description {
+    padding: 8px;
+    font-size: 0.8em;
+    color: #FFFFFF;
+    text-align: center;
+}
+
+.category-letters {
+    min-height: 60px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.category-letters.drag-over {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sorting-stats {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.sorting-controls {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* SEAL 6 & 7: Wellness and Revelation Styles */
+.seal-six-wellness, .seal-seven-revelation {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.seal-six-wellness h2, .seal-seven-revelation h2 {
+    color: #FFD700;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 2.5em;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
+.wellness-situation, .revelation-phase {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 20px;
+    min-height: 300px;
+}
+
+.situation-content, .phase-content {
+    text-align: center;
+}
+
+.situation-content h3, .phase-content h3 {
+    color: #32CD32;
+    margin-bottom: 15px;
+    font-size: 1.8em;
+}
+
+.situation-scenario, .phase-description {
+    color: #FFFFFF;
+    font-size: 1.1em;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.bible-verse, .scripture-reference {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    color: #FFD700;
+    font-style: italic;
+    margin: 20px 0;
+}
+
+.situation-choices, .revelation-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 25px;
+}
+
+.wellness-choice-btn, .revelation-choice-btn {
+    background: rgba(138, 43, 226, 0.8);
+    color: #FFFFFF;
+    border: 2px solid rgba(147, 112, 219, 0.5);
+    border-radius: 8px;
+    padding: 12px 20px;
+    font-size: 1em;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-align: left;
 }
 
-.seal-placeholder button:hover {
-    background: linear-gradient(135deg, #FFA500, #FFD700);
+.wellness-choice-btn:hover, .revelation-choice-btn:hover {
+    background: rgba(147, 112, 219, 0.9);
+    border-color: #9370DB;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.wellness-score, .apocalypse-score {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 1.2em;
+    color: #FFD700;
+    font-weight: bold;
+}
+
+.wellness-progress, .revelation-progress {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.situation-indicator, .phase-indicator {
+    color: #FFD700;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.situation-result, .phase-result {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    margin-top: 20px;
+}
+
+.wisdom-feedback, .result-feedback {
+    color: #32CD32;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.principle-learned, .explanation {
+    color: #FFFFFF;
+    margin-bottom: 10px;
+}
+
+.wisdom-points, .points-earned {
+    color: #FFD700;
+    font-weight: bold;
+}
+
+/* Revelation specific styles */
+.verse-completion {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.verse-completion p {
+    color: #FFFFFF;
+    font-size: 1.1em;
+    line-height: 1.8;
+    margin-bottom: 20px;
+}
+
+.blank-input {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #FFD700;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-weight: bold;
+    color: #000;
+    text-align: center;
+    margin: 0 5px;
+}
+
+.blank-input.correct {
+    background: rgba(50, 205, 50, 0.9);
+    border-color: #32CD32;
+}
+
+.blank-input.incorrect {
+    background: rgba(220, 20, 60, 0.9);
+    border-color: #DC143C;
+    color: #FFFFFF;
+}
+
+.final-question {
+    text-align: center;
+}
+
+.final-question p {
+    color: #FFFFFF;
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+
+.key-points {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.key-points h4 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+.key-points ul {
+    color: #FFFFFF;
+    text-align: left;
+    list-style-type: none;
+}
+
+.key-points li {
+    margin-bottom: 8px;
+    padding-left: 20px;
+    position: relative;
+}
+
+.key-points li:before {
+    content: '✨';
+    position: absolute;
+    left: 0;
+}
+
+.comprehensive-answer {
+    width: 100%;
+    max-width: 600px;
+    min-height: 100px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #FFD700;
+    border-radius: 8px;
+    padding: 15px;
+    font-size: 1em;
+    color: #000;
+    margin: 20px 0;
+    resize: vertical;
+}
+
+.ultimate-truth, .gospel-lesson, .wellness-lesson, .kingdom-lesson {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.ultimate-truth h4, .gospel-lesson h4, .wellness-lesson h4, .kingdom-lesson h4 {
+    color: #FFD700;
+    margin-bottom: 15px;
+}
+
+.seven-seals-summary {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.seven-seals-summary h4 {
+    color: #FFD700;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.seven-seals-summary ol {
+    color: #FFFFFF;
+    text-align: left;
+    padding-left: 20px;
+}
+
+.seven-seals-summary li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+/* Responsive updates for new seals */
+@media (max-width: 768px) {
+    .sorting-workspace {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .categories-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .parable-choices, .situation-choices, .revelation-choices {
+        gap: 8px;
+    }
+    
+    .comprehensive-answer {
+        max-width: 100%;
+    }
 }
 
 /* Responsive Design */

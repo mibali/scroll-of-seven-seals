@@ -871,80 +871,986 @@ class SealThreeMechanic extends BaseSealMechanic {
     }
 }
 
-// Placeholder classes for remaining seals (to be implemented)
+// SEAL 4: Kingdom Parables Interactive Story
 class SealFourMechanic extends BaseSealMechanic {
     constructor() {
         super(4, 'Kingdom Parables');
+        this.currentParable = null;
+        this.playerChoices = [];
+        this.wisdomScore = 0;
     }
 
     async start() {
         const content = document.getElementById('sealContent');
-        content.innerHTML = `
-            <div class="seal-placeholder">
+        content.innerHTML = this.generateParableHTML();
+        
+        this.setupKingdomParable();
+    }
+
+    generateParableHTML() {
+        return `
+            <div class="seal-four-parables">
                 <h2>🏰 KINGDOM PARABLES CHALLENGE</h2>
-                <p>Interactive parable story choices coming soon!</p>
-                <button onclick="sealMechanicsManager.mechanicsRegistry[4].complete('KINGDOM')">
-                    Complete (Placeholder)
-                </button>
+                <p class="instruction">Experience Jesus' parables through interactive choices. Choose wisely to unlock kingdom wisdom!</p>
+                
+                <div id="parableStory" class="parable-story"></div>
+                
+                <div class="wisdom-score">
+                    <span>Kingdom Wisdom: <span id="wisdomScore">0</span>/15</span>
+                </div>
+                
+                <div id="parableResult" class="parable-result"></div>
             </div>
         `;
     }
+
+    setupKingdomParable() {
+        this.currentParable = {
+            title: "The Parable of the Sower",
+            story: "A farmer went out to sow his seed. As he was scattering the seed, some fell along the path, some on rocky places, some among thorns, and some on good soil.",
+            stages: [
+                {
+                    question: "The seed that fell on the path was eaten by birds. What does this represent?",
+                    choices: [
+                        { text: "People who hear God's word but don't understand it", wisdom: 3 },
+                        { text: "People who are too busy to listen", wisdom: 1 },
+                        { text: "People who reject God completely", wisdom: 2 }
+                    ],
+                    explanation: "The path represents hearts hardened by sin, where Satan quickly takes away God's word before it can take root."
+                },
+                {
+                    question: "The seed on rocky ground grew quickly but had no root. What does this teach us?",
+                    choices: [
+                        { text: "Some people have shallow, temporary faith", wisdom: 3 },
+                        { text: "Rocky soil is bad for farming", wisdom: 1 },
+                        { text: "Quick growth is always better", wisdom: 1 }
+                    ],
+                    explanation: "Rocky ground represents those who receive God's word with joy but have no deep commitment, falling away during trials."
+                },
+                {
+                    question: "The seed among thorns was choked. What are the 'thorns' in our spiritual lives?",
+                    choices: [
+                        { text: "Worries, wealth, and worldly pleasures", wisdom: 3 },
+                        { text: "Other people's opinions", wisdom: 2 },
+                        { text: "Lack of education", wisdom: 1 }
+                    ],
+                    explanation: "Thorns represent life's distractions - worry about money, pursuit of pleasure, and other concerns that choke out spiritual growth."
+                },
+                {
+                    question: "The good soil produced a crop 30, 60, or 100 times what was sown. How can you be 'good soil'?",
+                    choices: [
+                        { text: "Listen to God's word, understand it, and obey it", wisdom: 3 },
+                        { text: "Go to church regularly", wisdom: 2 },
+                        { text: "Be a good person", wisdom: 2 }
+                    ],
+                    explanation: "Good soil represents hearts that hear, understand, and act on God's word, producing spiritual fruit in their lives."
+                },
+                {
+                    question: "What is the main lesson of the Parable of the Sower?",
+                    choices: [
+                        { text: "Our hearts determine how we respond to God's word", wisdom: 3 },
+                        { text: "Farming is important in Jesus' time", wisdom: 1 },
+                        { text: "Not everyone will become a Christian", wisdom: 2 }
+                    ],
+                    explanation: "Jesus teaches that the condition of our hearts determines how we receive and respond to God's word."
+                }
+            ],
+            currentStage: 0
+        };
+
+        this.showCurrentStage();
+    }
+
+    showCurrentStage() {
+        const stage = this.currentParable.stages[this.currentParable.currentStage];
+        const storyContainer = document.getElementById('parableStory');
+        
+        if (this.currentParable.currentStage === 0) {
+            // Show initial story
+            storyContainer.innerHTML = `
+                <div class="parable-intro">
+                    <h3>${this.currentParable.title}</h3>
+                    <p class="story-text">"${this.currentParable.story}"</p>
+                    <p class="story-reference">- Matthew 13:3-8 (Jesus speaking)</p>
+                </div>
+            `;
+        }
+        
+        setTimeout(() => {
+            storyContainer.innerHTML += `
+                <div class="parable-question">
+                    <h4>Question ${this.currentParable.currentStage + 1}:</h4>
+                    <p>${stage.question}</p>
+                    
+                    <div class="parable-choices">
+                        ${stage.choices.map((choice, index) => `
+                            <button class="parable-choice-btn" onclick="sealMechanicsManager.mechanicsRegistry[4].makeChoice(${index})">
+                                ${choice.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }, this.currentParable.currentStage === 0 ? 2000 : 500);
+    }
+
+    makeChoice(choiceIndex) {
+        const stage = this.currentParable.stages[this.currentParable.currentStage];
+        const choice = stage.choices[choiceIndex];
+        
+        this.playerChoices.push({
+            stage: this.currentParable.currentStage,
+            choice: choiceIndex,
+            wisdom: choice.wisdom
+        });
+        
+        this.wisdomScore += choice.wisdom;
+        this.updateWisdomScore();
+        
+        // Show explanation
+        this.showStageResult(stage.explanation, choice.wisdom);
+        
+        // Move to next stage
+        setTimeout(() => {
+            this.currentParable.currentStage++;
+            
+            if (this.currentParable.currentStage >= this.currentParable.stages.length) {
+                this.completeParableChallenge();
+            } else {
+                this.showCurrentStage();
+            }
+        }, 3000);
+    }
+
+    updateWisdomScore() {
+        document.getElementById('wisdomScore').textContent = this.wisdomScore;
+    }
+
+    showStageResult(explanation, wisdomGained) {
+        const result = document.getElementById('parableResult');
+        const wisdomMessages = {
+            3: '✨ Excellent wisdom! You understand the kingdom principle!',
+            2: '👍 Good insight! You\'re growing in understanding.',
+            1: '🤔 Consider this more deeply. The kingdom often works differently than we expect.'
+        };
+
+        result.innerHTML = `
+            <div class="stage-result">
+                <p class="wisdom-feedback">${wisdomMessages[wisdomGained]}</p>
+                <p class="explanation"><strong>Kingdom Truth:</strong> ${explanation}</p>
+                <p class="wisdom-gained">+${wisdomGained} Kingdom Wisdom</p>
+            </div>
+        `;
+    }
+
+    completeParableChallenge() {
+        const storyContainer = document.getElementById('parableStory');
+        const finalWisdomLevel = this.getFinalWisdomLevel();
+        
+        storyContainer.innerHTML = `
+            <div class="parable-completion">
+                <h3>🎉 Kingdom Wisdom Unlocked!</h3>
+                <p><strong>Your Kingdom Understanding:</strong> ${finalWisdomLevel.level}</p>
+                <p class="wisdom-message">${finalWisdomLevel.message}</p>
+                <p><strong>Final Wisdom Score:</strong> ${this.wisdomScore}/15</p>
+                
+                <div class="kingdom-lesson">
+                    <h4>Kingdom Principle Learned:</h4>
+                    <p><em>"The kingdom of heaven is like a treasure hidden in a field. When a man found it, he hid it again, and then in his joy went and sold all he had and bought that field."</em> - Matthew 13:44</p>
+                    <p><strong>Truth:</strong> The kingdom of God is worth everything - it transforms how we see and respond to God's truth.</p>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            this.complete('KINGDOM');
+        }, 4000);
+    }
+
+    getFinalWisdomLevel() {
+        const percentage = this.wisdomScore / 15;
+        
+        if (percentage >= 0.9) {
+            return { level: 'Kingdom Scholar', message: '👑 You demonstrate deep kingdom wisdom!' };
+        } else if (percentage >= 0.7) {
+            return { level: 'Growing Disciple', message: '🌱 Your kingdom understanding is flourishing!' };
+        } else if (percentage >= 0.5) {
+            return { level: 'Seeking Student', message: '🔍 You\'re learning the ways of the kingdom!' };
+        } else {
+            return { level: 'New Believer', message: '🌱 Every kingdom journey begins with simple faith!' };
+        }
+    }
 }
 
+// SEAL 5: New Testament Letter Categorization
 class SealFiveMechanic extends BaseSealMechanic {
     constructor() {
         super(5, 'New Testament Letters');
+        this.letters = [];
+        this.categories = [];
+        this.correctMatches = 0;
+        this.totalMatches = 8;
     }
 
     async start() {
         const content = document.getElementById('sealContent');
-        content.innerHTML = `
-            <div class="seal-placeholder">
+        content.innerHTML = this.generateLetterSortingHTML();
+        
+        this.setupLetterSorting();
+    }
+
+    generateLetterSortingHTML() {
+        return `
+            <div class="seal-five-letters">
                 <h2>✉️ NEW TESTAMENT LETTERS CHALLENGE</h2>
-                <p>Letter sorting mechanic coming soon!</p>
-                <button onclick="sealMechanicsManager.mechanicsRegistry[5].complete('GOSPEL')">
-                    Complete (Placeholder)
-                </button>
+                <p class="instruction">Sort Paul's letters by matching them with their main themes and target audiences!</p>
+                
+                <div class="sorting-workspace">
+                    <div id="lettersPool" class="letters-pool">
+                        <h3>📜 Paul's Letters</h3>
+                        <div class="letters-container"></div>
+                    </div>
+                    
+                    <div id="categoryBoxes" class="category-boxes">
+                        <h3>🎯 Letter Categories</h3>
+                        <div class="categories-container"></div>
+                    </div>
+                </div>
+                
+                <div class="sorting-stats">
+                    <div class="stat">
+                        <span class="label">Correct Matches:</span>
+                        <span id="correctMatches" class="value">0</span> / ${this.totalMatches}
+                    </div>
+                </div>
+                
+                <div class="sorting-controls">
+                    <button id="checkSortingBtn" class="btn-primary" onclick="sealMechanicsManager.mechanicsRegistry[5].checkSorting()">
+                        ✅ Check Sorting
+                    </button>
+                    <button id="resetSortingBtn" class="btn-secondary" onclick="sealMechanicsManager.mechanicsRegistry[5].resetSorting()">
+                        🔄 Reset
+                    </button>
+                </div>
+                
+                <div id="sortingResult" class="sorting-result"></div>
             </div>
         `;
     }
+
+    setupLetterSorting() {
+        this.letters = [
+            { id: 1, book: 'Romans', theme: 'Salvation by Faith', audience: 'Church in Rome', category: 'Doctrine' },
+            { id: 2, book: '1 Corinthians', theme: 'Church Unity', audience: 'Corinthian Church', category: 'Community' },
+            { id: 3, book: 'Galatians', theme: 'Freedom in Christ', audience: 'Galatian Churches', category: 'Liberation' },
+            { id: 4, book: 'Ephesians', theme: 'Unity in Christ', audience: 'Ephesian Church', category: 'Community' },
+            { id: 5, book: 'Philippians', theme: 'Joy in Christ', audience: 'Philippian Church', category: 'Experience' },
+            { id: 6, book: 'Colossians', theme: 'Christ\'s Supremacy', audience: 'Colossian Church', category: 'Doctrine' },
+            { id: 7, book: '1 Timothy', theme: 'Church Leadership', audience: 'Timothy (Pastor)', category: 'Leadership' },
+            { id: 8, book: 'Philemon', theme: 'Christian Love', audience: 'Philemon (Individual)', category: 'Personal' }
+        ];
+
+        this.categories = [
+            { id: 'doctrine', name: 'Doctrinal Teaching', description: 'Letters focused on core Christian beliefs', color: '#4169E1' },
+            { id: 'community', name: 'Church Community', description: 'Letters about church unity and fellowship', color: '#32CD32' },
+            { id: 'liberation', name: 'Christian Freedom', description: 'Letters about freedom from law and sin', color: '#FF6347' },
+            { id: 'experience', name: 'Christian Experience', description: 'Letters about living the Christian life', color: '#FFD700' },
+            { id: 'leadership', name: 'Church Leadership', description: 'Letters to church leaders and pastors', color: '#9370DB' },
+            { id: 'personal', name: 'Personal Letters', description: 'Letters to individuals', color: '#20B2AA' }
+        ];
+
+        this.renderLetters();
+        this.renderCategories();
+        this.setupDragAndDrop();
+    }
+
+    renderLetters() {
+        const container = document.querySelector('.letters-container');
+        const shuffledLetters = [...this.letters].sort(() => Math.random() - 0.5);
+        
+        container.innerHTML = shuffledLetters.map(letter => `
+            <div class="letter-card" draggable="true" data-letter-id="${letter.id}" data-category="${letter.category.toLowerCase()}">
+                <div class="letter-book">${letter.book}</div>
+                <div class="letter-theme">${letter.theme}</div>
+                <div class="letter-audience">To: ${letter.audience}</div>
+            </div>
+        `).join('');
+    }
+
+    renderCategories() {
+        const container = document.querySelector('.categories-container');
+        
+        container.innerHTML = this.categories.map(category => `
+            <div class="category-box" data-category-id="${category.id}" style="border-color: ${category.color}">
+                <div class="category-header" style="background-color: ${category.color}">
+                    <h4>${category.name}</h4>
+                </div>
+                <div class="category-description">${category.description}</div>
+                <div class="category-letters" data-category="${category.id}"></div>
+            </div>
+        `).join('');
+    }
+
+    setupDragAndDrop() {
+        const lettersContainer = document.querySelector('.letters-container');
+        const categoryBoxes = document.querySelectorAll('.category-letters');
+        
+        // Drag start
+        lettersContainer.addEventListener('dragstart', (e) => {
+            if (e.target.classList.contains('letter-card')) {
+                e.dataTransfer.setData('text/plain', e.target.dataset.letterId);
+                e.target.classList.add('dragging');
+            }
+        });
+        
+        lettersContainer.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+        });
+        
+        // Drop zones
+        categoryBoxes.forEach(box => {
+            box.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                box.classList.add('drag-over');
+            });
+            
+            box.addEventListener('dragleave', (e) => {
+                box.classList.remove('drag-over');
+            });
+            
+            box.addEventListener('drop', (e) => {
+                e.preventDefault();
+                box.classList.remove('drag-over');
+                
+                const letterId = e.dataTransfer.getData('text/plain');
+                const letterElement = document.querySelector(`[data-letter-id="${letterId}"]`);
+                const categoryId = box.dataset.category;
+                
+                if (letterElement) {
+                    this.placeLetter(letterElement, box, categoryId);
+                }
+            });
+        });
+    }
+
+    placeLetter(letterElement, categoryBox, categoryId) {
+        // Move letter to category
+        categoryBox.appendChild(letterElement);
+        letterElement.classList.add('placed');
+        
+        // Check if correct
+        const letterCategory = letterElement.dataset.category;
+        const isCorrect = letterCategory === categoryId;
+        
+        if (isCorrect) {
+            letterElement.classList.add('correct');
+            this.correctMatches++;
+            this.updateStats();
+        } else {
+            letterElement.classList.add('incorrect');
+        }
+        
+        letterElement.draggable = false; // Can't move once placed
+    }
+
+    checkSorting() {
+        const placedLetters = document.querySelectorAll('.letter-card.placed');
+        
+        if (placedLetters.length < this.totalMatches) {
+            this.showResult('Please sort all letters into categories first!', 'warning');
+            return;
+        }
+
+        if (this.correctMatches === this.totalMatches) {
+            this.showResult('🎉 Perfect! You understand Paul\'s letter organization!', 'success');
+            setTimeout(() => {
+                this.completeLetterSorting();
+            }, 2000);
+        } else {
+            this.showResult(`${this.correctMatches}/${this.totalMatches} correct. Review the incorrect letters and their themes.`, 'error');
+            this.highlightErrors();
+        }
+    }
+
+    updateStats() {
+        document.getElementById('correctMatches').textContent = this.correctMatches;
+    }
+
+    highlightErrors() {
+        // Already handled in placeLetter method with correct/incorrect classes
+    }
+
+    resetSorting() {
+        // Move all letters back to pool
+        const letters = document.querySelectorAll('.letter-card');
+        const lettersContainer = document.querySelector('.letters-container');
+        
+        letters.forEach(letter => {
+            lettersContainer.appendChild(letter);
+            letter.classList.remove('placed', 'correct', 'incorrect');
+            letter.draggable = true;
+        });
+        
+        this.correctMatches = 0;
+        this.updateStats();
+        this.showResult('', 'info');
+    }
+
+    completeLetterSorting() {
+        const storyContainer = document.getElementById('parableStory');
+        
+        storyContainer.innerHTML = `
+            <div class="sorting-completion">
+                <h3>🎉 Gospel Understanding Complete!</h3>
+                <p>You have successfully organized Paul's letters by their themes and purposes!</p>
+                
+                <div class="gospel-lesson">
+                    <h4>Gospel Truth Learned:</h4>
+                    <p><em>"All Scripture is God-breathed and is useful for teaching, rebuking, correcting and training in righteousness, so that the servant of God may be thoroughly equipped for every good work."</em> - 2 Timothy 3:16-17</p>
+                    <p><strong>Truth:</strong> Paul's letters provide comprehensive teaching for Christian living, addressing doctrine, community, freedom, experience, leadership, and personal relationships.</p>
+                </div>
+            </div>
+        `;
+
+        setTimeout(() => {
+            this.complete('GOSPEL');
+        }, 3000);
+    }
+
+    showResult(message, type) {
+        const result = document.getElementById('sortingResult');
+        result.textContent = message;
+        result.className = `sorting-result ${type}`;
+    }
 }
 
+// SEAL 6: Biblical Health & Wellness Principles  
 class SealSixMechanic extends BaseSealMechanic {
     constructor() {
         super(6, 'Health & Vitality');
+        this.healthPrinciples = [];
+        this.situations = [];
+        this.currentSituation = 0;
+        this.wellnessScore = 0;
     }
 
     async start() {
         const content = document.getElementById('sealContent');
-        content.innerHTML = `
-            <div class="seal-placeholder">
-                <h2>💪 HEALTH & VITALITY CHALLENGE</h2>
-                <p>Wellness principles mechanic coming soon!</p>
-                <button onclick="sealMechanicsManager.mechanicsRegistry[6].complete('HEALING')">
-                    Complete (Placeholder)
-                </button>
+        content.innerHTML = this.generateWellnessHTML();
+        
+        this.setupWellnessChallenge();
+    }
+
+    generateWellnessHTML() {
+        return `
+            <div class="seal-six-wellness">
+                <h2>💪 BIBLICAL HEALTH & VITALITY CHALLENGE</h2>
+                <p class="instruction">Apply biblical wisdom to modern wellness situations. Choose the most biblically sound approach!</p>
+                
+                <div class="wellness-progress">
+                    <div class="progress-bar">
+                        <div id="wellnessProgress" class="progress-fill"></div>
+                    </div>
+                    <div class="situation-indicator">Situation <span id="currentSituationNum">1</span> of 6</div>
+                </div>
+                
+                <div id="wellnessSituation" class="wellness-situation"></div>
+                
+                <div class="wellness-score">
+                    <span>Wellness Wisdom: <span id="wellnessScore">0</span>/18</span>
+                </div>
+                
+                <div id="wellnessResult" class="wellness-result"></div>
             </div>
         `;
+    }
+
+    setupWellnessChallenge() {
+        this.situations = [
+            {
+                title: 'Physical Health',
+                scenario: 'You\'re feeling exhausted from overwork and poor eating habits. How do you apply biblical wisdom?',
+                verse: '"Do you not know that your bodies are temples of the Holy Spirit?" - 1 Corinthians 6:19',
+                choices: [
+                    { text: 'Rest properly and nourish your body as God\'s temple', wisdom: 3, principle: 'Stewardship of body' },
+                    { text: 'Push through with coffee and fast food', wisdom: 1, principle: 'Neglecting God\'s temple' },
+                    { text: 'Take some vitamins and keep working', wisdom: 2, principle: 'Partial care' }
+                ]
+            },
+            {
+                title: 'Mental Rest',
+                scenario: 'You\'re overwhelmed with anxiety and racing thoughts. What biblical approach brings peace?',
+                verse: '"Cast all your anxiety on him because he cares for you." - 1 Peter 5:7',
+                choices: [
+                    { text: 'Pray, meditate on Scripture, and trust God with your worries', wisdom: 3, principle: 'Spiritual peace' },
+                    { text: 'Distract yourself with entertainment', wisdom: 1, principle: 'Avoidance' },
+                    { text: 'Talk to friends but keep worrying', wisdom: 2, principle: 'Partial release' }
+                ]
+            },
+            {
+                title: 'Emotional Health',
+                scenario: 'Someone has deeply hurt you and you\'re struggling with anger and bitterness.',
+                verse: '"Be kind and compassionate, forgiving each other." - Ephesians 4:32',
+                choices: [
+                    { text: 'Choose to forgive and release the anger to God', wisdom: 3, principle: 'Biblical forgiveness' },
+                    { text: 'Hold onto the anger because it\'s justified', wisdom: 1, principle: 'Justified resentment' },
+                    { text: 'Forgive but keep bringing it up', wisdom: 2, principle: 'Incomplete forgiveness' }
+                ]
+            },
+            {
+                title: 'Spiritual Discipline',
+                scenario: 'You want to grow spiritually but struggle with consistent prayer and Bible reading.',
+                verse: '"Like newborn babies, crave pure spiritual milk." - 1 Peter 2:2',
+                choices: [
+                    { text: 'Start small with daily habits and grow gradually', wisdom: 3, principle: 'Sustainable growth' },
+                    { text: 'Make huge commitments you can\'t keep', wisdom: 1, principle: 'Unsustainable effort' },
+                    { text: 'Wait until you feel more motivated', wisdom: 1, principle: 'Procrastination' }
+                ]
+            },
+            {
+                title: 'Social Wellness',
+                scenario: 'You\'re in conflict with a fellow believer over a disagreement.',
+                verse: '"If your brother sins against you, go and show him his fault." - Matthew 18:15',
+                choices: [
+                    { text: 'Approach them privately with love and humility', wisdom: 3, principle: 'Biblical conflict resolution' },
+                    { text: 'Tell everyone else about the problem first', wisdom: 1, principle: 'Gossip and division' },
+                    { text: 'Avoid them and hope it goes away', wisdom: 1, principle: 'Avoidance' }
+                ]
+            },
+            {
+                title: 'Holistic Balance',
+                scenario: 'You\'re trying to balance work, family, church, and personal time in a godly way.',
+                verse: '"Seek first his kingdom and righteousness." - Matthew 6:33',
+                choices: [
+                    { text: 'Prioritize according to God\'s will and trust Him with the results', wisdom: 3, principle: 'Kingdom priorities' },
+                    { text: 'Try to do everything perfectly in your own strength', wisdom: 1, principle: 'Self-reliance' },
+                    { text: 'Focus only on what pays the most money', wisdom: 1, principle: 'Materialism' }
+                ]
+            }
+        ];
+
+        this.showCurrentSituation();
+    }
+
+    showCurrentSituation() {
+        if (this.currentSituation >= this.situations.length) {
+            this.completeWellnessChallenge();
+            return;
+        }
+
+        const situation = this.situations[this.currentSituation];
+        const situationContainer = document.getElementById('wellnessSituation');
+        
+        situationContainer.innerHTML = `
+            <div class="situation-content">
+                <h3>${situation.title}</h3>
+                <p class="situation-scenario">${situation.scenario}</p>
+                <div class="bible-verse">📖 ${situation.verse}</div>
+                
+                <div class="situation-choices">
+                    ${situation.choices.map((choice, index) => `
+                        <button class="wellness-choice-btn" onclick="sealMechanicsManager.mechanicsRegistry[6].makeWellnessChoice(${index})">
+                            ${choice.text}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        // Update progress
+        const progress = (this.currentSituation / this.situations.length) * 100;
+        document.getElementById('wellnessProgress').style.width = `${progress}%`;
+        document.getElementById('currentSituationNum').textContent = this.currentSituation + 1;
+    }
+
+    makeWellnessChoice(choiceIndex) {
+        const situation = this.situations[this.currentSituation];
+        const choice = situation.choices[choiceIndex];
+        
+        this.wellnessScore += choice.wisdom;
+        this.updateWellnessScore();
+        
+        // Show result
+        this.showSituationResult(choice.principle, choice.wisdom);
+        
+        // Move to next situation
+        setTimeout(() => {
+            this.currentSituation++;
+            this.showCurrentSituation();
+        }, 3000);
+    }
+
+    updateWellnessScore() {
+        document.getElementById('wellnessScore').textContent = this.wellnessScore;
+    }
+
+    showSituationResult(principle, wisdom) {
+        const result = document.getElementById('wellnessResult');
+        const wisdomMessages = {
+            3: '✨ Excellent biblical wisdom! This honors God and promotes true wellness.',
+            2: '👍 Good approach with room for deeper biblical understanding.',
+            1: '🤔 Consider how biblical principles could guide a better choice.'
+        };
+
+        result.innerHTML = `
+            <div class="situation-result">
+                <p class="wisdom-feedback">${wisdomMessages[wisdom]}</p>
+                <p class="principle-learned"><strong>Principle:</strong> ${principle}</p>
+                <p class="wisdom-points">+${wisdom} Wellness Wisdom</p>
+            </div>
+        `;
+    }
+
+    completeWellnessChallenge() {
+        const situationContainer = document.getElementById('wellnessSituation');
+        const finalLevel = this.getWellnessLevel();
+        
+        situationContainer.innerHTML = `
+            <div class="wellness-completion">
+                <h3>🎉 Biblical Wellness Mastered!</h3>
+                <p><strong>Your Wellness Wisdom Level:</strong> ${finalLevel.level}</p>
+                <p class="level-message">${finalLevel.message}</p>
+                <p><strong>Final Score:</strong> ${this.wellnessScore}/18</p>
+                
+                <div class="wellness-lesson">
+                    <h4>Holistic Health Truth:</h4>
+                    <p><em>"Dear friend, I pray that you may enjoy good health and that all may go well with you, even as your soul is getting along well."</em> - 3 John 1:2</p>
+                    <p><strong>Truth:</strong> Biblical wellness encompasses spirit, soul, and body - true health requires alignment with God\'s design for human flourishing.</p>
+                </div>
+            </div>
+        `;
+
+        // Update progress to 100%
+        document.getElementById('wellnessProgress').style.width = '100%';
+
+        setTimeout(() => {
+            this.complete('HEALING');
+        }, 4000);
+    }
+
+    getWellnessLevel() {
+        const percentage = this.wellnessScore / 18;
+        
+        if (percentage >= 0.9) {
+            return { level: 'Wellness Master', message: '🌟 You demonstrate comprehensive biblical wellness wisdom!' };
+        } else if (percentage >= 0.7) {
+            return { level: 'Growing in Health', message: '🌱 Your wellness understanding is growing strong!' };
+        } else if (percentage >= 0.5) {
+            return { level: 'Learning Balance', message: '⚖️ You\'re learning biblical balance for health!' };
+        } else {
+            return { level: 'Beginning Journey', message: '🌱 Every wellness journey begins with God\'s wisdom!' };
+        }
     }
 }
 
+// SEAL 7: Revelation Final Challenge - Ultimate Biblical Knowledge
 class SealSevenMechanic extends BaseSealMechanic {
     constructor() {
         super(7, 'Revelation Final Challenge');
+        this.revelationPhases = [];
+        this.currentPhase = 0;
+        this.apocalypseScore = 0;
+        this.playerAnswers = [];
     }
 
     async start() {
         const content = document.getElementById('sealContent');
-        content.innerHTML = `
-            <div class="seal-placeholder">
-                <h2>🔥 REVELATION FINAL CHALLENGE</h2>
-                <p>Ultimate final challenge coming soon!</p>
-                <button onclick="sealMechanicsManager.mechanicsRegistry[7].complete('VICTORY')">
-                    Complete (Placeholder)
-                </button>
+        content.innerHTML = this.generateRevelationHTML();
+        
+        this.setupRevelationChallenge();
+    }
+
+    generateRevelationHTML() {
+        return `
+            <div class="seal-seven-revelation">
+                <h2>🔥 REVELATION ULTIMATE CHALLENGE</h2>
+                <p class="instruction">Complete the final trial by demonstrating your mastery of all biblical knowledge!</p>
+                
+                <div class="revelation-progress">
+                    <div class="progress-bar">
+                        <div id="revelationProgress" class="progress-fill"></div>
+                    </div>
+                    <div class="phase-indicator">Phase <span id="currentPhaseNum">1</span> of 4</div>
+                </div>
+                
+                <div id="revelationPhase" class="revelation-phase"></div>
+                
+                <div class="apocalypse-score">
+                    <span>Revelation Mastery: <span id="apocalypseScore">0</span>/20</span>
+                </div>
+                
+                <div id="revelationResult" class="revelation-result"></div>
             </div>
         `;
+    }
+
+    setupRevelationChallenge() {
+        this.revelationPhases = [
+            {
+                title: 'The Seven Churches',
+                description: 'John writes to seven churches in Revelation. Match each church with its main issue.',
+                type: 'matching',
+                items: [
+                    { church: 'Ephesus', issue: 'Lost their first love', correct: true },
+                    { church: 'Laodicea', issue: 'Lukewarm faith', correct: true },
+                    { church: 'Smyrna', issue: 'Facing persecution', correct: true },
+                    { church: 'Pergamum', issue: 'Compromised with world', correct: true }
+                ],
+                scripture: 'Revelation 2-3'
+            },
+            {
+                title: 'The Seven Seals Symbolism',
+                description: 'What does the breaking of the seven seals represent in Revelation?',
+                type: 'multiple_choice',
+                question: 'The seven seals in Revelation represent:',
+                choices: [
+                    { text: 'God\'s judgments and the unfolding of end times', correct: true, points: 5 },
+                    { text: 'Seven different churches in Asia', correct: false, points: 1 },
+                    { text: 'Seven virtues Christians should have', correct: false, points: 2 },
+                    { text: 'Seven books of prophecy in the Bible', correct: false, points: 1 }
+                ],
+                explanation: 'The seven seals represent God\'s progressive revelation of end-time events and divine judgment.',
+                scripture: 'Revelation 6-8'
+            },
+            {
+                title: 'The New Heaven and Earth',
+                description: 'Complete this promise from Revelation about the eternal state.',
+                type: 'fill_blanks',
+                verse: '"Then I saw a new heaven and a new earth... And I heard a loud voice from the throne saying, \'Look! God\'s dwelling place is now among the people... He will wipe every ____ from their eyes. There will be no more ____ or mourning or crying or ____, for the old order of things has passed away.\'"',
+                blanks: [
+                    { word: 'TEAR', hint: 'What God wipes from our eyes' },
+                    { word: 'DEATH', hint: 'The last enemy to be defeated' },
+                    { word: 'PAIN', hint: 'Physical and emotional suffering' }
+                ],
+                scripture: 'Revelation 21:1-4'
+            },
+            {
+                title: 'The Ultimate Victory',
+                description: 'What is the final message and promise of the Bible?',
+                type: 'comprehensive',
+                question: 'Based on all seven seals of knowledge you\'ve unlocked, what is God\'s ultimate plan for humanity?',
+                keyPoints: [
+                    'Creation → Fall → Redemption → Restoration',
+                    'God\'s love demonstrated through Christ',
+                    'Eternal life with God in perfection',
+                    'Victory over sin, death, and evil'
+                ],
+                scripture: 'Revelation 22:1-5'
+            }
+        ];
+
+        this.showCurrentPhase();
+    }
+
+    showCurrentPhase() {
+        if (this.currentPhase >= this.revelationPhases.length) {
+            this.completeRevelationChallenge();
+            return;
+        }
+
+        const phase = this.revelationPhases[this.currentPhase];
+        const phaseContainer = document.getElementById('revelationPhase');
+        
+        phaseContainer.innerHTML = `
+            <div class="phase-content">
+                <h3>${phase.title}</h3>
+                <p class="phase-description">${phase.description}</p>
+                <div class="scripture-reference">📖 ${phase.scripture}</div>
+                
+                <div id="phaseChallenge" class="phase-challenge">
+                    ${this.renderPhaseChallenge(phase)}
+                </div>
+            </div>
+        `;
+
+        // Update progress
+        const progress = (this.currentPhase / this.revelationPhases.length) * 100;
+        document.getElementById('revelationProgress').style.width = `${progress}%`;
+        document.getElementById('currentPhaseNum').textContent = this.currentPhase + 1;
+    }
+
+    renderPhaseChallenge(phase) {
+        switch (phase.type) {
+            case 'multiple_choice':
+                return `
+                    <div class="revelation-question">
+                        <p>${phase.question}</p>
+                        <div class="revelation-choices">
+                            ${phase.choices.map((choice, index) => `
+                                <button class="revelation-choice-btn" onclick="sealMechanicsManager.mechanicsRegistry[7].makeChoice(${index})">
+                                    ${choice.text}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            case 'fill_blanks':
+                return `
+                    <div class="verse-completion">
+                        <p>${phase.verse.replace(/__+/g, (match, offset) => {
+                            const blankIndex = (phase.verse.substring(0, offset).match(/__+/g) || []).length;
+                            const blank = phase.blanks[blankIndex];
+                            return `<input type="text" class="blank-input" data-answer="${blank.word}" placeholder="${blank.hint}" maxlength="10">`;
+                        })}</p>
+                        <button class="btn-primary" onclick="sealMechanicsManager.mechanicsRegistry[7].checkBlanks()">
+                            ✅ Check Verse
+                        </button>
+                    </div>
+                `;
+            case 'comprehensive':
+                return `
+                    <div class="final-question">
+                        <p>${phase.question}</p>
+                        <div class="key-points">
+                            <h4>Consider these key elements:</h4>
+                            <ul>
+                                ${phase.keyPoints.map(point => `<li>${point}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <textarea class="comprehensive-answer" placeholder="Write your understanding of God's ultimate plan..." rows="4"></textarea>
+                        <button class="btn-primary" onclick="sealMechanicsManager.mechanicsRegistry[7].submitFinalAnswer()">
+                            🏆 Submit Final Answer
+                        </button>
+                    </div>
+                `;
+            default:
+                return `<p>Challenge type not implemented: ${phase.type}</p>`;
+        }
+    }
+
+    makeChoice(choiceIndex) {
+        const phase = this.revelationPhases[this.currentPhase];
+        const choice = phase.choices[choiceIndex];
+        
+        this.apocalypseScore += choice.points;
+        this.updateScore();
+        
+        // Show explanation
+        this.showPhaseResult(phase.explanation, choice.correct, choice.points);
+        
+        // Move to next phase
+        setTimeout(() => {
+            this.currentPhase++;
+            this.showCurrentPhase();
+        }, 3000);
+    }
+
+    checkBlanks() {
+        const inputs = document.querySelectorAll('.blank-input');
+        let correctBlanks = 0;
+        
+        inputs.forEach(input => {
+            const userAnswer = input.value.trim().toUpperCase();
+            const correctAnswer = input.dataset.answer.toUpperCase();
+            
+            if (userAnswer === correctAnswer) {
+                input.classList.add('correct');
+                correctBlanks++;
+            } else {
+                input.classList.add('incorrect');
+            }
+        });
+        
+        const points = Math.round((correctBlanks / inputs.length) * 5);
+        this.apocalypseScore += points;
+        this.updateScore();
+        
+        this.showPhaseResult(`You completed ${correctBlanks}/${inputs.length} blanks correctly.`, correctBlanks === inputs.length, points);
+        
+        setTimeout(() => {
+            this.currentPhase++;
+            this.showCurrentPhase();
+        }, 3000);
+    }
+
+    submitFinalAnswer() {
+        const answer = document.querySelector('.comprehensive-answer').value.trim();
+        
+        if (answer.length < 50) {
+            this.showPhaseResult('Please provide a more detailed answer (at least 50 characters).', false, 0);
+            return;
+        }
+        
+        // Award points for thoughtful response
+        this.apocalypseScore += 5;
+        this.updateScore();
+        
+        this.showPhaseResult('Thank you for your thoughtful reflection on God\'s ultimate plan!', true, 5);
+        
+        setTimeout(() => {
+            this.currentPhase++;
+            this.showCurrentPhase();
+        }, 3000);
+    }
+
+    updateScore() {
+        document.getElementById('apocalypseScore').textContent = this.apocalypseScore;
+    }
+
+    showPhaseResult(explanation, isCorrect, points) {
+        const result = document.getElementById('revelationResult');
+        
+        result.innerHTML = `
+            <div class="phase-result">
+                <p class="result-feedback">${isCorrect ? '✨ Excellent understanding!' : '🤔 Consider this more deeply.'}</p>
+                <p class="explanation">${explanation}</p>
+                <p class="points-earned">+${points} Revelation Mastery</p>
+            </div>
+        `;
+    }
+
+    completeRevelationChallenge() {
+        const phaseContainer = document.getElementById('revelationPhase');
+        const finalLevel = this.getRevelationLevel();
+        
+        phaseContainer.innerHTML = `
+            <div class="revelation-completion">
+                <h3>🎉 ALL SEVEN SEALS MASTERED!</h3>
+                <p><strong>Your Biblical Mastery Level:</strong> ${finalLevel.level}</p>
+                <p class="mastery-message">${finalLevel.message}</p>
+                <p><strong>Final Revelation Score:</strong> ${this.apocalypseScore}/20</p>
+                
+                <div class="ultimate-truth">
+                    <h4>The Ultimate Revelation:</h4>
+                    <p><em>"And he who was seated on the throne said, 'Behold, I am making all things new.' Also he said, 'Write this down, for these words are trustworthy and true.'"</em> - Revelation 21:5</p>
+                    <p><strong>The Final Victory:</strong> God's plan from creation to eternity is the restoration of perfect relationship between God and humanity through Jesus Christ. Every seal you've unlocked reveals part of this magnificent story!</p>
+                </div>
+                
+                <div class="seven-seals-summary">
+                    <h4>Your Journey Through the Seven Seals:</h4>
+                    <ol>
+                        <li><strong>Creation</strong> - God's perfect beginning</li>
+                        <li><strong>Wisdom</strong> - Learning from Scripture</li>
+                        <li><strong>Growth</strong> - Faith journey and development</li>
+                        <li><strong>Kingdom</strong> - Understanding God's ways</li>
+                        <li><strong>Gospel</strong> - The good news of salvation</li>
+                        <li><strong>Healing</strong> - Wholeness in spirit, soul, and body</li>
+                        <li><strong>Victory</strong> - Ultimate triumph over sin and death</li>
+                    </ol>
+                </div>
+            </div>
+        `;
+
+        // Update progress to 100%
+        document.getElementById('revelationProgress').style.width = '100%';
+
+        setTimeout(() => {
+            this.complete('VICTORY');
+        }, 5000);
+    }
+
+    getRevelationLevel() {
+        const percentage = this.apocalypseScore / 20;
+        
+        if (percentage >= 0.9) {
+            return { level: 'Revelation Master', message: '👑 You have achieved complete biblical mastery! You understand the full scope of God\'s plan from Genesis to Revelation!' };
+        } else if (percentage >= 0.7) {
+            return { level: 'Biblical Scholar', message: '📚 Your biblical knowledge is extensive and deep!' };
+        } else if (percentage >= 0.5) {
+            return { level: 'Growing Disciple', message: '🌱 You are well on your way to biblical maturity!' };
+        } else {
+            return { level: 'Faithful Student', message: '🎓 You have completed an amazing journey of biblical learning!' };
+        }
     }
 }
 
