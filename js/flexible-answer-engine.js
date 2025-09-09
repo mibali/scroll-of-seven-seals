@@ -72,7 +72,7 @@ window.generateDynamicBibleQuestions = async function () {
 window.checkBibleKnowledgeFlexible = async function () {
     // --- NEW: Attempt to generate dynamic questions before checking ---
     await window.generateDynamicBibleQuestions();
-    console.log('attempting to get questions from AI')
+    console.log('attempting to get questions from AI') // this is never reached, interesting
     const manager = window.enhancedPuzzleManager || window.PuzzleManager;
     const validation = new AnswerValidationEngine();
     const visual = new VisualEffectsEngine();

@@ -1,0 +1,29 @@
+
+# Application Startup and Event Flow Analysis
+
+This document outlines the typical function call flow from application start to the point where `checkBibleKnowledgeFlexible` is expected to be called.
+
+## 1. Initial Application Startup (Based on Provided Logs)
+
+The logs show the following sequence when the application first loads:
+
+1.  **`game.html` is loaded:** The main page structure is rendered.
+2.  **Scripts are loaded and executed:**
+    *   `worship-audio.js`: Initializes the audio engine.
+    *   `game.js`: `GameController` is initialized, and saved progress is loaded.
+    *   `puzzles.js`: The `puzzles.regenerate()` function is called, preparing the puzzle data structures in memory.
+    *   `firebase-config.js`: The app authenticates the user and tests the Firebase connection.
+3.  **Event Listeners are set up:** The log `Setting up mode selection event listeners...` indicates that the initial screen (e.g., single-player vs. multi-player) is now waiting for user input.
+
+At this point, the application is idle and waiting for the user to act. No puzzles have been opened, and no answers have been submitted.
+
+## 2. Expected User Interaction Flow (To trigger the function)
+
+The function `window.checkBibleKnowledgeFlexible` is an **event handler**. It is not designed to run on startup. It only runs when the user performs a specific action inside the Seal 1 (Bible Knowledge) puzzle.
+
+Here is the expected flow:
+
+1.  **User Clicks a Seal:** The user clicks on the card for Seal 1 on the main screen.
+2.  **Puzzle is Rendered:** This click triggers a function (likely `window.openPuzzle(1)` or similar in `puzzles.js`) which dynamically generates and displays the HTML for the Bible Knowledge quiz.
+3.  **HTML contains the trigger:** The generated HTML for the puzzle includes a "Verify Answers" button, which looks something like this:
+    
