@@ -21,7 +21,8 @@ window.generateDynamicBibleQuestions = async function () {
     try {
         console.log(`Requesting 3 new Bible questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
 
-
+        // IMPORTANT: Replace with your actual Gemini API key.
+        // For security, it's best to fetch this from a secure backend or environment variable.
         const apiKey = ' ';
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini2.0-flash:generateContent?key=${apiKey}`;
 
@@ -71,7 +72,7 @@ window.generateDynamicBibleQuestions = async function () {
 window.checkBibleKnowledgeFlexible = async function () {
     // --- NEW: Attempt to generate dynamic questions before checking ---
     await window.generateDynamicBibleQuestions();
-
+    console.log('attempting to get questions from AI')
     const manager = window.enhancedPuzzleManager || window.PuzzleManager;
     const validation = new AnswerValidationEngine();
     const visual = new VisualEffectsEngine();
