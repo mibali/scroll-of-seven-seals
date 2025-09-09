@@ -1,7 +1,6 @@
 // FLEXIBLE ANSWER ENGINE - Smart answer validation with age-appropriate feedback
 // Integrates with Enhanced Puzzle Manager for forgiving answer checking
 
-// --- NEW: Function to fetch dynamic questions from Gemini API ---
 window.generateDynamicBibleQuestions = async function () {
     const manager = window.enhancedPuzzleManager || window.PuzzleManager;
     if (!manager || !manager.getPuzzleVariation || !manager.setPuzzleVariation) {
@@ -15,59 +14,74 @@ window.generateDynamicBibleQuestions = async function () {
     // Avoid re-fetching if questions have already been dynamically generated
     if (originalVariation.source === 'gemini-api') {
         console.log('Using already generated dynamic questions.');
-        return;
+        return; // Exit the function gracefully
     }
+
+
+    const apiKey = 'YOUR_GEMINI_API_KEY';
+
+
+    if (apiKey === 'YOUR_GEMINI_API_KEY' || !apiKey.trim()) {
+        console.warn('Gemini API key is not set. Skipping dynamic questions.');
+        return; // Exit and fallback to hardcoded questions
+    }
+
+    // FIX 2: Use the correct model name. 'gemini-1.5-flash-latest' is perfect for this.
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
+    const prompt = `
+        Generate a JSON array of 3 unique Bible trivia questions suitable for a quiz game.
+        The target audience is '${profile.ageGroup}' and the difficulty is '${profile.difficulty}'.
+        Each object in the array must have these exact keys: "question", "correctAnswer", and "hint".
+        - "question": The question text.
+        - "correctAnswer": A concise, one-to-three word answer.
+        - "hint": A short, helpful hint for the user.
+        Do not include any introductory text, comments, or markdown formatting like \`\`\`json. Only output the raw JSON array.
+    `;
 
     try {
         console.log(`Requesting 3 new Bible questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
-
-        // IMPORTANT: Replace with your actual Gemini API key.
-        // For security, it's best to fetch this from a secure backend or environment variable.
-        const apiKey = ' ';
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini2.0-flash:generateContent?key=${apiKey}`;
-
-        const prompt = `
-            Generate a JSON array of 3 unique Bible trivia questions suitable for a quiz game.
-            The target audience is '${profile.ageGroup}' and the difficulty is '${profile.difficulty}'.
-            Each object in the array must have these exact keys: "question", "correctAnswer", and "hint".
-            - "question": The question text.
-            - "correctAnswer": A concise, one-to-three word answer.
-            - "hint": A short, helpful hint for the user.
-            Do not include any introductory text or markdown formatting. Only output the raw JSON array.
-        `;
 
         const response = await fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { response_mime_type: "application/json" }
+
+                generationConfig: {
+                    response_mime_type: "application/json",
+                    temperature: 0.7,
+                }
             }),
         });
 
         if (!response.ok) {
-            throw new Error(`API request failed with status ${response.status}`);
+
+            const errorBody = await response.text();
+            throw new Error(`API request failed with status ${response.status}. Response: ${errorBody}`);
         }
 
         const data = await response.json();
+
+
+        console.log('Gemini API Response Data:', data);
+
         const jsonString = data.candidates[0].content.parts[0].text;
         const newQuestions = JSON.parse(jsonString);
 
-        // Validate the structure of the generated questions
+
         if (Array.isArray(newQuestions) && newQuestions.length > 0 && newQuestions.every(q => q.question && q.correctAnswer && q.hint)) {
-            console.log('Successfully fetched and parsed new questions from Gemini API.');
+            console.log('✅ Successfully fetched and parsed new questions from Gemini API.');
             const newVariation = { ...originalVariation, questions: newQuestions, source: 'gemini-api' };
             manager.setPuzzleVariation('bibleKnowledge', newVariation);
         } else {
             throw new Error('Invalid question format received from API.');
         }
     } catch (error) {
-        console.error('Failed to fetch dynamic questions. Falling back to hardcoded questions.', error);
-        // No action needed, the original variation will be used.
+        console.error('❌ Failed to fetch dynamic questions. Falling back to hardcoded questions.', error);
+        // No action needed, the original (hardcoded) variation will be used.
     }
 };
-
-
 // Enhanced validation functions for flexible answer checking
 window.checkBibleKnowledgeFlexible = async function () {
     // --- NEW: Attempt to generate dynamic questions before checking ---
