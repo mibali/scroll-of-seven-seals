@@ -1,13 +1,82 @@
 // FLEXIBLE ANSWER ENGINE - Smart answer validation with age-appropriate feedback
 // Integrates with Enhanced Puzzle Manager for forgiving answer checking
 
+// --- NEW: Function to fetch dynamic questions from Gemini API ---
+window.generateDynamicBibleQuestions = async function () {
+    const manager = window.enhancedPuzzleManager || window.PuzzleManager;
+    if (!manager || !manager.getPuzzleVariation || !manager.setPuzzleVariation) {
+        console.log('Dynamic questions disabled: Puzzle manager not fully available.');
+        return;
+    }
+
+    const profile = manager.currentGameContent?.profile || { ageGroup: 'adults', difficulty: 'normal' };
+    const originalVariation = manager.getPuzzleVariation('bibleKnowledge');
+
+    // Avoid re-fetching if questions have already been dynamically generated
+    if (originalVariation.source === 'gemini-api') {
+        console.log('Using already generated dynamic questions.');
+        return;
+    }
+
+    try {
+        console.log(`Requesting 3 new Bible questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
+
+
+        const apiKey = ' ';
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini2.0-flash:generateContent?key=${apiKey}`;
+
+        const prompt = `
+            Generate a JSON array of 3 unique Bible trivia questions suitable for a quiz game.
+            The target audience is '${profile.ageGroup}' and the difficulty is '${profile.difficulty}'.
+            Each object in the array must have these exact keys: "question", "correctAnswer", and "hint".
+            - "question": The question text.
+            - "correctAnswer": A concise, one-to-three word answer.
+            - "hint": A short, helpful hint for the user.
+            Do not include any introductory text or markdown formatting. Only output the raw JSON array.
+        `;
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { response_mime_type: "application/json" }
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`API request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+        const jsonString = data.candidates[0].content.parts[0].text;
+        const newQuestions = JSON.parse(jsonString);
+
+        // Validate the structure of the generated questions
+        if (Array.isArray(newQuestions) && newQuestions.length > 0 && newQuestions.every(q => q.question && q.correctAnswer && q.hint)) {
+            console.log('Successfully fetched and parsed new questions from Gemini API.');
+            const newVariation = { ...originalVariation, questions: newQuestions, source: 'gemini-api' };
+            manager.setPuzzleVariation('bibleKnowledge', newVariation);
+        } else {
+            throw new Error('Invalid question format received from API.');
+        }
+    } catch (error) {
+        console.error('Failed to fetch dynamic questions. Falling back to hardcoded questions.', error);
+        // No action needed, the original variation will be used.
+    }
+};
+
+
 // Enhanced validation functions for flexible answer checking
-window.checkBibleKnowledgeFlexible = function() {
+window.checkBibleKnowledgeFlexible = async function () {
+    // --- NEW: Attempt to generate dynamic questions before checking ---
+    await window.generateDynamicBibleQuestions();
+
     const manager = window.enhancedPuzzleManager || window.PuzzleManager;
     const validation = new AnswerValidationEngine();
     const visual = new VisualEffectsEngine();
     const audio = new AudioFeedbackEngine();
-    
+
     const variation = manager.getPuzzleVariation('bibleKnowledge');
     if (!variation || !variation.questions) {
         console.error('No bible knowledge variation found');
@@ -15,35 +84,35 @@ window.checkBibleKnowledgeFlexible = function() {
     }
 
     const profile = manager.currentGameContent?.profile || { answerFlexibility: 'forgiving', ageGroup: 'adults' };
-    
+
     let allCorrect = true;
     const results = [];
     let totalConfidence = 0;
-    
+
     // Set age group for effects
     visual.setAgeGroup(profile.ageGroup);
     audio.setAgeGroup(profile.ageGroup);
-    
+
     variation.questions.forEach((question, index) => {
         const userAnswer = document.getElementById(`knowledge${index + 1}`).value.trim();
         const inputElement = document.getElementById(`knowledge${index + 1}`);
         const feedbackElement = document.getElementById(`feedback${index + 1}`);
-        
+
         // Validate answer with flexibility
         const result = validation.validateAnswer(
-            userAnswer, 
-            question.correctAnswer, 
+            userAnswer,
+            question.correctAnswer,
             profile.answerFlexibility
         );
-        
+
         totalConfidence += result.confidence;
-        
+
         // Show visual feedback
         if (result.isCorrect) {
             visual.showSuccessEffect(inputElement, result.confidence);
             audio.playFeedbackSound('success', result.confidence);
             results.push(`✅ Question ${index + 1}: ${result.feedback}`);
-            
+
             // Show age-appropriate encouragement
             if (feedbackElement) {
                 feedbackElement.innerHTML = `
@@ -58,7 +127,7 @@ window.checkBibleKnowledgeFlexible = function() {
             audio.playFeedbackSound('error');
             results.push(`❌ Question ${index + 1}: ${result.feedback}`);
             allCorrect = false;
-            
+
             // Show helpful feedback
             if (feedbackElement) {
                 feedbackElement.innerHTML = `
@@ -70,14 +139,14 @@ window.checkBibleKnowledgeFlexible = function() {
             }
         }
     });
-    
+
     const averageConfidence = totalConfidence / variation.questions.length;
     const resultDiv = document.getElementById('bibleKnowledgeResult');
-    
+
     if (allCorrect) {
         // Age-appropriate success message
         const successMessage = getAgeAppropriateSuccessMessage(profile.ageGroup, averageConfidence);
-        
+
         resultDiv.innerHTML = `
             <div style="color: #228b22; padding: 20px; border-radius: 12px; background: rgba(34, 139, 34, 0.1); border: 2px solid #228b22;">
                 <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 10px;">
@@ -96,22 +165,22 @@ window.checkBibleKnowledgeFlexible = function() {
                 </div>
             </div>
         `;
-        
+
         // Play celebration audio
         audio.playFeedbackSound('encouragement', averageConfidence);
-        
+
         // Delay seal completion for celebration
         setTimeout(() => {
-                window.completeSeal(1);
-                // Auto-return to seal cards
-                setTimeout(() => {
-                    if (window.closePuzzle) window.closePuzzle();
-                    if (window.renderSeals) window.renderSeals();
-                }, 3000);
-            }, 2000);
+            window.completeSeal(1);
+            // Auto-return to seal cards
+            setTimeout(() => {
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 2000);
     } else {
         const encouragementMessage = getAgeAppropriateEncouragementMessage(profile.ageGroup);
-        
+
         resultDiv.innerHTML = `
             <div style="color: #dc3545; padding: 20px; border-radius: 12px; background: rgba(220, 53, 69, 0.1); border: 2px solid #dc3545;">
                 <div style="font-size: 1.3em; font-weight: 700; margin-bottom: 10px;">
@@ -133,11 +202,11 @@ window.checkBibleKnowledgeFlexible = function() {
     }
 };
 
-window.checkCodeBreakingFlexible = function() {
+window.checkCodeBreakingFlexible = function () {
     const manager = window.enhancedPuzzleManager || window.PuzzleManager;
     const visual = new VisualEffectsEngine();
     const audio = new AudioFeedbackEngine();
-    
+
     const variation = manager.getPuzzleVariation('codeBreaking');
     if (!variation || !variation.items) {
         console.error('No code breaking variation found');
@@ -145,24 +214,24 @@ window.checkCodeBreakingFlexible = function() {
     }
 
     const profile = manager.currentGameContent?.profile || { ageGroup: 'adults' };
-    
+
     // Set age group for effects
     visual.setAgeGroup(profile.ageGroup);
     audio.setAgeGroup(profile.ageGroup);
-    
+
     let allCorrect = true;
     const results = [];
     const categories = variation.categories || {};
-    
+
     // Check each category drop zone with visual feedback
     Object.keys(categories).forEach(categoryKey => {
         const dropZone = document.querySelector(`[data-testament="${categoryKey}"]`);
         const droppedItems = dropZone.querySelectorAll('.draggable-item');
-        
+
         let categoryCorrect = true;
         let correctCount = 0;
         let totalExpected = variation.items.filter(item => item.testament === categoryKey).length;
-        
+
         droppedItems.forEach(item => {
             const itemTestament = item.getAttribute('data-testament');
             if (itemTestament === categoryKey) {
@@ -175,7 +244,7 @@ window.checkCodeBreakingFlexible = function() {
                 visual.showErrorEffect(item);
             }
         });
-        
+
         // Visual feedback for drop zone
         if (correctCount === totalExpected && categoryCorrect) {
             visual.showSuccessEffect(dropZone, 1.0);
@@ -186,14 +255,14 @@ window.checkCodeBreakingFlexible = function() {
             allCorrect = false;
         }
     });
-    
+
     const resultDiv = document.getElementById('codeBreakingResult');
-    
+
     if (allCorrect) {
         const successMessage = getAgeAppropriateSuccessMessage(profile.ageGroup, 1.0);
-        
+
         audio.playFeedbackSound('success', 1.0);
-        
+
         resultDiv.innerHTML = `
             <div style="color: #228b22; padding: 20px; border-radius: 12px; background: rgba(34, 139, 34, 0.1); border: 2px solid #228b22;">
                 <div style="font-size: 1.5em; font-weight: 700; margin-bottom: 10px;">
@@ -210,20 +279,20 @@ window.checkCodeBreakingFlexible = function() {
                 </div>
             </div>
         `;
-        
+
         setTimeout(() => {
-                window.completeSeal(4);
-                // Auto-return to seal cards
-                setTimeout(() => {
-                    if (window.closePuzzle) window.closePuzzle();
-                    if (window.renderSeals) window.renderSeals();
-                }, 3000);
-            }, 2000);
+            window.completeSeal(4);
+            // Auto-return to seal cards
+            setTimeout(() => {
+                if (window.closePuzzle) window.closePuzzle();
+                if (window.renderSeals) window.renderSeals();
+            }, 3000);
+        }, 2000);
     } else {
         audio.playFeedbackSound('error');
-        
+
         const encouragementMessage = getCodeBreakingEncouragementMessage(profile.ageGroup);
-        
+
         resultDiv.innerHTML = `
             <div style="color: #dc3545; padding: 20px; border-radius: 12px; background: rgba(220, 53, 69, 0.1); border: 2px solid #dc3545;">
                 <div style="font-size: 1.3em; font-weight: 700; margin-bottom: 10px;">
@@ -244,19 +313,19 @@ window.checkCodeBreakingFlexible = function() {
 };
 
 // Show adaptive hints based on age group and difficulty
-window.showAdaptiveHints = function(challengeType) {
+window.showAdaptiveHints = function (challengeType) {
     const manager = window.enhancedPuzzleManager || window.PuzzleManager;
     const variation = manager.getPuzzleVariation(challengeType);
     const profile = manager.currentGameContent?.profile || { ageGroup: 'adults' };
-    
+
     if (!variation) return;
-    
+
     const hintDiv = document.getElementById(`${challengeType}Hint`);
     if (!hintDiv) return;
-    
+
     let hintsHtml = `<div style="background: ${getAgeHintBackground(profile.ageGroup)}; padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid ${getAgeHintColor(profile.ageGroup)};">`;
     hintsHtml += `<h4 style="color: ${getAgeHintColor(profile.ageGroup)}; margin-bottom: 10px;">${getAgeHintTitle(profile.ageGroup)}</h4>`;
-    
+
     if (challengeType === 'bibleKnowledge' && variation.questions) {
         variation.questions.forEach((question, index) => {
             const hintText = getAgeAppropriateHint(question, profile.ageGroup);
@@ -264,7 +333,7 @@ window.showAdaptiveHints = function(challengeType) {
         });
     } else if (challengeType === 'codeBreaking' && variation.items) {
         hintsHtml += `<p>${getCodeBreakingHints(profile.ageGroup)}</p>`;
-        
+
         if (profile.ageGroup === 'kids') {
             // Show specific hints for kids
             variation.items.forEach((item, index) => {
@@ -273,12 +342,12 @@ window.showAdaptiveHints = function(challengeType) {
             });
         }
     }
-    
+
     hintsHtml += '</div>';
-    
+
     hintDiv.innerHTML = hintsHtml;
     hintDiv.style.display = 'block';
-    
+
     // Scroll hint into view for better UX
     hintDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 };
@@ -288,42 +357,42 @@ function getAgeAppropriateSuccessMessage(ageGroup, confidence) {
     const messages = {
         kids: {
             title: confidence >= 0.9 ? '🌟 WOW! You\'re a Bible Superstar!' : confidence >= 0.8 ? '🎉 Great Job, Bible Explorer!' : '😊 Nice Work, Bible Friend!',
-            description: confidence >= 0.9 ? 'You knew all those Bible answers perfectly! God is so proud of you!' : 
-                        confidence >= 0.8 ? 'You did really well! You\'re learning so much about God!' :
-                        'Good job trying your best! Keep learning about Jesus!',
-            bonus: confidence >= 0.9 ? '🏆 You get a PERFECT SCORE sticker!' : 
-                   confidence >= 0.8 ? '⭐ You get a GREAT JOB sticker!' : 
-                   '🌈 You get a GOOD EFFORT sticker!'
+            description: confidence >= 0.9 ? 'You knew all those Bible answers perfectly! God is so proud of you!' :
+                confidence >= 0.8 ? 'You did really well! You\'re learning so much about God!' :
+                    'Good job trying your best! Keep learning about Jesus!',
+            bonus: confidence >= 0.9 ? '🏆 You get a PERFECT SCORE sticker!' :
+                confidence >= 0.8 ? '⭐ You get a GREAT JOB sticker!' :
+                    '🌈 You get a GOOD EFFORT sticker!'
         },
         teenagers: {
             title: confidence >= 0.9 ? '🔥 Biblical Knowledge MASTERED!' : confidence >= 0.8 ? '⚡ Strong Bible Game!' : '💪 Solid Scripture Foundation!',
             description: confidence >= 0.9 ? 'Your biblical knowledge is on fire! Outstanding understanding of Scripture!' :
-                        confidence >= 0.8 ? 'Impressive biblical knowledge! You\'re building a strong foundation!' :
-                        'Good scriptural understanding! Keep growing in God\'s Word!',
+                confidence >= 0.8 ? 'Impressive biblical knowledge! You\'re building a strong foundation!' :
+                    'Good scriptural understanding! Keep growing in God\'s Word!',
             bonus: confidence >= 0.9 ? '🏆 Expert Level Achievement Unlocked!' :
-                   confidence >= 0.8 ? '⭐ Advanced Knowledge Badge Earned!' :
-                   '🎯 Scripture Student Badge Earned!'
+                confidence >= 0.8 ? '⭐ Advanced Knowledge Badge Earned!' :
+                    '🎯 Scripture Student Badge Earned!'
         },
         adults: {
             title: confidence >= 0.9 ? 'Excellent Biblical Knowledge' : confidence >= 0.8 ? 'Strong Scripture Understanding' : 'Good Biblical Foundation',
             description: confidence >= 0.9 ? 'Demonstrated comprehensive understanding of biblical truth.' :
-                        confidence >= 0.8 ? 'Showed solid grasp of scriptural knowledge.' :
-                        'Displayed foundational biblical understanding.',
+                confidence >= 0.8 ? 'Showed solid grasp of scriptural knowledge.' :
+                    'Displayed foundational biblical understanding.',
             bonus: confidence >= 0.9 ? 'Biblical Scholar Recognition' :
-                   confidence >= 0.8 ? 'Scripture Student Certification' :
-                   'Bible Knowledge Foundation'
+                confidence >= 0.8 ? 'Scripture Student Certification' :
+                    'Bible Knowledge Foundation'
         },
         scholars: {
             title: confidence >= 0.9 ? 'Scholarly Biblical Mastery' : confidence >= 0.8 ? 'Advanced Scriptural Analysis' : 'Academic Biblical Competency',
             description: confidence >= 0.9 ? 'Exhibited masterful comprehension of biblical hermeneutics and scriptural precision.' :
-                        confidence >= 0.8 ? 'Demonstrated advanced biblical scholarship and interpretive accuracy.' :
-                        'Showed competent biblical analysis and scriptural understanding.',
+                confidence >= 0.8 ? 'Demonstrated advanced biblical scholarship and interpretive accuracy.' :
+                    'Showed competent biblical analysis and scriptural understanding.',
             bonus: confidence >= 0.9 ? 'Doctoral-Level Biblical Expertise' :
-                   confidence >= 0.8 ? 'Graduate-Level Scripture Mastery' :
-                   'Academic Biblical Proficiency'
+                confidence >= 0.8 ? 'Graduate-Level Scripture Mastery' :
+                    'Academic Biblical Proficiency'
         }
     };
-    
+
     return messages[ageGroup] || messages['adults'];
 }
 
@@ -346,7 +415,7 @@ function getAgeAppropriateEncouragementMessage(ageGroup) {
             description: 'Scholarly precision requires careful examination. Consider the hermeneutical context and scriptural accuracy.'
         }
     };
-    
+
     return messages[ageGroup] || messages['adults'];
 }
 
@@ -389,7 +458,7 @@ function getCodeBreakingEncouragementMessage(ageGroup) {
             description: 'Certain biblical pericopes require accurate Testament categorization. Apply chronological hermeneutical principles.'
         }
     };
-    
+
     return messages[ageGroup] || messages['adults'];
 }
 
@@ -416,11 +485,11 @@ function getCodeBreakingHelpText(ageGroup) {
 function getAgeAppropriateHint(question, ageGroup) {
     if (!question.hint) {
         return ageGroup === 'kids' ? 'Think about the Bible stories you know!' :
-               ageGroup === 'teenagers' ? 'Consider what you\'ve learned in church or Bible study!' :
-               ageGroup === 'adults' ? 'Reflect on scriptural knowledge and biblical context.' :
-               'Apply hermeneutical analysis and biblical scholarship.';
+            ageGroup === 'teenagers' ? 'Consider what you\'ve learned in church or Bible study!' :
+                ageGroup === 'adults' ? 'Reflect on scriptural knowledge and biblical context.' :
+                    'Apply hermeneutical analysis and biblical scholarship.';
     }
-    
+
     // Adapt existing hint to age group
     if (ageGroup === 'kids') {
         return `🌈 ${question.hint} (Think about fun Bible stories!)`;
@@ -464,11 +533,11 @@ function getAgeHintTitle(ageGroup) {
 }
 
 // Chronological order validation function
-window.checkChronologicalOrder = function() {
+window.checkChronologicalOrder = function () {
     console.log('📅 Checking Chronological Order...');
-    
+
     const dropZones = document.querySelectorAll('.drop-zone[data-position]');
-    
+
     // CRITICAL: Check if drop zones exist
     if (dropZones.length === 0) {
         console.error('❌ No chronological drop zones found! Looking for alternative selectors...');
@@ -479,7 +548,7 @@ window.checkChronologicalOrder = function() {
                 return window.checkChronologicalOrder();
             }
         }
-        
+
         const resultDiv = document.getElementById('chronologicalOrderResult');
         if (resultDiv) {
             resultDiv.innerHTML = `
@@ -491,9 +560,9 @@ window.checkChronologicalOrder = function() {
         }
         return;
     }
-    
+
     const droppedEvents = [];
-    
+
     // Collect all dropped events in order
     dropZones.forEach((zone, index) => {
         const droppedItem = zone.querySelector('.drag-item');
@@ -504,9 +573,9 @@ window.checkChronologicalOrder = function() {
             console.log(`📅 Zone ${index}: empty`);
         }
     });
-    
+
     console.log('📅 Collected droppedEvents:', droppedEvents);
-    
+
     // Check if we have all events placed
     if (droppedEvents.length !== dropZones.length || droppedEvents.includes(undefined)) {
         const resultDiv = document.getElementById('chronologicalOrderResult');
@@ -520,19 +589,19 @@ window.checkChronologicalOrder = function() {
         }
         return;
     }
-    
+
     // Get the correct order from the puzzle variation
     let correctOrder;
     let variation = null;
-    
+
     // Try multiple ways to get the puzzle manager
     const puzzleManager = window.enhancedPuzzleManager || window.PuzzleManager;
-    
+
     if (puzzleManager && puzzleManager.getPuzzleVariation) {
         variation = puzzleManager.getPuzzleVariation('chronologicalOrder');
         console.log('📅 Found puzzle manager, variation:', variation);
     }
-    
+
     if (variation && variation.correctOrder) {
         correctOrder = variation.correctOrder;
         console.log('📅 Using variation correct order:', correctOrder);
@@ -542,7 +611,7 @@ window.checkChronologicalOrder = function() {
         if (sampleItem && sampleItem.dataset.eventId) {
             const sampleId = sampleItem.dataset.eventId;
             console.log('📅 Sample event ID detected:', sampleId);
-            
+
             // If it's semantic IDs like "creation", "fall", etc., use the biblical timeline order
             if (['creation', 'fall', 'flood', 'abraham', 'egypt', 'exodus', 'sinai', 'promised'].includes(sampleId)) {
                 correctOrder = ['creation', 'fall', 'flood', 'abraham', 'egypt', 'exodus', 'sinai', 'promised'];
@@ -551,15 +620,15 @@ window.checkChronologicalOrder = function() {
                 correctOrder = ['saul', 'david', 'solomon', 'divided', 'assyria', 'babylon', 'return', 'temple2'];
                 console.log('📅 Using Kings and Prophets timeline order');
             } else {
-                correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+                correctOrder = Array.from({ length: dropZones.length }, (_, i) => String(i + 1));
                 console.log('📅 Using numeric fallback order');
             }
         } else {
-            correctOrder = Array.from({length: dropZones.length}, (_, i) => String(i + 1));
+            correctOrder = Array.from({ length: dropZones.length }, (_, i) => String(i + 1));
             console.log('📅 No event IDs found, using numeric fallback');
         }
     }
-    
+
     // Compare with placed order
     let correctCount = 0;
     console.log('📅 Comparing droppedEvents vs correctOrder:');
@@ -576,13 +645,13 @@ window.checkChronologicalOrder = function() {
             dropZones[index].style.backgroundColor = '#f87171';
         }
     });
-    
+
     console.log(`📅 Final result: ${correctCount}/${droppedEvents.length} correct`);
-    
+
     const resultDiv = document.getElementById('chronologicalOrderResult');
     if (resultDiv) {
         const percentage = Math.round((correctCount / dropZones.length) * 100);
-        
+
         if (percentage === 100) {
             resultDiv.innerHTML = `
                 <div class="success-message">
@@ -591,7 +660,7 @@ window.checkChronologicalOrder = function() {
                     <p>Your understanding of biblical history is excellent!</p>
                 </div>
             `;
-            
+
             // Trigger completion
             setTimeout(() => {
                 console.log('🎯 Triggering completeSeal(5) for chronological order');
@@ -630,17 +699,17 @@ window.checkChronologicalOrder = function() {
 };
 
 // Scripture topics validation function
-window.checkScriptureTopics = function() {
+window.checkScriptureTopics = function () {
     console.log('🗂️ Checking Scripture Topics organization...');
-    
+
     const topicDrops = document.querySelectorAll('.topic-drop');
     let correctCount = 0;
     let totalTopics = topicDrops.length;
-    
+
     topicDrops.forEach(drop => {
         const topicName = drop.dataset.topic;
         const droppedVerses = drop.querySelectorAll('.drag-item');
-        
+
         let topicCorrect = true;
         droppedVerses.forEach(verse => {
             const verseTopicName = verse.dataset.verseTopic;
@@ -648,7 +717,7 @@ window.checkScriptureTopics = function() {
                 topicCorrect = false;
             }
         });
-        
+
         if (topicCorrect && droppedVerses.length > 0) {
             correctCount++;
             drop.style.backgroundColor = '#4ade80';
@@ -656,11 +725,11 @@ window.checkScriptureTopics = function() {
             drop.style.backgroundColor = '#f87171';
         }
     });
-    
+
     const resultDiv = document.getElementById('scriptureTopicsResult');
     if (resultDiv) {
         const percentage = Math.round((correctCount / Math.max(1, totalTopics)) * 100);
-        
+
         if (percentage >= 80) {
             resultDiv.innerHTML = `
                 <div class="success-message">
@@ -669,18 +738,18 @@ window.checkScriptureTopics = function() {
                     <p>Your understanding of biblical themes is growing strong!</p>
                 </div>
             `;
-            
+
             // Trigger completion
             setTimeout(() => {
-            if (window.completeSeal) {
-            window.completeSeal(6);
-                // Auto-return to seal cards
+                if (window.completeSeal) {
+                    window.completeSeal(6);
+                    // Auto-return to seal cards
                     setTimeout(() => {
-                    if (window.closePuzzle) window.closePuzzle();
-                    if (window.renderSeals) window.renderSeals();
-                }, 3000);
-            }
-        }, 2000);
+                        if (window.closePuzzle) window.closePuzzle();
+                        if (window.renderSeals) window.renderSeals();
+                    }, 3000);
+                }
+            }, 2000);
         } else if (percentage >= 50) {
             resultDiv.innerHTML = `
                 <div class="partial-success">

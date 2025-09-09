@@ -21,13 +21,13 @@ class GameController {
                 hintsUsed: 0
             }
         };
-        
+
         console.log('🎮 GameController initialized with fresh state');
-        
+
         this.gameTimer = null;
         this.autoSaveInterval = null;
         this.init();
-        
+
         // Expose globally for other scripts (Oracle's fix)
         window.GameController = this;
         window.gameController = this; // CRITICAL: Add lowercase alias for leaderboard compatibility
@@ -37,7 +37,7 @@ class GameController {
     init() {
         this.showMainMenu();
         this.setupEventListeners();
-        
+
         // Auto-save progress periodically
         this.autoSaveInterval = setInterval(() => {
             this.autoSaveProgress();
@@ -76,7 +76,7 @@ class GameController {
     showMainMenu() {
         this.showScreen('mainMenu');
         this.updatePageState('mainMenu');
-        
+
         // Check if there's a saved game and show resume option
         this.checkForSavedGame();
     }
@@ -85,7 +85,7 @@ class GameController {
     checkForSavedGame() {
         const savedState = this.loadSavedProgress();
         const resumeButton = document.getElementById('resumeGameBtn');
-        
+
         if (savedState && resumeButton) {
             resumeButton.style.display = 'block';
             resumeButton.textContent = `Resume Game (${savedState.completedSeals.length}/7 seals)`;
@@ -137,7 +137,7 @@ class GameController {
         document.querySelectorAll('.screen').forEach(screen => {
             screen.classList.remove('active');
         });
-        
+
         const targetScreen = document.getElementById(screenId);
         if (targetScreen) {
             targetScreen.classList.add('active');
@@ -170,22 +170,22 @@ class GameController {
                     return;
                 }
             }
-            
+
             // Reset retry count on success
             this._retryCount = 0;
-            
+
             // Debug: Check if GameData is available
             console.log('🔧 GameData check:', {
                 exists: !!window.GameData,
                 hasSeals: !!(window.GameData && window.GameData.seals),
                 sealsCount: window.GameData && window.GameData.seals ? window.GameData.seals.length : 0
             });
-            
+
             // Try multiple possible team name inputs
-            const teamNameElement = document.getElementById('teamName') || 
-                                  document.getElementById('playerTeamName') || 
-                                  document.getElementById('singleTeamName');
-            
+            const teamNameElement = document.getElementById('teamName') ||
+                document.getElementById('playerTeamName') ||
+                document.getElementById('singleTeamName');
+
             if (!teamNameElement) {
                 // Create a default team name if no input found
                 const teamName = 'Solo Player';
@@ -193,7 +193,7 @@ class GameController {
                 this.startGameWithTeam(teamName, 1);
                 return;
             }
-            
+
             const teamName = teamNameElement.value.trim() || 'Solo Player';
             const teamSize = 1; // Single player is always team size 1
 
@@ -204,7 +204,7 @@ class GameController {
 
             // Clear any previous saved progress and start fresh
             this.clearSavedProgress();
-            
+
             this.gameState.mode = 'single';
             this.gameState.teamName = teamName;
             this.gameState.teamSize = parseInt(teamSize);
@@ -221,13 +221,13 @@ class GameController {
 
             this.showGameScreen();
             this.startGameTimer();
-            
+
             // Initialize leaderboard for both single-player and AI modes
             if (window.LeaderboardManager && (this.gameState?.mode === 'single' || this.gameState?.mode === 'ai')) {
                 window.LeaderboardManager.updateSinglePlayerProgress(this.gameState);
                 console.log('🏆 Initialized leaderboard for mode:', this.gameState?.mode);
             }
-            
+
             showNotification(`Welcome ${teamName}! Your quest begins now.`, 'success');
 
         } catch (error) {
@@ -235,17 +235,17 @@ class GameController {
             showNotification('Failed to start game. Please try again.', 'error');
         }
     }
-    
+
     // Helper method to start game with team
     startGameWithTeam(teamName, teamSize) {
         try {
             console.log(`🎮 Starting game for team: ${teamName} (size: ${teamSize})`);
-            
+
             // Initialize game state
             this.gameState.currentTeam = teamName;
             this.gameState.mode = 'single';
             this.gameState.teams = [{ name: teamName, score: 0, completedSeals: [], isAI: false }];
-            
+
             // Add AI competitor teams for single-player mode
             const aiCompetitors = [
                 { name: 'Scripture Scholars 📚', score: 0, completedSeals: [], isAI: true },
@@ -253,28 +253,28 @@ class GameController {
                 { name: 'Gospel Guardians 🛡️', score: 0, completedSeals: [], isAI: true }
             ];
             this.gameState.teams.push(...aiCompetitors);
-            
+
             console.log('🎮 Single-player teams initialized:', this.gameState.teams.map(t => ({
                 name: t.name, score: t.score, isAI: t.isAI
             })));
-            
+
             // FIX: Ensure startTime is set for accurate completion time tracking
             if (!this.gameState.startTime) {
                 this.gameState.startTime = Date.now();
                 this.gameState.isGameActive = true;
                 console.log('✅ Game timer started at:', new Date(this.gameState.startTime).toLocaleTimeString());
             }
-            
+
             // Hide setup and start game
             const modeSelection = document.getElementById('modeSelection');
             if (modeSelection) modeSelection.style.display = 'none';
-            
+
             const multiplayerSetup = document.getElementById('multiplayerSetup');
             if (multiplayerSetup) multiplayerSetup.style.display = 'none';
-            
+
             const aiSetup = document.getElementById('aiSetup');
             if (aiSetup) aiSetup.style.display = 'none';
-            
+
             // Start the actual game
             if (window.startGame) {
                 window.startGame();
@@ -282,7 +282,7 @@ class GameController {
                 console.log('Game started successfully');
                 showNotification(`Welcome ${teamName}! Your quest begins now.`, 'success');
             }
-            
+
         } catch (error) {
             console.error('Error in startGameWithTeam:', error);
             showNotification('Failed to start game. Please try again.', 'error');
@@ -322,7 +322,7 @@ class GameController {
     async joinGame() {
         try {
             const roomCode = document.getElementById('gameRoomCode').value.trim().toUpperCase();
-            
+
             if (!roomCode) {
                 showNotification('Please enter a room code', 'error');
                 return;
@@ -362,7 +362,7 @@ class GameController {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modalHtml);
     }
 
@@ -404,9 +404,9 @@ class GameController {
     showGameLobby(roomCode, gameId) {
         this.showScreen('gameLobby');
         this.updatePageState('gameLobby');
-        
+
         document.getElementById('displayRoomCode').textContent = roomCode;
-        
+
         // Start listening for lobby updates
         window.MultiplayerManager.startGameListener(gameId, (gameData) => {
             this.updateLobby(gameData);
@@ -417,18 +417,18 @@ class GameController {
     updateLobby(gameData) {
         const teams = Object.values(gameData.teams || {});
         const teamCount = teams.length;
-        
+
         document.getElementById('teamCount').textContent = teamCount;
         document.getElementById('maxTeamCount').textContent = gameData.maxTeams;
-        
+
         // Update teams list
         const teamsList = document.getElementById('teamsList');
         let teamsHtml = '';
-        
+
         teams.forEach(team => {
             const hostBadge = team.isHost ? '👑 Host' : '';
             const statusClass = team.status === 'ready' ? 'ready' : 'waiting';
-            
+
             teamsHtml += `
                 <div class="team-card ${team.isHost ? 'host' : ''}">
                     <div class="team-name">${team.name} ${hostBadge}</div>
@@ -437,9 +437,9 @@ class GameController {
                 </div>
             `;
         });
-        
+
         teamsList.innerHTML = teamsHtml;
-        
+
         // Update start button for host
         const startBtn = document.getElementById('startGameBtn');
         if (window.MultiplayerManager.isHost) {
@@ -449,7 +449,7 @@ class GameController {
         } else {
             startBtn.style.display = 'none';
         }
-        
+
         // Check if game started
         if (gameData.status === 'playing') {
             this.startMultiplayerGame();
@@ -468,13 +468,13 @@ class GameController {
 
             // Sync puzzle variations in multiplayer
             this.generatePuzzleVariations();
-            
+
             this.showGameScreen();
             this.startGameTimer();
-            
+
             // Initialize leaderboard
             window.LeaderboardManager.initializeGameLeaderboard(this.gameState.gameId);
-            
+
             showNotification('The quest has begun! May the fastest team win!', 'success');
 
         } catch (error) {
@@ -510,19 +510,19 @@ class GameController {
             gameContainer.style.display = 'block';
             console.log('🔧 Forced gameContainer to be visible');
         }
-        
+
         this.showScreen('gameContainer');
         this.updatePageState('gameScreen');
-        
+
         // team name display (make call safe - element may not exist)
         const teamNameEl = document.getElementById('currentTeamName');
         if (teamNameEl) {
             teamNameEl.textContent = this.gameState.teamName;
         }
-        
+
         this.renderSeals();
         this.updateProgress();
-        
+
         // Show admin panel for hosts
         if (window.MultiplayerManager.isHost) {
             document.getElementById('adminPanel').style.display = 'block';
@@ -536,30 +536,30 @@ class GameController {
             console.warn('❌ sealsGrid element not found');
             return;
         }
-        
+
         if (!window.GameData || !window.GameData.seals) {
             console.error('❌ GameData or GameData.seals not available');
             container.innerHTML = '<p style="color: white; text-align: center; padding: 20px;">Game data not loaded. Please refresh the page.</p>';
             return;
         }
-        
+
         console.log('🎯 Rendering seals. GameData.seals:', window.GameData.seals.length);
         console.log('🎯 Current completedSeals:', this.gameState.completedSeals);
         let html = '';
-        
+
         window.GameData.seals.forEach(seal => {
             const isCompleted = this.gameState.completedSeals.includes(seal.id);
             const isLocked = !this.canOpenSeal(seal);
-            
+
             let statusClass = '';
             if (isCompleted) statusClass = 'completed';
             else if (isLocked) statusClass = 'locked';
-            
+
             console.log(`🔧 Seal ${seal.id} (type: ${typeof seal.id}): completed=${isCompleted}, locked=${isLocked}`);
             if (seal.id <= 4) { // Only log for first 4 seals to avoid spam
                 console.log(`🔧 Checking if ${seal.id} in [${this.gameState.completedSeals}] = ${this.gameState.completedSeals.includes(seal.id)}`);
             }
-            
+
             html += `
                 <div class="seal ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}">
                     <div class="seal-number">${seal.id}</div>
@@ -570,22 +570,22 @@ class GameController {
                 </div>
             `;
         });
-        
+
         console.log('🔧 Generated HTML length:', html.length);
         console.log('🔧 Container before:', container.innerHTML.length);
-        
+
         container.innerHTML = html;
-        
+
         console.log('🔧 Container after:', container.innerHTML.length);
         console.log('🔧 sealsGrid element:', container, 'visible:', container.offsetWidth, 'x', container.offsetHeight);
         console.log('🔧 Container computed styles:', window.getComputedStyle(container).display, window.getComputedStyle(container).visibility);
-        
+
         // Force make visible for debugging
         container.style.display = 'block';
         container.style.visibility = 'visible';
         container.style.minHeight = '200px';
         container.style.backgroundColor = 'rgba(255,0,0,0.1)'; // Red tint for debugging
-        
+
         // Check parent element
         const parent = container.parentElement;
         console.log('🔧 Parent element:', parent, 'visible:', parent ? parent.offsetWidth + 'x' + parent.offsetHeight : 'none');
@@ -606,13 +606,13 @@ class GameController {
     async openSeal(sealId) {
         const seal = window.GameData.seals.find(s => s.id === sealId);
         if (!seal || !this.canOpenSeal(seal)) return;
-        
+
         this.gameState.currentSeal = seal;
-        
+
         const titleEl = document.getElementById('puzzleTitle');
         const questionEl = document.getElementById('puzzleQuestion');
         const modalEl = document.getElementById('puzzleModal');
-        
+
         if (titleEl) {
             titleEl.textContent = `Seal ${seal.id}: ${seal.title}`;
         }
@@ -646,7 +646,7 @@ class GameController {
     // ---- UNIVERSAL seal-completion handler (Oracle's fix) ----
     async completeSeal(sealId, keyword = null) {
         console.log('🎯 GAMECONTROLLER.completeSeal called with:', sealId, keyword);
-        
+
         // ignore duplicates
         if (this.gameState.completedSeals.includes(sealId)) {
             console.log('⚠️ Seal', sealId, 'already completed, skipping');
@@ -721,30 +721,30 @@ class GameController {
         if (this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
             // CRITICAL: Update multiplayer team score immediately
             this.updateMultiplayerTeamScore();
-            
+
             // CRITICAL: Update HTML leaderboard IMMEDIATELY for multiplayer
             console.log('🚀 MULTIPLAYER: Forcing immediate HTML leaderboard update');
             if (typeof window.updateLeaderboard === 'function') {
                 window.updateLeaderboard();
                 console.log('🚀 MULTIPLAYER: Immediate HTML updateLeaderboard triggered');
             }
-            
+
             // CRITICAL: Ensure progress is fully updated before syncing to Firebase
             this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
             this.gameState.progress.keywords = [...this.gameState.keywords];
             this.gameState.progress.lastUpdated = Date.now();
-            
+
             console.log('🔥 Syncing multiplayer progress:', {
                 sealsCompleted: this.gameState.progress.sealsCompleted.length,
                 teamId: window.MultiplayerManager.currentTeam.id
             });
-            
+
             await window.MultiplayerManager.updateTeamProgress(
                 this.gameState.gameId,
                 window.MultiplayerManager.currentTeam.id,
                 this.gameState.progress
             );
-            
+
             // CRITICAL: Update leaderboard again after Firebase sync
             if (typeof window.updateLeaderboard === 'function') {
                 setTimeout(() => {
@@ -764,7 +764,7 @@ class GameController {
 
         // 9. Game completion tracking and final updates
         const progress = (this.gameState.completedSeals.length / 7) * 100;
-        
+
         console.log(`📊 Completed Seals: ${this.gameState.completedSeals.length}`);
     }
 
@@ -776,27 +776,27 @@ class GameController {
             console.log('🔍 DEBUG: currentTeam:', this.gameState.currentTeam);
             console.log('🔍 DEBUG: teamName:', this.gameState.teamName);
             console.log('🔍 DEBUG: mode:', this.gameState.mode);
-            
+
             // Try multiple ways to find the player team
             let playerTeam = this.gameState.teams.find(team => !team.isAI && (team.name === this.gameState.currentTeam || team.name === this.gameState.teamName));
-            
+
             if (!playerTeam) {
                 // Fallback: find team that's not AI and matches typical player names
                 playerTeam = this.gameState.teams.find(team => !team.isAI);
             }
-            
+
             if (!playerTeam) {
                 // Last resort: find team named 'Player'
                 playerTeam = this.gameState.teams.find(team => team.name === 'Player');
             }
-            
+
             console.log('🔍 DEBUG: Found player team:', playerTeam);
-            
+
             if (playerTeam) {
                 // CRITICAL: Sync team data with authoritative gameState
                 playerTeam.completedSeals = [...this.gameState.completedSeals];
                 playerTeam.score = this.gameState.completedSeals.length;
-                
+
                 console.log('🔥 SYNC: Force syncing team with gameState:', {
                     gameStateSeals: this.gameState.completedSeals.length,
                     teamSeals: playerTeam.completedSeals.length,
@@ -814,34 +814,34 @@ class GameController {
                     score: playerTeam.score,
                     mode: this.gameState.mode
                 });
-                
+
                 // Team updated - leaderboard will be called from main completeSeal method
             } else {
                 console.log('🔥 WARNING: Could not find player team in teams array:', this.gameState.teams);
                 console.log('🔥 WARNING: Searched for currentTeam:', this.gameState.currentTeam, 'teamName:', this.gameState.teamName);
-                
+
                 // Team not found - leaderboard will still be called from main completeSeal method
             }
         }
     }
 
     // Update multiplayer team score method
-    updateMultiplayerTeamScore() {
+    async updateMultiplayerTeamScore() {
         if (!this.gameState.teams || !window.MultiplayerManager.currentTeam) return;
-        
+
         console.log('🏆 MULTIPLAYER: Updating team score for:', window.MultiplayerManager.currentTeam.name);
-        
+
         // Find the current player's team in gameState.teams
-        const playerTeam = this.gameState.teams.find(team => 
+        const playerTeam = this.gameState.teams.find(team =>
             team.id === window.MultiplayerManager.currentTeam.id ||
             team.name === window.MultiplayerManager.currentTeam.name
         );
-        
+
         if (playerTeam) {
             // CRITICAL: Sync team data with authoritative gameState
             playerTeam.completedSeals = [...this.gameState.completedSeals];
             playerTeam.score = this.gameState.completedSeals.length;
-            
+
             console.log('🏆 MULTIPLAYER SYNC: Updated team score:', {
                 teamName: playerTeam.name,
                 teamId: playerTeam.id,
@@ -898,12 +898,12 @@ class GameController {
             this.gameState.progress.sealsCompleted = [...this.gameState.completedSeals];
             this.gameState.progress.keywords = [...this.gameState.keywords];
             this.gameState.progress.lastUpdated = Date.now();
-            
+
             console.log('🔥 Syncing multiplayer progress:', {
                 sealsCompleted: this.gameState.progress.sealsCompleted.length,
                 teamId: window.MultiplayerManager.currentTeam.id
             });
-            
+
             await window.MultiplayerManager.updateTeamProgress(
                 this.gameState.gameId,
                 window.MultiplayerManager.currentTeam.id,
@@ -931,7 +931,7 @@ class GameController {
     // Update progress bar
     updateProgress() {
         const progress = (this.gameState.completedSeals.length / 7) * 100;
-        
+
         // Update progress bar with safety checks
         const progressFill = document.getElementById('progressFill');
         if (progressFill) {
@@ -939,7 +939,7 @@ class GameController {
         } else {
             console.warn('⚠️ Progress bar element not found');
         }
-        
+
         // Update progress text with safety checks
         const progressText = document.getElementById('progressText');
         if (progressText) {
@@ -947,14 +947,14 @@ class GameController {
         } else {
             console.warn('⚠️ Progress text element not found');
         }
-        
+
         console.log(`📊 Progress updated: ${this.gameState.completedSeals.length}/7 seals (${progress.toFixed(1)}%)`);
     }
 
     // Show final challenge - Completion celebration
     showFinalChallenge() {
         console.log('🎉 All 7 seals completed! Showing completion celebration');
-        
+
         // Create completion modal
         this.showCompletionCelebration();
     }
@@ -992,7 +992,7 @@ class GameController {
         const now = Date.now();
         // FIX: Handle ALL modes - single-player, AI, and multiplayer
         let startTime = this.gameState.startTime || (window.gameState && window.gameState.startTime);
-        
+
         // For multiplayer, also check if we have Firebase team data with startTime
         if (!startTime && this.gameState.mode === 'multiplayer' && window.MultiplayerManager.currentTeam) {
             // Try to get startTime from Firebase data if available
@@ -1001,19 +1001,19 @@ class GameController {
                 console.log('🔥 Using Firebase team startTime for multiplayer');
             }
         }
-        
-        console.log('⏰ Completion time debug:', { 
-            now, 
+
+        console.log('⏰ Completion time debug:', {
+            now,
             startTime,
             mode: this.gameState.mode,
             controllerStartTime: this.gameState.startTime,
             globalStartTime: window.gameState?.startTime,
             firebaseStartTime: window.MultiplayerManager?.currentTeamData?.progress?.startTime,
-            gameState: this.gameState 
+            gameState: this.gameState
         });
-        
+
         let completionTime;
-        
+
         // Validate that we have a proper startTime
         if (!startTime || typeof startTime !== 'number' || startTime <= 0) {
             console.error('❌ Invalid or missing startTime:', startTime);
@@ -1022,7 +1022,7 @@ class GameController {
             console.warn('⚠️ Using 5-minute fallback completion time');
         } else {
             completionTime = now - startTime;
-            
+
             // Validate completion time is reasonable
             if (completionTime < 0) {
                 console.error('❌ Negative completion time detected:', completionTime);
@@ -1031,10 +1031,10 @@ class GameController {
                 console.warn('⚠️ Very long completion time:', completionTime, 'ms');
                 completionTime = Math.min(completionTime, 3600000); // Cap at 1 hour
             }
-            
+
             console.log('✅ Final completion time:', completionTime, 'ms');
         }
-        
+
         const timeString = this.formatTime(completionTime);
 
         content.innerHTML = `
@@ -1133,7 +1133,7 @@ class GameController {
     // Return to seals after completion
     returnToSealsAfterCompletion() {
         console.log('🔄 Returning to seals after completion');
-        
+
         // Close any open puzzle modal
         const puzzleModal = document.getElementById('puzzleModal');
         if (puzzleModal) {
@@ -1142,10 +1142,10 @@ class GameController {
 
         // Show the game screen
         this.showGameScreen();
-        
+
         // Render seals to show completion badges
         this.renderSeals();
-        
+
         // Show a brief success message
         setTimeout(() => {
             this.showBriefSuccessMessage();
@@ -1169,9 +1169,9 @@ class GameController {
             animation: slideInRight 0.3s ease-out;
         `;
         message.textContent = '🎉 All seals mastered! Well done!';
-        
+
         document.body.appendChild(message);
-        
+
         setTimeout(() => {
             message.style.animation = 'slideOutRight 0.3s ease-in';
             setTimeout(() => message.remove(), 300);
@@ -1188,23 +1188,23 @@ class GameController {
     // Check final answer
     async checkFinalAnswer() {
         const answer = document.getElementById('finalAnswer').value.toUpperCase().trim();
-        
+
         const keywordString = this.gameState.keywords.join(' ');
         const possibleAnswers = [
             "THE KINGDOM IS WITHIN YOU",
-            "GOD IS LOVE AND TRUTH", 
+            "GOD IS LOVE AND TRUTH",
             "FAITH HOPE AND LOVE",
             keywordString,
             "JESUS IS LORD",
             "ETERNAL LIFE"
         ];
-        
+
         const isCorrect = possibleAnswers.some(possible => answer === possible.toUpperCase());
-        
+
         if (isCorrect) {
             const completionTime = Date.now() - this.gameState.startTime;
             this.gameState.progress.completionTime = completionTime;
-            
+
             // Update final progress
             if (this.gameState.mode === 'multiplayer') {
                 await window.MultiplayerManager.updateTeamProgress(
@@ -1213,7 +1213,7 @@ class GameController {
                     this.gameState.progress
                 );
             }
-            
+
             this.showVictory(answer, completionTime);
         } else {
             showNotification('Not quite right. Use the collected keywords to find the hidden message in Scripture.', 'error');
@@ -1223,7 +1223,7 @@ class GameController {
     // Show victory screen
     showVictory(answer, completionTime) {
         const minutes = Math.round(completionTime / 1000 / 60);
-        
+
         document.getElementById('hiddenWordResult').innerHTML = `
             <div style="color: #228b22;">
                 🎉 VICTORY! 🎉<br>
@@ -1233,10 +1233,10 @@ class GameController {
                 <small>Game ID: ${this.gameState.gameId}</small>
             </div>
         `;
-        
+
         this.stopGameTimer();
         this.gameState.isGameActive = false;
-        
+
         showNotification('🏆 Congratulations! You have unlocked all seven seals!', 'success');
     }
 
@@ -1250,14 +1250,14 @@ class GameController {
     // Update game timer display
     updateGameTimer() {
         if (!this.gameState.startTime) return;
-        
+
         const elapsed = Date.now() - this.gameState.startTime;
         const minutes = Math.floor(elapsed / 60000);
         const seconds = Math.floor((elapsed % 60000) / 1000);
-        
+
         const timerDisplay = document.getElementById('timer');
         if (timerDisplay) {
-            timerDisplay.textContent = 
+            timerDisplay.textContent =
                 `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
     }
@@ -1348,14 +1348,14 @@ class GameController {
         this.stopGameTimer();
         window.LeaderboardManager.cleanup();
         window.PuzzleManager.clearPuzzles();
-        
+
         if (this.gameState.mode === 'multiplayer') {
             window.MultiplayerManager.leaveGame();
         }
-        
+
         // Clear saved progress
         localStorage.removeItem('scrollGameProgress');
-        
+
         // Reset state
         this.gameState = {
             mode: null,
@@ -1376,7 +1376,7 @@ class GameController {
                 hintsUsed: 0
             }
         };
-        
+
         // Reset UI
         document.getElementById('finalChallenge').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'none';
@@ -1448,13 +1448,13 @@ class GameController {
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.classList.remove('active');
         });
-        
+
         const tabMap = {
             'global': 0,
             'weekly': 1,
             'daily': 2
         };
-        
+
         const tabs = document.querySelectorAll('.tab-btn');
         if (tabs[tabMap[active]]) {
             tabs[tabMap[active]].classList.add('active');
@@ -1475,7 +1475,7 @@ class GameController {
 // Initialize game when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     window.gameController = new GameController();
-    
+
     // Make functions globally available for onclick handlers
     window.showMainMenu = () => window.gameController.showMainMenu();
     window.showSinglePlayerSetup = () => window.gameController.showSinglePlayerSetup();
@@ -1483,17 +1483,17 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showCreateGame = () => window.gameController.showCreateGame();
     window.showLeaderboard = () => window.gameController.showLeaderboard();
     window.resumeGame = () => window.gameController.resumeGame();
-    
+
     // CRITICAL: Create hybrid renderSeals that preserves HTML functionality but uses correct state
     const originalRenderSeals = window.renderSeals;
     window.renderSeals = () => {
         console.log('🎯 Hybrid renderSeals called');
-        
+
         // If GameController is available and we have a sealsGrid, use GameController for the grid
         if (window.gameController && document.getElementById('sealsGrid')) {
             console.log('🎯 Using GameController.renderSeals for seal grid');
             return window.gameController.renderSeals();
-        } 
+        }
         // Otherwise, fall back to original HTML version but sync the state first
         else if (originalRenderSeals) {
             console.log('🎯 Using original renderSeals with synced state');
@@ -1512,41 +1512,41 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('❌ No renderSeals function available');
         }
     };
-    
+
     window.startSinglePlayerGame = () => window.gameController.startSinglePlayerGame();
     window.createNewGame = () => window.gameController.createNewGame();
     window.joinGame = () => window.gameController.joinGame();
     window.confirmJoinGame = (roomCode) => window.gameController.confirmJoinGame(roomCode);
     window.closeJoinGameModal = () => window.gameController.closeJoinGameModal();
-    
+
     window.startMultiplayerGame = () => window.gameController.startMultiplayerGame();
     window.copyRoomCode = () => window.gameController.copyRoomCode();
     window.leaveLobby = () => window.gameController.leaveLobby();
-    
+
     window.openSeal = (sealId) => window.gameController.openSeal(sealId);
     window.closePuzzle = () => window.gameController.closePuzzle();
     window.completeSeal = (sealId) => {
-    console.log('🚀 GAME.JS completeSeal called with sealId:', sealId);
-    console.log('🔍 gameController exists:', !!window.gameController);
-    console.log('🔍 GameController exists:', !!window.GameController);
-    
-    if (!window.gameController && !window.GameController) {
-        console.error('❌ Neither gameController nor GameController available!');
-        return;
-    }
-    
-    // Try both controller references
-    const controller = window.gameController || window.GameController;
-    if (controller && controller.completeSeal) {
-        console.log('✅ Calling controller.completeSeal...');
-        return controller.completeSeal(sealId);
-    } else {
-        console.error('❌ Controller has no completeSeal method!');
-    }
-};
+        console.log('🚀 GAME.JS completeSeal called with sealId:', sealId);
+        console.log('🔍 gameController exists:', !!window.gameController);
+        console.log('🔍 GameController exists:', !!window.GameController);
+
+        if (!window.gameController && !window.GameController) {
+            console.error('❌ Neither gameController nor GameController available!');
+            return;
+        }
+
+        // Try both controller references
+        const controller = window.gameController || window.GameController;
+        if (controller && controller.completeSeal) {
+            console.log('✅ Calling controller.completeSeal...');
+            return controller.completeSeal(sealId);
+        } else {
+            console.error('❌ Controller has no completeSeal method!');
+        }
+    };
     window.checkFinalAnswer = () => window.gameController.checkFinalAnswer();
     window.newGame = () => window.gameController.newGame();
-    
+
     // 🔥 DEBUG FUNCTION - Manual seal completion for testing
     window.debugCompleteSeal = (sealId) => {
         console.log('🔥 DEBUG: Manually completing seal', sealId);
@@ -1555,7 +1555,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('🔥 DEBUG: Current gameState.completedSeals before:', controller.gameState.completedSeals);
             controller.gameState.completedSeals.push(sealId);
             console.log('🔥 DEBUG: Current gameState.completedSeals after:', controller.gameState.completedSeals);
-            
+
             // Update AI mode player team
             if (controller.gameState.mode === 'ai' && controller.gameState.teams) {
                 const playerTeam = controller.gameState.teams.find(team => !team.isAI);
@@ -1565,7 +1565,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('🔥 DEBUG: Updated player team:', playerTeam);
                 }
             }
-            
+
             // Force updates
             controller.updateProgress();
             controller.renderSeals();
@@ -1574,7 +1574,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
-    
+
     // 🔥 DEBUG FUNCTION - Check teams array
     window.debugTeams = () => {
         const controller = window.gameController || window.GameController;
@@ -1592,18 +1592,18 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('🔥 DEBUG: No teams found');
         }
     };
-    
+
     window.toggleLeaderboard = () => window.gameController.toggleLeaderboard();
     window.showGlobalLeaderboard = () => window.gameController.showGlobalLeaderboard();
     window.showWeeklyLeaderboard = () => window.gameController.showWeeklyLeaderboard();
     window.showDailyLeaderboard = () => window.gameController.showDailyLeaderboard();
-    
+
     // Admin functions
     window.pauseGame = () => window.gameController.pauseGame();
     window.resumeGame = () => window.gameController.resumeGame();
     window.endGame = () => window.gameController.endGame();
     window.resetGame = () => window.gameController.resetGame();
-    
+
     // Puzzle functions (will be implemented in puzzles.js)
     window.showHint = (puzzleType) => window.PuzzleManager.showHint(puzzleType);
     window.resetPuzzle = (puzzleType) => window.PuzzleManager.resetPuzzle(puzzleType);
@@ -1620,13 +1620,13 @@ window.addEventListener('beforeunload', () => {
 function showNotification(message, type = 'info') {
     const container = document.getElementById('notifications');
     if (!container) return;
-    
+
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
     notification.textContent = message;
-    
+
     container.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.remove();
     }, window.GameData.GAME_CONSTANTS.NOTIFICATION_DURATION);
