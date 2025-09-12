@@ -57,10 +57,14 @@ class EnhancedPuzzleManager {
     }
 
     // CHALLENGE 1: Bible Knowledge - Deep Scriptural Recall (Now Beginner-Friendly!)
-    generateBibleKnowledgeContent(variation) {
+    async generateBibleKnowledgeContent(variation) {
+        await this.generateDynamicBibleQuestions();
+        
+        // Re-fetch the variation in case it was updated by the dynamic question generator
+        const currentVariation = (window.enhancedPuzzleManager || window.PuzzleManager).getPuzzleVariation('bibleKnowledge') || variation;
         let questionsHtml = '';
         
-        variation.questions.forEach((question, index) => {
+        currentVariation.questions.forEach((question, index) => {
             // Use the hint from the question data or create a kid-friendly hint
             const hintText = question.hint ? `💡 ${question.hint}` : '';
             
@@ -88,7 +92,7 @@ class EnhancedPuzzleManager {
                 <div class="challenge-info" style="background: rgba(0, 150, 0, 0.1); padding: 15px; border-radius: 10px; margin: 15px 0; border-left: 4px solid #009600;">
                     <p><strong>🎯 Beginner-Friendly Challenge!</strong></p>
                     <p>Answer questions about basic biblical knowledge. Look for the helpful hints below each question!</p>
-                    <p><strong>Target Keyword:</strong> <span class="keyword-target">${variation.keyword}</span></p>
+                    <p><strong>Target Keyword:</strong> <span class="keyword-target">${currentVariation.keyword}</span></p>
                 </div>
                 
                 <div class="questions-container">
@@ -105,6 +109,78 @@ class EnhancedPuzzleManager {
                 <div id="bibleKnowledgeHint" class="challenge-hint" style="display: none;"></div>
             </div>
         `;
+    }
+
+    async generateDynamicBibleQuestions() {
+        const manager = this; // Use 'this' as we are inside the class instance
+        if (!manager.getPuzzleVariation || !manager.setPuzzleVariations) { // Corrected method name check
+            console.log('Dynamic questions disabled: Puzzle manager methods not available.');
+            return;
+        }
+
+        const profile = manager.currentGameContent?.profile || { ageGroup: 'adults', difficulty: 'normal' };
+        const originalVariation = manager.getPuzzleVariation('bibleKnowledge');
+
+        if (originalVariation.source === 'gemini-api') {
+            console.log('Using already generated dynamic questions.');
+            return;
+        }
+
+        const apiKey = 'YOUR_GEMINI_API_KEY';
+
+        if (apiKey === 'YOUR_GEMINI_API_KEY' || !apiKey.trim()) {
+            console.warn('Gemini API key is not set. Skipping dynamic questions.');
+            return;
+        }
+
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
+        const prompt = `
+            Generate a JSON array of 3 unique Bible trivia questions suitable for a quiz game.
+            The target audience is '${profile.ageGroup}' and the difficulty is '${profile.difficulty}'.
+            Each object in the array must have these exact keys: "question", "correctAnswer", and "hint".
+            - "question": The question text.
+            - "correctAnswer": A concise, one-to-three word answer.
+            - "hint": A short, helpful hint for the user.
+            Do not include any introductory text, comments, or markdown formatting like \`\`\`json. Only output the raw JSON array.
+        `;
+
+        try {
+            console.log(`Requesting 3 new Bible questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        response_mime_type: "application/json",
+                        temperature: 0.7,
+                    }
+                }),
+            });
+
+            if (!response.ok) {
+                const errorBody = await response.text();
+                throw new Error(`API request failed with status ${response.status}. Response: ${errorBody}`);
+            }
+
+            const data = await response.json();
+            console.log('Gemini API Response Data:', data);
+
+            const jsonString = data.candidates[0].content.parts[0].text;
+            const newQuestions = JSON.parse(jsonString);
+
+            if (Array.isArray(newQuestions) && newQuestions.length > 0 && newQuestions.every(q => q.question && q.correctAnswer && q.hint)) {
+                console.log('✅ Successfully fetched and parsed new questions from Gemini API.');
+                const newVariation = { ...originalVariation, questions: newQuestions, source: 'gemini-api' };
+                this.currentPuzzles['bibleKnowledge'] = newVariation; // Directly set the new variation
+            } else {
+                throw new Error('Invalid question format received from API.');
+            }
+        } catch (error) {
+            console.error('❌ Failed to fetch dynamic questions. Falling back to hardcoded questions.', error);
+        }
     }
 
     // CHALLENGE 2: Logical Reasoning - Biblical Deduction
@@ -1081,16 +1157,153 @@ class EnhancedPuzzleManager {
         `;
     }
 
-    getPlayerPreferences() {
-        // Analyze player's previous choices to determine preferences
-        const prefs = localStorage.getItem('playerPreferences');
-        return prefs ? JSON.parse(prefs) : {};
+    renderDynamicScriptureTopics(content, intro) {
+        // Shuffle verses for display
+        const shuffledVerses = [...content.verses].sort(() => Math.random() - 0.5);
+        
+        let versesHtml = '';
+        shuffledVerses.forEach((verse, index) => {
+            versesHtml += `
+                <div class="drag-item" draggable="true" data-verse-id="${verse.id}">
+                    ${verse.text}
+                </div>
+            `;
+        });
+
+        let topicsHtml = '';
+        content.topics.forEach((topic, index) => {
+            topicsHtml += `
+                <div class="topic-section">
+                    <div class="topic-title">${topic.name}</div>
+                    <div class="topic-description" style="font-size: 0.9em; color: #b8a082; margin-bottom: 10px;">
+                        ${topic.description}
+                    </div>
+                    <div class="drop-zone topic-drop" data-topic="${topic.name}">
+                        Drop ${topic.name.toLowerCase()} verses here
+                    </div>
+                </div>
+            `;
+        });
+
+        return `
+            <div class="scripture-topics-challenge">
+                <div class="immersive-intro" style="
+                    background: linear-gradient(135deg, rgba(147, 112, 219, 0.1), rgba(138, 43, 226, 0.05));
+                    border: 1px solid #9370db;
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    color: #9370db;
+                    font-style: italic;
+                    text-align: center;
+                ">${intro}</div>
+                
+                <h3>📚 DYNAMIC SCRIPTURE ORGANIZATION TRIAL</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ AI-GENERATED TOPICS</strong></p>
+                    <p>This unique set of topics has been crafted for your knowledge level.</p>
+                    <p><strong>Topic Theme:</strong> <span class="keyword-target">${content.topicName}</span></p>
+                </div>
+                
+                <div class="items-pool">
+                    <div class="pool-title">📖 Bible Verses (Drag to Categories)</div>
+                    ${versesHtml}
+                </div>
+                
+                <div class="scripture-topics">
+                    ${topicsHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary" onclick="checkScriptureTopics()">🗂️ Verify Organization</button>
+                    <button class="btn secondary" onclick="resetChallenge('scriptureTopics')">🔄 Reset</button>
+                    ${this.getComplexityHint('scriptureTopics')}
+                </div>
+                
+                <div id="scriptureTopicsResult" class="challenge-result"></div>
+            </div>
+        `;
     }
 
-    getPlayerStrengths() {
-        // Analyze completion patterns to identify strengths
-        const strengths = localStorage.getItem('playerStrengths');
-        return strengths ? JSON.parse(strengths) : [];
+    renderDynamicWisdom(content, intro) {
+        let challengesHtml = '';
+        
+        content.challenges.forEach((challenge, index) => {
+            if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
+                let optionsHtml = '';
+                challenge.options.forEach((option, optIndex) => {
+                    optionsHtml += `
+                        <label class="wisdom-option">
+                            <input type="radio" name="wisdom${index}" value="${option}">
+                            <span class="option-text">${option}</span>
+                        </label>
+                    `;
+                });
+                
+                challengesHtml += `
+                    <div class="wisdom-question">
+                        <div class="question-header">
+                            <span class="question-number">Question ${index + 1}:</span>
+                        </div>
+                        <div class="question-text">${challenge.question}</div>
+                        <div class="wisdom-options">
+                            ${optionsHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                challengesHtml += `
+                    <div class="wisdom-question">
+                        <div class="question-header">
+                            <span class="question-number">Question ${index + 1}:</span>
+                        </div>
+                        <div class="question-text">${challenge.question}</div>
+                        ${challenge.context ? `<div class="question-context" style="font-size: 0.9em; color: #b8a082; margin: 5px 0;">Reference: ${challenge.context || challenge.reference}</div>` : ''}
+                        <div class="answer-input">
+                            <input type="text" 
+                                   id="wisdom${index + 1}" 
+                                   placeholder="Enter your answer" 
+                                   class="wisdom-input"
+                                   maxlength="50">
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        return `
+            <div class="biblical-wisdom-challenge">
+                <div class="immersive-intro" style="
+                    background: linear-gradient(135deg, rgba(147, 112, 219, 0.1), rgba(138, 43, 226, 0.05));
+                    border: 1px solid #9370db;
+                    border-radius: 10px;
+                    padding: 15px;
+                    margin-bottom: 20px;
+                    color: #9370db;
+                    font-style: italic;
+                    text-align: center;
+                ">${intro}</div>
+                
+                <h3>👑 DYNAMIC BIBLICAL WISDOM TRIAL</h3>
+                <div class="challenge-warning">
+                    <p><strong>⚠️ AI-GENERATED QUESTIONS</strong></p>
+                    <p>This unique set of questions has been crafted for your knowledge level.</p>
+                    <p><strong>Target Keyword:</strong> <span class="keyword-target">${content.keyword}</span></p>
+                </div>
+                
+                <div class="wisdom-container">
+                    ${challengesHtml}
+                </div>
+                
+                <div class="challenge-controls">
+                    <button class="btn primary" onclick="checkBiblicalWisdom()">🎓 Submit Wisdom</button>
+                    <button class="btn secondary" onclick="resetChallenge('biblicalWisdom')">🔄 Reset</button>
+                    ${this.getComplexityHint('biblicalWisdom')}
+                </div>
+                
+                <div id="biblicalWisdomResult" class="challenge-result"></div>
+            </div>
+        `;
     }
 
     // Learning system tracking
@@ -1379,13 +1592,13 @@ class EnhancedPuzzleManager {
 }
 
 // Initialize enhanced puzzle manager
-const enhancedPuzzleManager = new EnhancedPuzzleManager();
+window.enhancedPuzzleManager = new EnhancedPuzzleManager();
 
 // Verify initialization
 console.log('✅ EnhancedPuzzleManager created with methods:', {
-    generatePuzzleContent: typeof enhancedPuzzleManager.generatePuzzleContent,
-    regeneratePuzzles: typeof enhancedPuzzleManager.regeneratePuzzles,
-    getPuzzleVariation: typeof enhancedPuzzleManager.getPuzzleVariation
+    generatePuzzleContent: typeof window.enhancedPuzzleManager.generatePuzzleContent,
+    regeneratePuzzles: typeof window.enhancedPuzzleManager.regeneratePuzzles,
+    getPuzzleVariation: typeof window.enhancedPuzzleManager.getPuzzleVariation
 });
 
 // Enhanced validation functions with flexible answer matching
@@ -1495,7 +1708,7 @@ function isAnswerCorrect(userAnswer, correctAnswer) {
 
 function checkBibleKnowledge() {
     console.log('🔍 checkBibleKnowledge called');
-    const variation = enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
     if (!variation) {
         console.error('❌ No bibleKnowledge variation found!');
         return;
@@ -1602,7 +1815,7 @@ function checkBibleKnowledge() {
 
 // Add hint function for Bible Knowledge
 function showBibleKnowledgeHint() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('bibleKnowledge');
     if (!variation) return;
     
     const hintDiv = document.getElementById('bibleKnowledgeHint');
@@ -1622,7 +1835,7 @@ function showBibleKnowledgeHint() {
 }
 
 function checkLogicalReasoning() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('logicalReasoning');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('logicalReasoning');
     if (!variation) return;
     
     let allCorrect = true;
@@ -1689,7 +1902,7 @@ function checkLogicalReasoning() {
 }
 
 function checkTeamCommunication() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('teamCommunication');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('teamCommunication');
     
     // CRITICAL: Handle missing variation with fallback logic
     if (!variation || !variation.challenges) {
@@ -1827,7 +2040,7 @@ function checkTeamCommunication() {
 }
 
 function checkCodeBreaking() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('codeBreaking');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('codeBreaking');
     if (!variation || !variation.items) return;
     
     let allCorrect = true;
@@ -1892,7 +2105,7 @@ function checkCodeBreaking() {
 
 // Add hint function for code breaking
 function showCodeBreakingHint() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('codeBreaking');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('codeBreaking');
     if (!variation) return;
     
     const hintDiv = document.getElementById('codeBreakingHint');
@@ -1913,7 +2126,7 @@ function showCodeBreakingHint() {
 }
 
 function checkMetaphoricalScripture() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('metaphoricalScripture');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('metaphoricalScripture');
     if (!variation) return;
     
     let allCorrect = true;
@@ -1993,7 +2206,7 @@ function checkMetaphoricalScripture() {
 }
 
 function checkProphethicLogic() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('prophethicLogic');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('prophethicLogic');
     if (!variation) return;
     
     let allCorrect = true;
@@ -2076,7 +2289,7 @@ function checkProphethicLogic() {
 }
 
 function checkRevelationCode() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('revelationCode');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('revelationCode');
     if (!variation) return;
     
     let allCorrect = true;
@@ -2122,95 +2335,10 @@ function checkRevelationCode() {
     }
 }
 
-function checkTeamCommunicationFallback() {
-    console.log('🔧 Running fallback team communication check...');
-    
-    // Check the three input fields from our simplified interface
-    const leaderInput = document.getElementById('team0_part0');
-    const scholarInput = document.getElementById('team0_part1');
-    const teacherInput = document.getElementById('team0_part2');
-    
-    if (!leaderInput || !scholarInput || !teacherInput) {
-        console.error('❌ Team communication input fields not found!');
-        return;
-    }
-    
-    const leaderAnswer = leaderInput.value.trim().toUpperCase();
-    const scholarAnswer = scholarInput.value.trim().toUpperCase();
-    const teacherAnswer = teacherInput.value.trim().toUpperCase();
-    
-    console.log('📝 Answers:', { leader: leaderAnswer, scholar: scholarAnswer, teacher: teacherAnswer });
-    
-    let allCorrect = true;
-    const results = [];
-    
-    // Check Leader answer (Biblical book about fellowship)
-    if (leaderAnswer.includes('ACTS') || leaderAnswer.includes('JOHN') || 
-        leaderAnswer.includes('PHILIPPIANS') || leaderAnswer.includes('CORINTHIANS') ||
-        leaderAnswer.includes('EPHESIANS') || leaderAnswer.includes('HEBREWS')) {
-        results.push('✅ Leader: Biblical fellowship book identified');
-    } else {
-        results.push('❌ Leader: Need a book about fellowship (e.g., Acts, 1 John, Philippians)');
-        allCorrect = false;
-    }
-    
-    // Check Scholar answer (Unity verse)
-    if (scholarAnswer.includes('JOHN') && (scholarAnswer.includes('17') || scholarAnswer.includes('UNITY') || scholarAnswer.includes('ONE')) ||
-        scholarAnswer.includes('EPHESIANS') && scholarAnswer.includes('4') ||
-        scholarAnswer.includes('CORINTHIANS') && scholarAnswer.includes('12') ||
-        scholarAnswer.includes('PSALM') && scholarAnswer.includes('133')) {
-        results.push('✅ Scholar: Unity verse quoted');
-    } else {
-        results.push('❌ Scholar: Need a verse about unity (e.g., John 17:21, Ephesians 4:3)');
-        allCorrect = false;
-    }
-    
-    // Check Teacher answer (Biblical figure promoting fellowship)
-    if (teacherAnswer.includes('PAUL') || teacherAnswer.includes('JOHN') || 
-        teacherAnswer.includes('BARNABAS') || teacherAnswer.includes('PETER') ||
-        teacherAnswer.includes('JESUS') || teacherAnswer.includes('DAVID')) {
-        results.push('✅ Teacher: Fellowship promoter identified');
-    } else {
-        results.push('❌ Teacher: Need a Biblical figure who promoted fellowship (e.g., Paul, John, Barnabas)');
-        allCorrect = false;
-    }
-    
-    const resultDiv = document.getElementById('teamCommunicationResult');
-    if (allCorrect) {
-        resultDiv.innerHTML = `
-            <div style="color: #228b22;">
-                🤝 <strong>UNITY ACHIEVED!</strong><br>
-                Keyword unlocked: <strong>FELLOWSHIP</strong><br>
-                Team coordination successful!<br>
-                ${results.join('<br>')}
-            </div>
-        `;
-        setTimeout(() => {
-            console.log('🎯 Calling completeSeal(3) after team communication success');
-            window.completeSeal(3);
-            
-            // CRITICAL: Auto-return to seal cards after completion
-            setTimeout(() => {
-                console.log('🏠 Auto-returning to seal cards from team communication...');
-                if (window.closePuzzle) window.closePuzzle();
-                if (window.renderSeals) window.renderSeals();
-            }, 3000);
-        }, 1500);
-    } else {
-        resultDiv.innerHTML = `
-            <div style="color: #dc3545;">
-                💔 <strong>Team Disunity</strong><br>
-                Coordination required. Work together to unlock the truth.<br>
-                ${results.join('<br>')}
-            </div>
-        `;
-    }
-}
-
 function checkChronologicalOrder() {
     console.log('📅 checkChronologicalOrder called in puzzles.js');
     
-    const variation = enhancedPuzzleManager.getPuzzleVariation('chronologicalOrder');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('chronologicalOrder');
     console.log('📅 Got variation:', variation);
     
     // Get current order from drop zones
@@ -2301,7 +2429,7 @@ function checkChronologicalOrder() {
 }
 
 function checkScriptureTopics() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('scriptureTopics');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('scriptureTopics');
     if (!variation) return;
     
     // Check each topic section
@@ -2364,7 +2492,7 @@ function checkScriptureTopics() {
 }
 
 function checkBiblicalWisdom() {
-    const variation = enhancedPuzzleManager.getPuzzleVariation('biblicalWisdom');
+    const variation = window.enhancedPuzzleManager.getPuzzleVariation('biblicalWisdom');
     if (!variation) return;
     
     let allCorrect = true;
@@ -2417,11 +2545,11 @@ function checkBiblicalWisdom() {
 
 // Reset functions
 function resetChallenge(challengeType) {
-    enhancedPuzzleManager.resetChallenge(challengeType);
+    window.enhancedPuzzleManager.resetChallenge(challengeType);
 }
 
 // Export enhanced manager with all methods IMMEDIATELY
-window.PuzzleManager = enhancedPuzzleManager;
+window.PuzzleManager = window.enhancedPuzzleManager;
 
 // Debug: Verify methods are available
 console.log('🔧 window.PuzzleManager assigned! Methods available:', {
@@ -2433,7 +2561,7 @@ console.log('🔧 window.PuzzleManager assigned! Methods available:', {
 });
 
 // Make regeneration function globally available for easy access
-window.regeneratePuzzles = () => enhancedPuzzleManager.regeneratePuzzles();
+window.regeneratePuzzles = () => window.enhancedPuzzleManager.regeneratePuzzles();
 
 // Make validation functions globally available
 window.checkBibleKnowledge = checkBibleKnowledge;
