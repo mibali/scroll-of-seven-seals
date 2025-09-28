@@ -1,6 +1,6 @@
 // Enhanced Challenge Manager - Complete Implementation
 // NO HINTS ALLOWED - Pure Biblical Knowledge and Reasoning
-
+const PuzzleType = Object.freeze({})
 class EnhancedPuzzleManager {
     constructor() {
         this.currentPuzzles = {};
@@ -58,7 +58,7 @@ class EnhancedPuzzleManager {
 
     // CHALLENGE 1: Bible Knowledge - Deep Scriptural Recall (Now Beginner-Friendly!)
     async generateBibleKnowledgeContent(variation) {
-        await this.generateDynamicBibleQuestions();
+        await this.generateDynamicQuestions('bibleKnowledge');
 
         // Re-fetch the variation in case it was updated by the dynamic question generator
         const currentVariation = (window.enhancedPuzzleManager || window.PuzzleManager).getPuzzleVariation('bibleKnowledge') || variation;
@@ -111,103 +111,179 @@ class EnhancedPuzzleManager {
         `;
     }
 
-    async generateDynamicBibleQuestions() {
-        const manager = this; // Use 'this' as we are inside the class instance
-        if (!manager.getPuzzleVariation || !manager.setPuzzleVariations) { // Corrected method name check
-            console.log('Dynamic questions disabled: Puzzle manager methods not available.');
-            return;
-        }
 
-        const profile = manager.currentGameContent?.profile || { ageGroup: 'adults', difficulty: 'normal' };
-        const originalVariation = manager.getPuzzleVariation('bibleKnowledge');
 
-        if (originalVariation.source === 'gemini-api') {
-            console.log('Using already generated dynamic questions.');
-            return;
-        }
-
-        const apiKey = 'AIzaSyDStF9vgP7iCRR6Gqsdk4LocbrkkJpp8Gc';
-
-        if (apiKey === 'YOUR_GEMINI_API_KEY' || !apiKey.trim()) {
-            console.warn('Gemini API key is not set. Skipping dynamic questions.');
-            return;
-        }
-
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-        const prompt = `
-            Generate a JSON array of 3 unique Bible trivia questions suitable for a quiz game.
-            The target audience is '${profile.ageGroup}' and the difficulty is '${profile.difficulty}'.
-            Each object in the array must have these exact keys: "question", "correctAnswer", and "hint".
-            - "question": The question text.
-            - "correctAnswer": A concise, one-to-three word answer.
-            - "hint": A short, helpful hint for the user.
-            Do not include any introductory text, comments, or markdown formatting like \`\`\`json. Only output the raw JSON array.
-        `;
-
-        try {
-            console.log(`Requesting 3 new Bible questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
-
-            const response = await fetch(apiUrl, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        response_mime_type: "application/json",
-                        temperature: 0.7,
-                    }
-                }),
-            });
-
-            if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(`API request failed with status ${response.status}. Response: ${errorBody}`);
-            }
-
-            const data = await response.json();
-            console.log('Gemini API Response Data:', data);
-
-            const jsonString = data.candidates[0].content.parts[0].text;
-            const newQuestions = JSON.parse(jsonString);
-
-            if (Array.isArray(newQuestions) && newQuestions.length > 0 && newQuestions.every(q => q.question && q.correctAnswer && q.hint)) {
-                console.log('✅ Successfully fetched and parsed new questions from Gemini API.');
-                const newVariation = { ...originalVariation, questions: newQuestions, source: 'gemini-api' };
-                this.currentPuzzles['bibleKnowledge'] = newVariation; // Directly set the new variation
-            } else {
-                throw new Error('Invalid question format received from API.');
-            }
-        } catch (error) {
-            console.error('❌ Failed to fetch dynamic questions. Falling back to hardcoded questions.', error);
-        }
+    async generateDynamicQuestions(PuzzleType) {
+    const manager = this;
+    if (!manager.getPuzzleVariation || !manager.setPuzzleVariations) {
+        console.log('Dynamic questions disabled: Puzzle manager methods not available.');
+        return;
     }
 
-    // CHALLENGE 2: Logical Reasoning - Biblical Deduction
-    generateLogicalReasoningContent(variation) {
-        let puzzlesHtml = '';
+    const profile = manager.currentGameContent?.profile || { ageGroup: 'adults', difficulty: 'normal' };
+    const originalVariation = manager.getPuzzleVariation(PuzzleType); // Use PuzzleType to get the correct variation
 
-        variation.puzzles.forEach((puzzle, index) => {
-            let optionsHtml = '';
+    // It's good practice to check if the variation exists first
+    if (!originalVariation) {
+        console.error(`No puzzle variation found for type: ${PuzzleType}`);
+        return;
+    }
 
-            if (puzzle.options) {
-                optionsHtml = `
+    if (originalVariation.source === 'gemini-api') {
+        console.log(`Using already generated dynamic questions for ${PuzzleType}.`);
+        return;
+    }
+
+    const apiKey = ' ';
+
+    if (apiKey === 'YOUR_GEMINI_API_KEY' || !apiKey.trim()) {
+        console.warn('Gemini API key is not set. Skipping dynamic questions.');
+        return;
+    }
+
+
+    let prompt;
+
+
+    switch (PuzzleType) {
+        case 'bibleKnowledge':
+            prompt = `
+                Generate a JSON array of 3 unique Bible trivia questions suitable for a quiz game.
+                The target audience is '${profile.ageGroup}' and the difficulty is '${profile.difficulty}'.
+                Each object in the array must have these exact keys: "question", "correctAnswer", and "hint".
+                - "question": The question text.
+                - "correctAnswer": A concise, one-to-three word answer.
+                - "hint": A short, helpful hint for the user.
+                Do not include any introductory text, comments, or markdown formatting like \`\`\`json. Only output the raw JSON array.
+            `;
+            break;
+
+        case 'logicalReasoning':
+            prompt = `
+                Generate a JSON array of 3 unique logical reasoning questions for an audience with '${profile.difficulty}' difficulty.
+                The first question should be about chronological sequencing, the second a logical puzzle, and the third a deductive reasoning problem.
+                Each object in the array must have these exact keys: "question", "correctAnswer", and "hint".
+                - "question": The question text.
+                - "correctAnswer": A concise, one-to-three word answer.
+                - "hint": A short, helpful hint for the user.
+                Do not include any introductory text, comments, or markdown formatting like \`\`\`json. Only output the raw JSON array.
+            `;
+            break;
+
+        case 'chronologicalOrder':
+            prompt = `
+                Generate a JSON array of 3 unique questions about the chronological order of biblical events, suitable for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                Each object must have "question", "correctAnswer", and "hint" keys.
+                - "question": The question, asking to order 3-4 events.
+                - "correctAnswer": The correct sequence (e.g., "Event A, Event C, Event B").
+                - "hint": A clue about the time period of one of the events.
+                Output only the raw JSON array.
+            `;
+            break;
+
+        case 'codeBreaking':
+            prompt = `
+                Generate a JSON array of 3 unique code-breaking puzzles with a biblical theme for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                Each object must have "question", "correctAnswer", and "hint" keys.
+                - "question": A simple cipher or pattern-based puzzle (e.g., "If A=1, B=2, what is 10-5-19-21-19?").
+                - "correctAnswer": The decoded biblical word or phrase.
+                - "hint": A clue about the cipher or the biblical context.
+                Output only the raw JSON array.
+            `;
+            break;
+
+        case 'biblicalWisdom':
+            prompt = `
+                Generate a JSON array of 3 unique questions about biblical wisdom and proverbs for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                Each object must have "question", "correctAnswer", and "hint" keys.
+                - "question": A question asking to complete a proverb or explain a piece of wisdom.
+                - "correctAnswer": The correct completion or a concise explanation.
+                - "hint": A clue about the book of the Bible the wisdom comes from.
+                Output only the raw JSON array.
+            `;
+            break;
+
+        case 'scriptureTopics':
+            prompt = `
+                Generate a JSON array of 3 unique questions about identifying themes in scripture passages for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                Each object must have "question", "correctAnswer", and "hint" keys.
+                - "question": A short scripture passage followed by a question about its main theme (e.g., "'For God so loved the world...' What is the main theme?").
+                - "correctAnswer": The primary theme (e.g., "Love", "Sacrifice").
+                - "hint": A keyword from the passage.
+                Output only the raw JSON array.
+            `;
+            break;
+
+        default:
+            console.error(`Unsupported PuzzleType for dynamic generation: ${PuzzleType}`);
+            return;
+    }
+
+
+
+
+    try {
+        console.log(`Requesting 3 new '${PuzzleType}' questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                    response_mime_type: "application/json",
+                    temperature: 0.7,
+                }
+            }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(`API request failed with status ${response.status}. Response: ${errorBody}`);
+        }
+
+        const data = await response.json();
+        const jsonString = data.candidates[0].content.parts[0].text;
+        const newQuestions = JSON.parse(jsonString);
+
+        if (Array.isArray(newQuestions) && newQuestions.length > 0 && newQuestions.every(q => q.question && q.correctAnswer && q.hint)) {
+            console.log(`✅ Successfully fetched and parsed new questions for ${PuzzleType}.`);
+            const newVariation = { ...originalVariation, questions: newQuestions, source: 'gemini-api' };
+            this.currentPuzzles[PuzzleType] = newVariation; // Use PuzzleType to update the correct puzzle
+        } else {
+            throw new Error('Invalid question format received from API.');
+        }
+    } catch (error) {
+        console.error(`❌ Failed to fetch dynamic questions for ${PuzzleType}. Falling back to hardcoded questions.`, error);
+    }
+}
+
+// CHALLENGE 2: Logical Reasoning - Biblical Deduction
+generateLogicalReasoningContent(variation) {
+    let puzzlesHtml = '';
+
+    variation.puzzles.forEach((puzzle, index) => {
+        let optionsHtml = '';
+
+        if (puzzle.options) {
+            optionsHtml = `
                     <select id="logical${index + 1}" class="logical-select">
                         <option value="">Choose your answer...</option>
                         ${puzzle.options.map(option => `<option value="${option}">${option}</option>`).join('')}
                     </select>
                 `;
-            } else {
-                optionsHtml = `
+        } else {
+            optionsHtml = `
                     <input type="text" 
                            id="logical${index + 1}" 
                            placeholder="Enter your deduction" 
                            class="logical-input"
                            maxlength="30">
                 `;
-            }
+        }
 
-            puzzlesHtml += `
+        puzzlesHtml += `
                 <div class="logical-puzzle">
                     <div class="puzzle-type">${puzzle.type.toUpperCase()}</div>
                     <div class="puzzle-question">${puzzle.question}</div>
@@ -216,9 +292,9 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        return `
+    return `
             <div class="logical-reasoning-challenge">
                 <h3>🧠 LOGICAL REASONING TRIAL</h3>
                 <div class="challenge-warning">
@@ -239,42 +315,42 @@ class EnhancedPuzzleManager {
                 <div id="logicalReasoningResult" class="challenge-result"></div>
             </div>
         `;
+}
+
+// CHALLENGE 3: Team Communication - Coordinated Biblical Knowledge  
+generateTeamCommunicationContent(variation) {
+    console.log('🔧 DEBUG: Team Communication variation:', variation);
+
+    let challengesHtml = '';
+
+    // Use actual variation challenges if available, otherwise provide fallback
+    let challenges;
+    if (variation && variation.challenges) {
+        challenges = variation.challenges;
+        console.log('🔧 DEBUG: Using variation challenges:', challenges);
+    } else {
+        // Fallback for when variation is not available
+        challenges = [
+            {
+                type: 'collaborative',
+                title: 'Unity Challenge: Biblical Fellowship',
+                description: 'Complete all parts to unlock the fellowship keyword (single-player mode)',
+                completionRequirement: 'Fill in all three fellowship aspects',
+                parts: [
+                    { role: 'Leader', task: 'Name a book of the Bible about fellowship (e.g., Acts, 1 John, Philippians)' },
+                    { role: 'Scholar', task: 'Quote a verse about unity (format: Book Chapter:Verse, e.g., John 17:21)' },
+                    { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship (e.g., Paul, John, Barnabas)' }
+                ]
+            }
+        ];
+        console.log('🔧 DEBUG: Using fallback challenges:', challenges);
     }
 
-    // CHALLENGE 3: Team Communication - Coordinated Biblical Knowledge  
-    generateTeamCommunicationContent(variation) {
-        console.log('🔧 DEBUG: Team Communication variation:', variation);
-
-        let challengesHtml = '';
-
-        // Use actual variation challenges if available, otherwise provide fallback
-        let challenges;
-        if (variation && variation.challenges) {
-            challenges = variation.challenges;
-            console.log('🔧 DEBUG: Using variation challenges:', challenges);
-        } else {
-            // Fallback for when variation is not available
-            challenges = [
-                {
-                    type: 'collaborative',
-                    title: 'Unity Challenge: Biblical Fellowship',
-                    description: 'Complete all parts to unlock the fellowship keyword (single-player mode)',
-                    completionRequirement: 'Fill in all three fellowship aspects',
-                    parts: [
-                        { role: 'Leader', task: 'Name a book of the Bible about fellowship (e.g., Acts, 1 John, Philippians)' },
-                        { role: 'Scholar', task: 'Quote a verse about unity (format: Book Chapter:Verse, e.g., John 17:21)' },
-                        { role: 'Teacher', task: 'Name a Biblical figure who promoted fellowship (e.g., Paul, John, Barnabas)' }
-                    ]
-                }
-            ];
-            console.log('🔧 DEBUG: Using fallback challenges:', challenges);
-        }
-
-        challenges.forEach((challenge, index) => {
-            if (challenge.type === 'collaborative' || challenge.type === 'division') {
-                let partsHtml = '';
-                challenge.parts.forEach((part, partIndex) => {
-                    partsHtml += `
+    challenges.forEach((challenge, index) => {
+        if (challenge.type === 'collaborative' || challenge.type === 'division') {
+            let partsHtml = '';
+            challenge.parts.forEach((part, partIndex) => {
+                partsHtml += `
                         <div class="team-part">
                             <div class="role-label">${part.role}:</div>
                             <div class="task-description">${part.task}</div>
@@ -285,9 +361,9 @@ class EnhancedPuzzleManager {
                                    data-role="${part.role}">
                         </div>
                     `;
-                });
+            });
 
-                challengesHtml += `
+            challengesHtml += `
                     <div class="collaborative-challenge">
                         <h4>${challenge.title}</h4>
                         <p class="challenge-description">${challenge.description}</p>
@@ -299,10 +375,10 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else if (challenge.type === 'chain') {
-                let sequenceHtml = '';
-                challenge.sequence.forEach((step, stepIndex) => {
-                    sequenceHtml += `
+        } else if (challenge.type === 'chain') {
+            let sequenceHtml = '';
+            challenge.sequence.forEach((step, stepIndex) => {
+                sequenceHtml += `
                         <div class="chain-step">
                             <div class="step-number">${step.order}</div>
                             <div class="step-clue">${step.clue}</div>
@@ -312,9 +388,9 @@ class EnhancedPuzzleManager {
                                    class="chain-input">
                         </div>
                     `;
-                });
+            });
 
-                challengesHtml += `
+            challengesHtml += `
                     <div class="chain-challenge">
                         <h4>${challenge.title}</h4>
                         <p class="challenge-description">${challenge.description}</p>
@@ -323,12 +399,12 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            }
-        });
+        }
+    });
 
-        const keyword = (variation && variation.keyword) ? variation.keyword : 'FELLOWSHIP';
+    const keyword = (variation && variation.keyword) ? variation.keyword : 'FELLOWSHIP';
 
-        return `
+    return `
             <div class="team-communication-challenge">
                 <h3>🤝 TEAM COORDINATION TRIAL</h3>
                 <div class="challenge-warning">
@@ -349,27 +425,27 @@ class EnhancedPuzzleManager {
                 <div id="teamCommunicationResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    // CHALLENGE 4: Code-Breaking - Biblical Classification (Testament Sorting)
-    generateCodeBreakingContent(variation) {
-        if (!variation || !variation.items) {
-            console.error('Code breaking variation data is missing or malformed');
-            return `
+// CHALLENGE 4: Code-Breaking - Biblical Classification (Testament Sorting)
+generateCodeBreakingContent(variation) {
+    if (!variation || !variation.items) {
+        console.error('Code breaking variation data is missing or malformed');
+        return `
                 <div class="code-breaking-challenge">
                     <h3>🔐 BIBLICAL CLASSIFICATION CHALLENGE</h3>
                     <p>Error loading challenge. Please try restarting the game.</p>
                 </div>
             `;
-        }
+    }
 
-        // Create category drop zones
-        const categories = variation.categories || {};
-        let categoriesHtml = '';
+    // Create category drop zones
+    const categories = variation.categories || {};
+    let categoriesHtml = '';
 
-        Object.keys(categories).forEach(categoryKey => {
-            const category = categories[categoryKey];
-            categoriesHtml += `
+    Object.keys(categories).forEach(categoryKey => {
+        const category = categories[categoryKey];
+        categoriesHtml += `
                 <div class="testament-category" data-category="${categoryKey}">
                     <h4 style="color: ${category.color}; margin-bottom: 10px;">
                         📖 ${category.name}
@@ -382,12 +458,12 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        // Create draggable items
-        let itemsHtml = '';
-        variation.items.forEach((item, index) => {
-            itemsHtml += `
+    // Create draggable items
+    let itemsHtml = '';
+    variation.items.forEach((item, index) => {
+        itemsHtml += `
                 <div class="draggable-item biblical-item" 
                      draggable="true" 
                      data-testament="${item.testament}" 
@@ -396,9 +472,9 @@ class EnhancedPuzzleManager {
                     ${item.text}
                 </div>
             `;
-        });
+    });
 
-        return `
+    return `
             <div class="code-breaking-challenge">
                 <h3>🔐 BIBLICAL CLASSIFICATION CHALLENGE</h3>
                 <div class="challenge-info">
@@ -434,14 +510,14 @@ class EnhancedPuzzleManager {
                 <div id="codeBreakingHint" class="challenge-hint" style="display: none;"></div>
             </div>
         `;
-    }
+}
 
-    // CHALLENGE 5: Metaphorical Scripture - Spiritual Interpretation
-    generateMetaphoricalScriptureContent(variation) {
-        let interpretationsHtml = '';
+// CHALLENGE 5: Metaphorical Scripture - Spiritual Interpretation
+generateMetaphoricalScriptureContent(variation) {
+    let interpretationsHtml = '';
 
-        variation.interpretations.forEach((interpretation, index) => {
-            interpretationsHtml += `
+    variation.interpretations.forEach((interpretation, index) => {
+        interpretationsHtml += `
                 <div class="metaphor-interpretation">
                     <div class="scripture-passage">
                         <strong>Scripture:</strong> "${interpretation.passage}"
@@ -465,9 +541,9 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        return `
+    return `
             <div class="metaphorical-scripture-challenge">
                 <h3>🕊️ SPIRITUAL INTERPRETATION TRIAL</h3>
                 <div class="challenge-warning">
@@ -488,15 +564,15 @@ class EnhancedPuzzleManager {
                 <div id="metaphoricalScriptureResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    // CHALLENGE 6: Prophetic Logic - Advanced Biblical Reasoning
-    generateProphethicLogicContent(variation) {
-        let logicChainsHtml = '';
+// CHALLENGE 6: Prophetic Logic - Advanced Biblical Reasoning
+generateProphethicLogicContent(variation) {
+    let logicChainsHtml = '';
 
-        variation.logic_chains.forEach((chain, index) => {
-            if (chain.premise1) {
-                logicChainsHtml += `
+    variation.logic_chains.forEach((chain, index) => {
+        if (chain.premise1) {
+            logicChainsHtml += `
                     <div class="logic-chain">
                         <div class="premises">
                             <div class="premise">Premise 1: ${chain.premise1}</div>
@@ -514,18 +590,18 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else if (chain.timeline) {
-                let eventsHtml = '';
-                chain.events.forEach((event, eventIndex) => {
-                    eventsHtml += `
+        } else if (chain.timeline) {
+            let eventsHtml = '';
+            chain.events.forEach((event, eventIndex) => {
+                eventsHtml += `
                         <div class="timeline-event">
                             <div class="stage">${event.stage}</div>
                             <div class="content">${event.content}</div>
                         </div>
                     `;
-                });
+            });
 
-                logicChainsHtml += `
+            logicChainsHtml += `
                     <div class="timeline-logic">
                         <div class="timeline-title">${chain.timeline}</div>
                         <div class="timeline-events">
@@ -542,8 +618,8 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else if (chain.syllogism) {
-                logicChainsHtml += `
+        } else if (chain.syllogism) {
+            logicChainsHtml += `
                     <div class="syllogism-logic">
                         <div class="syllogism">${chain.syllogism}</div>
                         <div class="syllogism-question">
@@ -557,10 +633,10 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            }
-        });
+        }
+    });
 
-        return `
+    return `
             <div class="prophetic-logic-challenge">
                 <h3>🔮 PROPHETIC LOGIC TRIAL</h3>
                 <div class="challenge-warning">
@@ -581,16 +657,16 @@ class EnhancedPuzzleManager {
                 <div id="prophethicLogicResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    // CHALLENGE 7: Revelation Code - Ultimate Biblical Mysteries
-    generateRevelationCodeContent(variation) {
-        let ultimateCodesHtml = '';
+// CHALLENGE 7: Revelation Code - Ultimate Biblical Mysteries
+generateRevelationCodeContent(variation) {
+    let ultimateCodesHtml = '';
 
-        variation.ultimate_codes.forEach((code, index) => {
-            if (code.type === 'symbolic_matrix') {
-                let elementsHtml = code.elements.map(element => `<div class="matrix-element">${element}</div>`).join('');
-                ultimateCodesHtml += `
+    variation.ultimate_codes.forEach((code, index) => {
+        if (code.type === 'symbolic_matrix') {
+            let elementsHtml = code.elements.map(element => `<div class="matrix-element">${element}</div>`).join('');
+            ultimateCodesHtml += `
                     <div class="symbolic-matrix">
                         <div class="matrix-title">${code.cipher}</div>
                         <div class="matrix-elements">
@@ -608,8 +684,8 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else if (code.type === 'numerical_prophecy') {
-                ultimateCodesHtml += `
+        } else if (code.type === 'numerical_prophecy') {
+            ultimateCodesHtml += `
                     <div class="numerical-prophecy">
                         <div class="prophecy-title">${code.cipher}</div>
                         <div class="prophecy-sequence">${code.sequence}</div>
@@ -622,8 +698,8 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else if (code.type === 'alpha_omega') {
-                ultimateCodesHtml += `
+        } else if (code.type === 'alpha_omega') {
+            ultimateCodesHtml += `
                     <div class="alpha-omega">
                         <div class="title-message">${code.message}</div>
                         <div class="title-question">
@@ -637,8 +713,8 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else {
-                ultimateCodesHtml += `
+        } else {
+            ultimateCodesHtml += `
                     <div class="ultimate-code">
                         <div class="code-message">${code.message}</div>
                         <div class="code-question">
@@ -652,10 +728,10 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            }
-        });
+        }
+    });
 
-        return `
+    return `
             <div class="revelation-code-challenge">
                 <h3>🌟 REVELATION CODE TRIAL</h3>
                 <div class="challenge-warning">
@@ -676,32 +752,32 @@ class EnhancedPuzzleManager {
                 <div id="revelationCodeResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    // CHALLENGE 5: Chronological Order - Biblical Timeline
-    generateChronologicalOrderContent(variation) {
-        console.log('📅 generateChronologicalOrderContent called with variation:', variation);
+// CHALLENGE 5: Chronological Order - Biblical Timeline
+generateChronologicalOrderContent(variation) {
+    console.log('📅 generateChronologicalOrderContent called with variation:', variation);
 
-        // CRITICAL: Ensure events exist, create fallback if missing
-        const defaultEvents = [
-            { id: '1', text: 'God creates the world and Adam & Eve', period: 'Beginning' },
-            { id: '2', text: 'The Fall of Man in the Garden of Eden', period: 'Beginning' },
-            { id: '3', text: "Noah's Flood destroys the earth", period: 'Early History' },
-            { id: '4', text: 'God calls Abraham to leave his homeland', period: 'Patriarchs' },
-            { id: '5', text: 'Joseph sold into slavery, family moves to Egypt', period: 'Patriarchs' },
-            { id: '6', text: 'Moses leads Israelites out of Egypt', period: 'Exodus' },
-            { id: '7', text: 'God gives the Ten Commandments at Mount Sinai', period: 'Exodus' }
-        ];
+    // CRITICAL: Ensure events exist, create fallback if missing
+    const defaultEvents = [
+        { id: '1', text: 'God creates the world and Adam & Eve', period: 'Beginning' },
+        { id: '2', text: 'The Fall of Man in the Garden of Eden', period: 'Beginning' },
+        { id: '3', text: "Noah's Flood destroys the earth", period: 'Early History' },
+        { id: '4', text: 'God calls Abraham to leave his homeland', period: 'Patriarchs' },
+        { id: '5', text: 'Joseph sold into slavery, family moves to Egypt', period: 'Patriarchs' },
+        { id: '6', text: 'Moses leads Israelites out of Egypt', period: 'Exodus' },
+        { id: '7', text: 'God gives the Ten Commandments at Mount Sinai', period: 'Exodus' }
+    ];
 
-        const events = (variation && variation.events) ? variation.events : defaultEvents;
-        console.log('📅 Using events:', events);
+    const events = (variation && variation.events) ? variation.events : defaultEvents;
+    console.log('📅 Using events:', events);
 
-        // Shuffle events for display
-        const shuffledEvents = [...events].sort(() => Math.random() - 0.5);
+    // Shuffle events for display
+    const shuffledEvents = [...events].sort(() => Math.random() - 0.5);
 
-        let eventsHtml = '';
-        shuffledEvents.forEach((event, index) => {
-            eventsHtml += `
+    let eventsHtml = '';
+    shuffledEvents.forEach((event, index) => {
+        eventsHtml += `
                 <div class="drag-item" draggable="true" data-event-id="${event.id}">
                     <div class="event-text">${event.text}</div>
                     <div class="event-period" style="font-size: 0.8em; color: #b8a082; margin-top: 5px;">
@@ -709,18 +785,18 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        let timelineHtml = '';
-        for (let i = 0; i < events.length; i++) {
-            timelineHtml += `
+    let timelineHtml = '';
+    for (let i = 0; i < events.length; i++) {
+        timelineHtml += `
                 <div class="drop-zone" data-position="${i}">
                     Drop event ${i + 1} here
                 </div>
             `;
-        }
+    }
 
-        return `
+    return `
             <div class="chronological-order-challenge">
                 <h3>⏰ CHRONOLOGICAL ORDER TRIAL</h3>
                 <div class="challenge-warning">
@@ -748,46 +824,46 @@ class EnhancedPuzzleManager {
                 <div id="chronologicalOrderResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    // CHALLENGE 6: Scripture Topics - Thematic Organization
-    generateScriptureTopicsContent(variation) {
-        // Combine all verses and shuffle them
-        let allVerses = [];
-        variation.topics.forEach(topic => {
-            topic.correctVerses.forEach(verse => {
-                allVerses.push({
-                    text: verse,
-                    topicName: topic.name,
-                    isCorrect: true
-                });
-            });
-        });
-
-        // Add distractor verses
-        variation.distractorVerses.forEach(verse => {
+// CHALLENGE 6: Scripture Topics - Thematic Organization
+generateScriptureTopicsContent(variation) {
+    // Combine all verses and shuffle them
+    let allVerses = [];
+    variation.topics.forEach(topic => {
+        topic.correctVerses.forEach(verse => {
             allVerses.push({
                 text: verse,
-                topicName: 'distractor',
-                isCorrect: false
+                topicName: topic.name,
+                isCorrect: true
             });
         });
+    });
 
-        // Shuffle all verses
-        allVerses.sort(() => Math.random() - 0.5);
+    // Add distractor verses
+    variation.distractorVerses.forEach(verse => {
+        allVerses.push({
+            text: verse,
+            topicName: 'distractor',
+            isCorrect: false
+        });
+    });
 
-        let versesHtml = '';
-        allVerses.forEach((verse, index) => {
-            versesHtml += `
+    // Shuffle all verses
+    allVerses.sort(() => Math.random() - 0.5);
+
+    let versesHtml = '';
+    allVerses.forEach((verse, index) => {
+        versesHtml += `
                 <div class="drag-item" draggable="true" data-verse-topic="${verse.topicName}" data-verse-text="${verse.text}">
                     ${verse.text}
                 </div>
             `;
-        });
+    });
 
-        let topicsHtml = '';
-        variation.topics.forEach((topic, index) => {
-            topicsHtml += `
+    let topicsHtml = '';
+    variation.topics.forEach((topic, index) => {
+        topicsHtml += `
                 <div class="topic-section">
                     <div class="topic-title">${topic.name}</div>
                     <div class="topic-description" style="font-size: 0.9em; color: #b8a082; margin-bottom: 10px;">
@@ -798,9 +874,9 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        return `
+    return `
             <div class="scripture-topics-challenge">
                 <h3>📚 SCRIPTURE ORGANIZATION TRIAL</h3>
                 <div class="challenge-warning">
@@ -827,25 +903,25 @@ class EnhancedPuzzleManager {
                 <div id="scriptureTopicsResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    // CHALLENGE 7: Biblical Wisdom - Comprehensive Knowledge
-    generateBiblicalWisdomContent(variation) {
-        let challengesHtml = '';
+// CHALLENGE 7: Biblical Wisdom - Comprehensive Knowledge
+generateBiblicalWisdomContent(variation) {
+    let challengesHtml = '';
 
-        variation.challenges.forEach((challenge, index) => {
-            if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
-                let optionsHtml = '';
-                challenge.options.forEach((option, optIndex) => {
-                    optionsHtml += `
+    variation.challenges.forEach((challenge, index) => {
+        if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
+            let optionsHtml = '';
+            challenge.options.forEach((option, optIndex) => {
+                optionsHtml += `
                         <label class="wisdom-option">
                             <input type="radio" name="wisdom${index}" value="${option}">
                             <span class="option-text">${option}</span>
                         </label>
                     `;
-                });
+            });
 
-                challengesHtml += `
+            challengesHtml += `
                     <div class="wisdom-question">
                         <div class="question-header">
                             <span class="question-number">Question ${index + 1}:</span>
@@ -856,8 +932,8 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else {
-                challengesHtml += `
+        } else {
+            challengesHtml += `
                     <div class="wisdom-question">
                         <div class="question-header">
                             <span class="question-number">Question ${index + 1}:</span>
@@ -873,10 +949,10 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            }
-        });
+        }
+    });
 
-        return `
+    return `
             <div class="biblical-wisdom-challenge">
                 <h3>👑 BIBLICAL WISDOM TRIAL</h3>
                 <div class="challenge-warning">
@@ -898,143 +974,143 @@ class EnhancedPuzzleManager {
                 <div id="biblicalWisdomResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
     // Reset a challenge to initial state
     async resetChallenge(challengeType) {
-        console.log('🔄 Resetting challenge:', challengeType);
+    console.log('🔄 Resetting challenge:', challengeType);
 
-        // Clear all inputs first
-        const inputs = document.querySelectorAll('#puzzleQuestion input, #puzzleQuestion select, #puzzleQuestion textarea');
-        inputs.forEach(input => {
-            if (input.type === 'checkbox' || input.type === 'radio') {
-                input.checked = false;
-            } else {
-                input.value = '';
-            }
-        });
-
-        // Clear result messages
-        const resultDivs = document.querySelectorAll('[id$="Result"]');
-        resultDivs.forEach(div => {
-            div.innerHTML = '';
-        });
-
-        // Reset drag and drop if present
-        if (this.resetDragAndDrop) {
-            this.resetDragAndDrop();
-        }
-
-        // Regenerate content if needed
-        const challengeContent = document.getElementById('puzzleQuestion');
-        if (challengeContent) {
-            const sealData = window.gameState?.currentSeal || window.gameController?.gameState?.currentSeal;
-            if (sealData) {
-                console.log('🔄 Regenerating content for seal:', sealData.id);
-                challengeContent.innerHTML = await this.generatePuzzleContent(sealData.id, sealData.puzzle);
-            }
-        }
-
-        console.log('✅ Challenge reset completed');
-    }
-
-    // Get current puzzle variation for a type
-    getPuzzleVariation(puzzleType) {
-        return this.currentPuzzles[puzzleType];
-    }
-
-    // Set puzzle variations (useful for multiplayer sync)
-    setPuzzleVariations(variations) {
-        this.currentPuzzles = { ...variations };
-    }
-
-    // Clear all puzzle selections and start new game session
-    clearPuzzles() {
-        this.currentPuzzles = {};
-        this.teamInputs = {};
-        this.gameSessionId = Date.now(); // New game session for randomization
-        console.log('🎲 New game session started - puzzles will be randomized');
-    }
-
-    // Get current game session identifier
-    getCurrentGameSession() {
-        if (!this.gameSessionId) {
-            this.gameSessionId = Date.now();
-        }
-        return this.gameSessionId;
-    }
-
-    // Force regenerate all puzzles for new game
-    regeneratePuzzles() {
-        console.log('🎲 Regenerating all puzzles for fresh game experience...');
-        this.gameSessionId = Date.now();
-        this.currentPuzzles = {};
-        this.teamInputs = {};
-
-        // Clear cached content to force AI regeneration if available
-        if (window.BibleGameAI && window.gameState?.complexity?.level) {
-            console.log('🤖 AI engine available - will generate fresh dynamic content for each seal');
-            // Don't pre-cache anything - let AI generate fresh content each time
+    // Clear all inputs first
+    const inputs = document.querySelectorAll('#puzzleQuestion input, #puzzleQuestion select, #puzzleQuestion textarea');
+    inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+            input.checked = false;
         } else {
-            // Fallback: Pre-generate random variations from static content
-            const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
-            puzzleTypes.forEach(type => {
-                const variations = window.GameData.puzzleVariations[type];
-                if (variations && variations.length > 0) {
-                    const randomIndex = Math.floor(Math.random() * variations.length);
-                    this.currentPuzzles[type] = variations[randomIndex];
-                    console.log(`🎲 Pre-generated ${type} - variation ${randomIndex + 1}/${variations.length}`);
-                }
-            });
+            input.value = '';
         }
+    });
 
-        console.log('✅ All puzzles regenerated for fresh game experience!');
+    // Clear result messages
+    const resultDivs = document.querySelectorAll('[id$="Result"]');
+    resultDivs.forEach(div => {
+        div.innerHTML = '';
+    });
+
+    // Reset drag and drop if present
+    if (this.resetDragAndDrop) {
+        this.resetDragAndDrop();
     }
+
+    // Regenerate content if needed
+    const challengeContent = document.getElementById('puzzleQuestion');
+    if (challengeContent) {
+        const sealData = window.gameState?.currentSeal || window.gameController?.gameState?.currentSeal;
+        if (sealData) {
+            console.log('🔄 Regenerating content for seal:', sealData.id);
+            challengeContent.innerHTML = await this.generatePuzzleContent(sealData.id, sealData.puzzle);
+        }
+    }
+
+    console.log('✅ Challenge reset completed');
+}
+
+// Get current puzzle variation for a type
+getPuzzleVariation(puzzleType) {
+    return this.currentPuzzles[puzzleType];
+}
+
+// Set puzzle variations (useful for multiplayer sync)
+setPuzzleVariations(variations) {
+    this.currentPuzzles = { ...variations };
+}
+
+// Clear all puzzle selections and start new game session
+clearPuzzles() {
+    this.currentPuzzles = {};
+    this.teamInputs = {};
+    this.gameSessionId = Date.now(); // New game session for randomization
+    console.log('🎲 New game session started - puzzles will be randomized');
+}
+
+// Get current game session identifier
+getCurrentGameSession() {
+    if (!this.gameSessionId) {
+        this.gameSessionId = Date.now();
+    }
+    return this.gameSessionId;
+}
+
+// Force regenerate all puzzles for new game
+regeneratePuzzles() {
+    console.log('🎲 Regenerating all puzzles for fresh game experience...');
+    this.gameSessionId = Date.now();
+    this.currentPuzzles = {};
+    this.teamInputs = {};
+
+    // Clear cached content to force AI regeneration if available
+    if (window.BibleGameAI && window.gameState?.complexity?.level) {
+        console.log('🤖 AI engine available - will generate fresh dynamic content for each seal');
+        // Don't pre-cache anything - let AI generate fresh content each time
+    } else {
+        // Fallback: Pre-generate random variations from static content
+        const puzzleTypes = Object.keys(window.GameData.puzzleVariations);
+        puzzleTypes.forEach(type => {
+            const variations = window.GameData.puzzleVariations[type];
+            if (variations && variations.length > 0) {
+                const randomIndex = Math.floor(Math.random() * variations.length);
+                this.currentPuzzles[type] = variations[randomIndex];
+                console.log(`🎲 Pre-generated ${type} - variation ${randomIndex + 1}/${variations.length}`);
+            }
+        });
+    }
+
+    console.log('✅ All puzzles regenerated for fresh game experience!');
+}
 
     // Dynamic content generation using AI engine
     async generateDynamicContent(sealId, puzzleType) {
-        try {
-            const complexity = window.gameState?.complexity?.level || 'intermediate';
-            const gameSession = {
-                preferences: this.getPlayerPreferences(),
-                strengths: this.getPlayerStrengths(),
-                engagement: 'high'
-            };
+    try {
+        const complexity = window.gameState?.complexity?.level || 'intermediate';
+        const gameSession = {
+            preferences: this.getPlayerPreferences(),
+            strengths: this.getPlayerStrengths(),
+            engagement: 'high'
+        };
 
-            return await window.BibleGameAI.generateDynamicSeal(sealId, complexity, gameSession);
-        } catch (error) {
-            console.log('Dynamic generation failed, using fallback', error);
-            return null;
-        }
+        return await window.BibleGameAI.generateDynamicSeal(sealId, complexity, gameSession);
+    } catch (error) {
+        console.log('Dynamic generation failed, using fallback', error);
+        return null;
     }
+}
 
-    // Render dynamically generated content
-    renderDynamicContent(dynamicContent, puzzleType) {
-        // Store the dynamic content for validation
-        this.currentPuzzles[puzzleType] = dynamicContent;
+// Render dynamically generated content
+renderDynamicContent(dynamicContent, puzzleType) {
+    // Store the dynamic content for validation
+    this.currentPuzzles[puzzleType] = dynamicContent;
 
-        // Add immersive introduction
-        const immersiveIntro = dynamicContent.immersiveIntro || '';
+    // Add immersive introduction
+    const immersiveIntro = dynamicContent.immersiveIntro || '';
 
-        switch (puzzleType) {
-            case 'bibleKnowledge':
-                return this.renderDynamicBibleKnowledge(dynamicContent, immersiveIntro);
-            case 'chronologicalOrder':
-                return this.renderDynamicChronological(dynamicContent, immersiveIntro);
-            case 'scriptureTopics':
-                return this.renderDynamicScriptureTopics(dynamicContent, immersiveIntro);
-            case 'biblicalWisdom':
-                return this.renderDynamicWisdom(dynamicContent, immersiveIntro);
-            default:
-                return this.generateBibleKnowledgeContent(dynamicContent);
-        }
+    switch (puzzleType) {
+        case 'bibleKnowledge':
+            return this.renderDynamicBibleKnowledge(dynamicContent, immersiveIntro);
+        case 'chronologicalOrder':
+            return this.renderDynamicChronological(dynamicContent, immersiveIntro);
+        case 'scriptureTopics':
+            return this.renderDynamicScriptureTopics(dynamicContent, immersiveIntro);
+        case 'biblicalWisdom':
+            return this.renderDynamicWisdom(dynamicContent, immersiveIntro);
+        default:
+            return this.generateBibleKnowledgeContent(dynamicContent);
     }
+}
 
-    renderDynamicBibleKnowledge(content, intro) {
-        let questionsHtml = '';
+renderDynamicBibleKnowledge(content, intro) {
+    let questionsHtml = '';
 
-        content.questions.forEach((question, index) => {
-            questionsHtml += `
+    content.questions.forEach((question, index) => {
+        questionsHtml += `
                 <div class="knowledge-question">
                     <div class="question-header">
                         <span class="question-number">Question ${index + 1}:</span>
@@ -1054,9 +1130,9 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        return `
+    return `
             <div class="bible-knowledge-challenge">
                 <div class="immersive-intro" style="
                     background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(255, 215, 0, 0.05));
@@ -1089,15 +1165,15 @@ class EnhancedPuzzleManager {
                 <div id="bibleKnowledgeResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    renderDynamicChronological(content, intro) {
-        // Shuffle events for display
-        const shuffledEvents = [...content.events].sort(() => Math.random() - 0.5);
+renderDynamicChronological(content, intro) {
+    // Shuffle events for display
+    const shuffledEvents = [...content.events].sort(() => Math.random() - 0.5);
 
-        let eventsHtml = '';
-        shuffledEvents.forEach((event, index) => {
-            eventsHtml += `
+    let eventsHtml = '';
+    shuffledEvents.forEach((event, index) => {
+        eventsHtml += `
                 <div class="drag-item" draggable="true" data-event-id="${event.id}">
                     <div class="event-text">${event.text}</div>
                     <div class="event-period" style="font-size: 0.8em; color: #b8a082; margin-top: 5px;">
@@ -1105,18 +1181,18 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        let timelineHtml = '';
-        for (let i = 0; i < content.events.length; i++) {
-            timelineHtml += `
+    let timelineHtml = '';
+    for (let i = 0; i < content.events.length; i++) {
+        timelineHtml += `
                 <div class="drop-zone" data-position="${i}">
                     Drop event ${i + 1} here
                 </div>
             `;
-        }
+    }
 
-        return `
+    return `
             <div class="chronological-order-challenge">
                 <div class="immersive-intro" style="
                     background: linear-gradient(135deg, rgba(147, 112, 219, 0.1), rgba(138, 43, 226, 0.05));
@@ -1155,24 +1231,24 @@ class EnhancedPuzzleManager {
                 <div id="chronologicalOrderResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    renderDynamicScriptureTopics(content, intro) {
-        // Shuffle verses for display
-        const shuffledVerses = [...content.verses].sort(() => Math.random() - 0.5);
+renderDynamicScriptureTopics(content, intro) {
+    // Shuffle verses for display
+    const shuffledVerses = [...content.verses].sort(() => Math.random() - 0.5);
 
-        let versesHtml = '';
-        shuffledVerses.forEach((verse, index) => {
-            versesHtml += `
+    let versesHtml = '';
+    shuffledVerses.forEach((verse, index) => {
+        versesHtml += `
                 <div class="drag-item" draggable="true" data-verse-id="${verse.id}">
                     ${verse.text}
                 </div>
             `;
-        });
+    });
 
-        let topicsHtml = '';
-        content.topics.forEach((topic, index) => {
-            topicsHtml += `
+    let topicsHtml = '';
+    content.topics.forEach((topic, index) => {
+        topicsHtml += `
                 <div class="topic-section">
                     <div class="topic-title">${topic.name}</div>
                     <div class="topic-description" style="font-size: 0.9em; color: #b8a082; margin-bottom: 10px;">
@@ -1183,9 +1259,9 @@ class EnhancedPuzzleManager {
                     </div>
                 </div>
             `;
-        });
+    });
 
-        return `
+    return `
             <div class="scripture-topics-challenge">
                 <div class="immersive-intro" style="
                     background: linear-gradient(135deg, rgba(147, 112, 219, 0.1), rgba(138, 43, 226, 0.05));
@@ -1223,24 +1299,24 @@ class EnhancedPuzzleManager {
                 <div id="scriptureTopicsResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    renderDynamicWisdom(content, intro) {
-        let challengesHtml = '';
+renderDynamicWisdom(content, intro) {
+    let challengesHtml = '';
 
-        content.challenges.forEach((challenge, index) => {
-            if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
-                let optionsHtml = '';
-                challenge.options.forEach((option, optIndex) => {
-                    optionsHtml += `
+    content.challenges.forEach((challenge, index) => {
+        if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
+            let optionsHtml = '';
+            challenge.options.forEach((option, optIndex) => {
+                optionsHtml += `
                         <label class="wisdom-option">
                             <input type="radio" name="wisdom${index}" value="${option}">
                             <span class="option-text">${option}</span>
                         </label>
                     `;
-                });
+            });
 
-                challengesHtml += `
+            challengesHtml += `
                     <div class="wisdom-question">
                         <div class="question-header">
                             <span class="question-number">Question ${index + 1}:</span>
@@ -1251,8 +1327,8 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            } else {
-                challengesHtml += `
+        } else {
+            challengesHtml += `
                     <div class="wisdom-question">
                         <div class="question-header">
                             <span class="question-number">Question ${index + 1}:</span>
@@ -1268,10 +1344,10 @@ class EnhancedPuzzleManager {
                         </div>
                     </div>
                 `;
-            }
-        });
+        }
+    });
 
-        return `
+    return `
             <div class="biblical-wisdom-challenge">
                 <div class="immersive-intro" style="
                     background: linear-gradient(135deg, rgba(147, 112, 219, 0.1), rgba(138, 43, 226, 0.05));
@@ -1304,236 +1380,236 @@ class EnhancedPuzzleManager {
                 <div id="biblicalWisdomResult" class="challenge-result"></div>
             </div>
         `;
-    }
+}
 
-    // Learning system tracking
-    recordSealSuccess(sealType, variation, sealNumber) {
-        try {
-            const sessionData = {
-                sealType,
-                sealNumber,
-                success: true,
-                timestamp: Date.now(),
-                difficulty: window.gameState?.complexity?.level || 'intermediate',
-                variation: variation.keyword || 'unknown',
-                timeTaken: this.getTimeTaken(sealNumber)
-            };
-
-            // Update player preferences based on success
-            this.updatePlayerPreferences(sealType, true);
-
-            // Update player strengths
-            this.updatePlayerStrengths(sealType, true);
-
-            // Record in AI learning system
-            if (window.BibleGameAI) {
-                const learningData = {
-                    seal: sealNumber,
-                    type: sealType,
-                    success: true,
-                    engagement: 'high',
-                    timestamp: Date.now()
-                };
-                // Store for later batch processing
-                this.addToLearningQueue(learningData);
-            }
-
-            console.log(`📊 Recorded success: Seal ${sealNumber} (${sealType})`);
-        } catch (error) {
-            console.log('Learning tracking error:', error);
-        }
-    }
-
-    recordSealAttempt(sealType, variation, sealNumber, success) {
-        try {
-            const sessionData = {
-                sealType,
-                sealNumber,
-                success,
-                timestamp: Date.now(),
-                difficulty: window.gameState?.complexity?.level || 'intermediate',
-                variation: variation.keyword || 'unknown',
-                attempt: true
-            };
-
-            // Update preferences and strengths
-            this.updatePlayerPreferences(sealType, success);
-            this.updatePlayerStrengths(sealType, success);
-
-            console.log(`📊 Recorded attempt: Seal ${sealNumber} (${sealType}) - Success: ${success}`);
-        } catch (error) {
-            console.log('Learning tracking error:', error);
-        }
-    }
-
-    updatePlayerPreferences(sealType, success) {
-        try {
-            let prefs = this.getPlayerPreferences();
-            if (!prefs[sealType]) {
-                prefs[sealType] = { attempts: 0, successes: 0, preference: 1 };
-            }
-
-            prefs[sealType].attempts++;
-            if (success) {
-                prefs[sealType].successes++;
-                prefs[sealType].preference = Math.min(5, prefs[sealType].preference + 0.2);
-            } else {
-                prefs[sealType].preference = Math.max(0.2, prefs[sealType].preference - 0.1);
-            }
-
-            localStorage.setItem('playerPreferences', JSON.stringify(prefs));
-        } catch (error) {
-            console.log('Preference update error:', error);
-        }
-    }
-
-    updatePlayerStrengths(sealType, success) {
-        try {
-            let strengths = this.getPlayerStrengths();
-            const strengthIndex = strengths.findIndex(s => s.type === sealType);
-
-            if (strengthIndex >= 0) {
-                strengths[strengthIndex].level += success ? 1 : -0.5;
-                strengths[strengthIndex].level = Math.max(0, Math.min(10, strengths[strengthIndex].level));
-            } else {
-                strengths.push({
-                    type: sealType,
-                    level: success ? 1 : 0.5,
-                    firstSeen: Date.now()
-                });
-            }
-
-            // Keep only top 20 strengths
-            strengths.sort((a, b) => b.level - a.level);
-            strengths = strengths.slice(0, 20);
-
-            localStorage.setItem('playerStrengths', JSON.stringify(strengths));
-        } catch (error) {
-            console.log('Strengths update error:', error);
-        }
-    }
-
-    addToLearningQueue(data) {
-        try {
-            let queue = JSON.parse(localStorage.getItem('learningQueue') || '[]');
-            queue.push(data);
-
-            // Keep queue manageable
-            if (queue.length > 100) {
-                queue = queue.slice(-50);
-            }
-
-            localStorage.setItem('learningQueue', JSON.stringify(queue));
-
-            // Process queue periodically
-            if (queue.length % 10 === 0) {
-                this.processLearningQueue();
-            }
-        } catch (error) {
-            console.log('Learning queue error:', error);
-        }
-    }
-
-    processLearningQueue() {
-        try {
-            const queue = JSON.parse(localStorage.getItem('learningQueue') || '[]');
-            if (queue.length === 0) return;
-
-            // Analyze patterns
-            const patterns = this.analyzeLearningPatterns(queue);
-
-            // Update AI system if available
-            if (window.BibleGameAI && patterns) {
-                window.BibleGameAI.recordGameSession({
-                    difficulty: window.gameState?.complexity?.level || 'intermediate',
-                    completionTime: Date.now() - (window.gameState?.startTime || Date.now()),
-                    sealsCompleted: window.gameState?.completedSeals?.length || 0,
-                    strengths: patterns.strengths,
-                    weaknesses: patterns.weaknesses,
-                    engagement: patterns.engagement,
-                    preferences: patterns.preferences
-                });
-            }
-
-            // Clear processed queue
-            localStorage.setItem('learningQueue', '[]');
-
-            console.log('📊 Processed learning queue with', queue.length, 'items');
-        } catch (error) {
-            console.log('Learning processing error:', error);
-        }
-    }
-
-    analyzeLearningPatterns(queue) {
-        try {
-            const sealTypes = {};
-            const strengths = [];
-            const weaknesses = [];
-            let totalEngagement = 0;
-
-            queue.forEach(item => {
-                if (!sealTypes[item.type]) {
-                    sealTypes[item.type] = { successes: 0, attempts: 0 };
-                }
-                sealTypes[item.type].attempts++;
-                if (item.success) {
-                    sealTypes[item.type].successes++;
-                    totalEngagement += 2;
-                } else {
-                    totalEngagement += 1;
-                }
-            });
-
-            // Determine strengths and weaknesses
-            Object.keys(sealTypes).forEach(type => {
-                const stats = sealTypes[type];
-                const successRate = stats.successes / stats.attempts;
-
-                if (successRate >= 0.8) {
-                    strengths.push(type);
-                } else if (successRate <= 0.4) {
-                    weaknesses.push(type);
-                }
-            });
-
-            return {
-                strengths,
-                weaknesses,
-                engagement: totalEngagement / queue.length > 1.5 ? 'high' : 'medium',
-                preferences: sealTypes
-            };
-        } catch (error) {
-            console.log('Pattern analysis error:', error);
-            return null;
-        }
-    }
-
-    getTimeTaken(sealNumber) {
-        // Calculate time taken for this seal (simplified)
-        return Date.now() - (this.sealStartTime || Date.now());
-    }
-
-    // Get complexity-based hint for puzzle types
-    getComplexityHint(puzzleType) {
-        const complexity = window.gameState?.complexity?.settings || { hintsAvailable: false };
-
-        if (!complexity.hintsAvailable) {
-            return '';
-        }
-
-        const hints = {
-            bibleKnowledge: 'Think about key figures, numbers, and places mentioned throughout Scripture.',
-            logicalReasoning: 'Look for patterns in biblical narratives and theological connections.',
-            teamCommunication: 'Consider the attributes and roles of the Trinity and biblical covenants.',
-            codeBreaking: 'Ancient ciphers often use numerical values and letter substitutions.',
-            metaphoricalScripture: 'Look beyond the literal meaning to find spiritual truths.',
-            prophethicLogic: 'Consider how God\'s promises connect through Christ.',
-            revelationCode: 'Numbers in Revelation often represent completion and perfection.'
+// Learning system tracking
+recordSealSuccess(sealType, variation, sealNumber) {
+    try {
+        const sessionData = {
+            sealType,
+            sealNumber,
+            success: true,
+            timestamp: Date.now(),
+            difficulty: window.gameState?.complexity?.level || 'intermediate',
+            variation: variation.keyword || 'unknown',
+            timeTaken: this.getTimeTaken(sealNumber)
         };
 
-        const hint = hints[puzzleType] || '';
+        // Update player preferences based on success
+        this.updatePlayerPreferences(sealType, true);
 
-        return hint ? `
+        // Update player strengths
+        this.updatePlayerStrengths(sealType, true);
+
+        // Record in AI learning system
+        if (window.BibleGameAI) {
+            const learningData = {
+                seal: sealNumber,
+                type: sealType,
+                success: true,
+                engagement: 'high',
+                timestamp: Date.now()
+            };
+            // Store for later batch processing
+            this.addToLearningQueue(learningData);
+        }
+
+        console.log(`📊 Recorded success: Seal ${sealNumber} (${sealType})`);
+    } catch (error) {
+        console.log('Learning tracking error:', error);
+    }
+}
+
+recordSealAttempt(sealType, variation, sealNumber, success) {
+    try {
+        const sessionData = {
+            sealType,
+            sealNumber,
+            success,
+            timestamp: Date.now(),
+            difficulty: window.gameState?.complexity?.level || 'intermediate',
+            variation: variation.keyword || 'unknown',
+            attempt: true
+        };
+
+        // Update preferences and strengths
+        this.updatePlayerPreferences(sealType, success);
+        this.updatePlayerStrengths(sealType, success);
+
+        console.log(`📊 Recorded attempt: Seal ${sealNumber} (${sealType}) - Success: ${success}`);
+    } catch (error) {
+        console.log('Learning tracking error:', error);
+    }
+}
+
+updatePlayerPreferences(sealType, success) {
+    try {
+        let prefs = this.getPlayerPreferences();
+        if (!prefs[sealType]) {
+            prefs[sealType] = { attempts: 0, successes: 0, preference: 1 };
+        }
+
+        prefs[sealType].attempts++;
+        if (success) {
+            prefs[sealType].successes++;
+            prefs[sealType].preference = Math.min(5, prefs[sealType].preference + 0.2);
+        } else {
+            prefs[sealType].preference = Math.max(0.2, prefs[sealType].preference - 0.1);
+        }
+
+        localStorage.setItem('playerPreferences', JSON.stringify(prefs));
+    } catch (error) {
+        console.log('Preference update error:', error);
+    }
+}
+
+updatePlayerStrengths(sealType, success) {
+    try {
+        let strengths = this.getPlayerStrengths();
+        const strengthIndex = strengths.findIndex(s => s.type === sealType);
+
+        if (strengthIndex >= 0) {
+            strengths[strengthIndex].level += success ? 1 : -0.5;
+            strengths[strengthIndex].level = Math.max(0, Math.min(10, strengths[strengthIndex].level));
+        } else {
+            strengths.push({
+                type: sealType,
+                level: success ? 1 : 0.5,
+                firstSeen: Date.now()
+            });
+        }
+
+        // Keep only top 20 strengths
+        strengths.sort((a, b) => b.level - a.level);
+        strengths = strengths.slice(0, 20);
+
+        localStorage.setItem('playerStrengths', JSON.stringify(strengths));
+    } catch (error) {
+        console.log('Strengths update error:', error);
+    }
+}
+
+addToLearningQueue(data) {
+    try {
+        let queue = JSON.parse(localStorage.getItem('learningQueue') || '[]');
+        queue.push(data);
+
+        // Keep queue manageable
+        if (queue.length > 100) {
+            queue = queue.slice(-50);
+        }
+
+        localStorage.setItem('learningQueue', JSON.stringify(queue));
+
+        // Process queue periodically
+        if (queue.length % 10 === 0) {
+            this.processLearningQueue();
+        }
+    } catch (error) {
+        console.log('Learning queue error:', error);
+    }
+}
+
+processLearningQueue() {
+    try {
+        const queue = JSON.parse(localStorage.getItem('learningQueue') || '[]');
+        if (queue.length === 0) return;
+
+        // Analyze patterns
+        const patterns = this.analyzeLearningPatterns(queue);
+
+        // Update AI system if available
+        if (window.BibleGameAI && patterns) {
+            window.BibleGameAI.recordGameSession({
+                difficulty: window.gameState?.complexity?.level || 'intermediate',
+                completionTime: Date.now() - (window.gameState?.startTime || Date.now()),
+                sealsCompleted: window.gameState?.completedSeals?.length || 0,
+                strengths: patterns.strengths,
+                weaknesses: patterns.weaknesses,
+                engagement: patterns.engagement,
+                preferences: patterns.preferences
+            });
+        }
+
+        // Clear processed queue
+        localStorage.setItem('learningQueue', '[]');
+
+        console.log('📊 Processed learning queue with', queue.length, 'items');
+    } catch (error) {
+        console.log('Learning processing error:', error);
+    }
+}
+
+analyzeLearningPatterns(queue) {
+    try {
+        const sealTypes = {};
+        const strengths = [];
+        const weaknesses = [];
+        let totalEngagement = 0;
+
+        queue.forEach(item => {
+            if (!sealTypes[item.type]) {
+                sealTypes[item.type] = { successes: 0, attempts: 0 };
+            }
+            sealTypes[item.type].attempts++;
+            if (item.success) {
+                sealTypes[item.type].successes++;
+                totalEngagement += 2;
+            } else {
+                totalEngagement += 1;
+            }
+        });
+
+        // Determine strengths and weaknesses
+        Object.keys(sealTypes).forEach(type => {
+            const stats = sealTypes[type];
+            const successRate = stats.successes / stats.attempts;
+
+            if (successRate >= 0.8) {
+                strengths.push(type);
+            } else if (successRate <= 0.4) {
+                weaknesses.push(type);
+            }
+        });
+
+        return {
+            strengths,
+            weaknesses,
+            engagement: totalEngagement / queue.length > 1.5 ? 'high' : 'medium',
+            preferences: sealTypes
+        };
+    } catch (error) {
+        console.log('Pattern analysis error:', error);
+        return null;
+    }
+}
+
+getTimeTaken(sealNumber) {
+    // Calculate time taken for this seal (simplified)
+    return Date.now() - (this.sealStartTime || Date.now());
+}
+
+// Get complexity-based hint for puzzle types
+getComplexityHint(puzzleType) {
+    const complexity = window.gameState?.complexity?.settings || { hintsAvailable: false };
+
+    if (!complexity.hintsAvailable) {
+        return '';
+    }
+
+    const hints = {
+        bibleKnowledge: 'Think about key figures, numbers, and places mentioned throughout Scripture.',
+        logicalReasoning: 'Look for patterns in biblical narratives and theological connections.',
+        teamCommunication: 'Consider the attributes and roles of the Trinity and biblical covenants.',
+        codeBreaking: 'Ancient ciphers often use numerical values and letter substitutions.',
+        metaphoricalScripture: 'Look beyond the literal meaning to find spiritual truths.',
+        prophethicLogic: 'Consider how God\'s promises connect through Christ.',
+        revelationCode: 'Numbers in Revelation often represent completion and perfection.'
+    };
+
+    const hint = hints[puzzleType] || '';
+
+    return hint ? `
             <div class="complexity-hint" style="
                 background: rgba(212, 175, 55, 0.1); 
                 border: 1px solid #d4af37; 
@@ -1546,50 +1622,50 @@ class EnhancedPuzzleManager {
                 💡 <strong>Hint:</strong> ${hint}
             </div>
         ` : '';
-    }
+}
 
-    // Missing methods for compatibility
-    regeneratePuzzles() {
-        this.currentPuzzles = {};
-        this.gameSessionId = null;
-        console.log('🔄 Puzzles regenerated - fresh content will be generated');
-    }
+// Missing methods for compatibility
+regeneratePuzzles() {
+    this.currentPuzzles = {};
+    this.gameSessionId = null;
+    console.log('🔄 Puzzles regenerated - fresh content will be generated');
+}
 
-    getPuzzleVariation(puzzleType) {
-        return this.currentPuzzles[puzzleType] || null;
-    }
+getPuzzleVariation(puzzleType) {
+    return this.currentPuzzles[puzzleType] || null;
+}
 
-    getHintsUsed() {
-        return this.hintsUsed || 0;
-    }
+getHintsUsed() {
+    return this.hintsUsed || 0;
+}
 
-    showHint(puzzleType) {
-        this.hintsUsed++;
-        console.log(`💡 Hint shown for ${puzzleType}, total hints used: ${this.hintsUsed}`);
-    }
+showHint(puzzleType) {
+    this.hintsUsed++;
+    console.log(`💡 Hint shown for ${puzzleType}, total hints used: ${this.hintsUsed}`);
+}
 
-    resetPuzzle(puzzleType) {
-        if (this.currentPuzzles[puzzleType]) {
-            delete this.currentPuzzles[puzzleType];
-            console.log(`🔄 Reset puzzle: ${puzzleType}`);
-        }
-    }
-
-    clearPuzzles() {
-        this.currentPuzzles = {};
-        this.hintsUsed = 0;
-        this.gameSessionId = null;
-        console.log('🧹 All puzzles cleared');
-    }
-
-    recordSealSuccess(puzzleType, variation, sealNumber) {
-        console.log(`✅ Recorded success for ${puzzleType} - Seal ${sealNumber}`);
-    }
-
-    recordSealAttempt(puzzleType, variation, sealNumber, success) {
-        console.log(`📝 Recorded attempt for ${puzzleType} - Seal ${sealNumber}, Success: ${success}`);
+resetPuzzle(puzzleType) {
+    if (this.currentPuzzles[puzzleType]) {
+        delete this.currentPuzzles[puzzleType];
+        console.log(`🔄 Reset puzzle: ${puzzleType}`);
     }
 }
+
+clearPuzzles() {
+    this.currentPuzzles = {};
+    this.hintsUsed = 0;
+    this.gameSessionId = null;
+    console.log('🧹 All puzzles cleared');
+}
+
+recordSealSuccess(puzzleType, variation, sealNumber) {
+    console.log(`✅ Recorded success for ${puzzleType} - Seal ${sealNumber}`);
+}
+
+recordSealAttempt(puzzleType, variation, sealNumber, success) {
+    console.log(`📝 Recorded attempt for ${puzzleType} - Seal ${sealNumber}, Success: ${success}`);
+}
+    }
 
 // Initialize enhanced puzzle manager
 window.enhancedPuzzleManager = new EnhancedPuzzleManager();
