@@ -134,10 +134,15 @@ class EnhancedPuzzleManager {
             return;
         }
 
-        const apiKey = ' ';
-
-        if (apiKey === 'YOUR_GEMINI_API_KEY' || !apiKey.trim()) {
-            console.warn('Gemini API key is not set. Skipping dynamic questions.');
+        let apiKey;
+        try {
+            apiKey = await window.apiUtils.fetchApiKey();
+            if (!apiKey) {
+                console.warn('Failed to fetch Gemini API key. Skipping dynamic questions.');
+                return;
+            }
+        } catch (error) {
+            console.error('Error fetching API key:', error);
             return;
         }
 
@@ -694,7 +699,7 @@ class EnhancedPuzzleManager {
                         <div class="code-input">
                             <input type="text" 
                                    id="revelation${index + 1}" 
-                                   placeholder="Enter answer"
+                                   placeholder="Enter answer", 
                                    class="revelation-input">
                         </div>
                     </div>
