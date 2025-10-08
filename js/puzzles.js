@@ -146,7 +146,6 @@ class EnhancedPuzzleManager {
             return;
         }
 
-
         let prompt;
 
 
@@ -190,46 +189,76 @@ class EnhancedPuzzleManager {
 
             case 'codeBreaking':
                 prompt = `
-                Generate a JSON array of 3 unique code-breaking puzzles with a biblical theme for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
-                Each object must have "question", "correctAnswer", and "hint" keys.
-                - "question": A simple cipher or pattern-based puzzle (e.g., "If A=1, B=2, what is 10-5-19-21-19?").
-                - "correctAnswer": The decoded biblical word or phrase.
-                - "hint": A clue about the cipher or the biblical context.
-                Output only the raw JSON array.
+                Generate a JSON object for a drag-and-drop Testament classification challenge for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                The object must have these keys:
+                - "keyword": A single word related to biblical testaments (e.g., "TESTAMENT", "COVENANT", "DIVISION")
+                - "title": A descriptive title for the challenge
+                - "description": Brief instructions for the drag-and-drop task
+                - "categories": An object with two keys ("oldTestament" and "newTestament"), each containing:
+                  - "name": Display name (e.g., "Old Testament", "New Testament")
+                  - "color": A hex color code
+                  - "description": Brief description of the category
+                - "items": An array of 8-10 biblical events/teachings to classify, each with:
+                  - "text": The event description (e.g., "Moses parts the Red Sea")
+                  - "testament": Either "oldTestament" or "newTestament"
+                  - "category": A category label like "History", "Miracles", "Gospel", etc.
+                
+                Make sure to include a mix of well-known events from both testaments that are appropriate for the age group.
+                Output only the raw JSON object.
             `;
                 break;
 
             case 'biblicalWisdom':
                 prompt = `
-                Generate a JSON array of 3 unique questions about biblical wisdom and proverbs for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
-                Each object must have "question", "correctAnswer", and "hint" keys.
-                - "question": A question asking to complete a proverb or explain a piece of wisdom.
-                - "correctAnswer": The correct completion or a concise explanation.
-                - "hint": A clue about the book of the Bible the wisdom comes from.
+                Generate a JSON array of 3 unique biblical wisdom questions for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                Each object must have these keys:
+                - "type": The question type - use "completion" for fill-in-the-blank, "application" for practical questions, "multiple_choice" for options, or "synthesis" for reflective questions
+                - "question": The question text
+                - "correctAnswer": The correct answer (for non-multiple-choice questions)
+                - "answer": Same as correctAnswer (for compatibility)
+                - "hint": A helpful clue (optional, can be empty string)
+                - "options": Array of 4 options (ONLY for multiple_choice/synthesis types, omit for others)
+                - "context" or "reference": Bible reference or context (optional)
+                
+                Mix different question types. For multiple_choice, include the "options" array with 4 choices.
+                For completion/application questions, provide concise answers that can be validated flexibly.
                 Output only the raw JSON array.
             `;
                 break;
 
             case 'chronologicalOrder':
                 prompt = `
-                Generate a JSON array of 5 biblical events for a chronological ordering challenge, suitable for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
-                Each object must have "question", "correctAnswer", and "hint" keys.
-                - "question": A description of a biblical event (e.g., "God creates the world and Adam & Eve", "Moses leads Israelites out of Egypt").
-                - "correctAnswer": The chronological position number (1 for earliest, 2 for second, etc.), for example for Creation, Death of Peter, Crucifiction of Christ, the correct answer would be 1,3,2.
-                - "hint": A clue about the time period or biblical book where this event occurred.
-                - "period": The biblical period (e.g., "Beginning", "Patriarchs", "Exodus", "Kingdom", "Exile", "New Testament").
-                Output only the raw JSON array. Ensure events are from different time periods and can be clearly ordered chronologically.
+                Generate a JSON object for a drag-and-drop chronological ordering challenge for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                The object must have these keys:
+                - "keyword": A single word related to time/order (e.g., "ORDER", "HISTORY", "TIMELINE")
+                - "timeline": A descriptive name for the timeline (e.g., "Old Testament Timeline", "Life of Jesus Timeline")
+                - "questions": An array of 5-8 biblical events, each with:
+                  - "question": Description of the event (e.g., "God creates the world and Adam & Eve")
+                  - "correctAnswer": The chronological position as a string number ("1" for earliest, "2" for second, etc.)
+                  - "hint": A clue about when this happened
+                  - "period": The biblical period (e.g., "Beginning", "Patriarchs", "Exodus", "Kingdom", "New Testament")
+                
+                CRITICAL: Ensure events are from different time periods and can be clearly ordered chronologically.
+                The correctAnswer should reflect the actual chronological order (1 = earliest event, 2 = second earliest, etc.).
+                Output only the raw JSON object.
             `;
                 break;
 
             case 'scriptureTopics':
                 prompt = `
-                Generate a JSON array of 3 unique questions about identifying themes in scripture passages for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
-                Each object must have "question", "correctAnswer", and "hint" keys.
-                - "question": A short scripture passage followed by a question about its main theme (e.g., "'For God so loved the world...' What is the main theme?").
-                - "correctAnswer": The primary theme (e.g., "Love", "Sacrifice").
-                - "hint": A keyword from the passage.
-                Output only the raw JSON array.
+                Generate a JSON object for a drag-and-drop scripture topic organization challenge for a '${profile.ageGroup}' audience with '${profile.difficulty}' difficulty.
+                The object must have these keys:
+                - "keyword": A single word related to organization (e.g., "ORGANIZATION", "CATEGORIES", "THEMES")
+                - "topicName": Overall theme name (e.g., "Biblical Wisdom", "Salvation and Faith")
+                - "topics": An array of 2-3 topic categories, each with:
+                  - "name": Topic name (e.g., "God's Promises", "Christian Living")
+                  - "description": Brief description of the topic
+                  - "correctVerses": Array of 3-4 Bible verses with references (e.g., "Love your neighbor as yourself - Matthew 22:39")
+                - "distractorVerses": An empty array (we don't use distractors for simplicity)
+                
+                Make sure verses are well-known and appropriate for the age group.
+                Each verse should clearly belong to its assigned topic.
+                Output only the raw JSON object.
             `;
                 break;
 
@@ -264,20 +293,44 @@ class EnhancedPuzzleManager {
 
             const data = await response.json();
             const jsonString = data.candidates[0].content.parts[0].text;
-            const newQuestions = JSON.parse(jsonString);
+            let newQuestions = JSON.parse(jsonString);
 
-            // Validate based on puzzle type - some need extra fields
+            // If the response for certain puzzle types is an array with one object, extract that object
+            if (Array.isArray(newQuestions) && newQuestions.length === 1 && ['codeBreaking', 'chronologicalOrder', 'scriptureTopics'].includes(PuzzleType)) {
+                newQuestions = newQuestions[0];
+            }
+
+            // Validate based on puzzle type - some need extra fields or are objects
             let isValid = false;
-            if (PuzzleType === 'chronologicalOrder') {
-                // chronologicalOrder needs 'period' field
-                isValid = Array.isArray(newQuestions) && newQuestions.length > 0 &&
-                    newQuestions.every(q => q.question && q.correctAnswer && q.hint && q.period);
+            if (PuzzleType === 'codeBreaking') {
+                // codeBreaking is an object with categories and items
+                isValid = newQuestions && typeof newQuestions === 'object' && !Array.isArray(newQuestions) &&
+                    newQuestions.keyword && newQuestions.title && newQuestions.description &&
+                    newQuestions.categories && newQuestions.items && Array.isArray(newQuestions.items) &&
+                    newQuestions.items.length > 0 &&
+                    newQuestions.items.every(item => item.text && item.testament && item.category);
+            } else if (PuzzleType === 'chronologicalOrder') {
+                // chronologicalOrder is an object with questions array
+                isValid = newQuestions && typeof newQuestions === 'object' && !Array.isArray(newQuestions) &&
+                    newQuestions.keyword && newQuestions.timeline && newQuestions.questions &&
+                    Array.isArray(newQuestions.questions) && newQuestions.questions.length > 0 &&
+                    newQuestions.questions.every(q => q.question && q.correctAnswer && q.hint && q.period);
+            } else if (PuzzleType === 'scriptureTopics') {
+                // scriptureTopics is an object with topics array
+                isValid = newQuestions && typeof newQuestions === 'object' && !Array.isArray(newQuestions) &&
+                    newQuestions.keyword && newQuestions.topicName && newQuestions.topics &&
+                    Array.isArray(newQuestions.topics) && newQuestions.topics.length > 0 &&
+                    newQuestions.topics.every(t => t.name && t.description && Array.isArray(t.correctVerses) && t.correctVerses.length > 0);
             } else if (['logicalReasoning', 'teamCommunication'].includes(PuzzleType)) {
                 // These need 'type' field
                 isValid = Array.isArray(newQuestions) && newQuestions.length > 0 &&
                     newQuestions.every(q => q.question && q.correctAnswer && q.hint && q.type);
+            } else if (PuzzleType === 'biblicalWisdom') {
+                // biblicalWisdom needs type field and either answer or correctAnswer
+                isValid = Array.isArray(newQuestions) && newQuestions.length > 0 &&
+                    newQuestions.every(q => q.question && q.type && (q.answer || q.correctAnswer));
             } else {
-                // Standard validation
+                // Standard validation for arrays
                 isValid = Array.isArray(newQuestions) && newQuestions.length > 0 &&
                     newQuestions.every(q => q.question && q.correctAnswer && q.hint);
             }
@@ -286,16 +339,24 @@ class EnhancedPuzzleManager {
                 console.log(newQuestions);
                 console.log(`✅ Successfully fetched and parsed new questions for ${PuzzleType}.`);
 
-                // Create new variation with AI questions, removing incompatible hardcoded fields
-                const newVariation = {
-                    keyword: originalVariation.keyword,
-                    questions: newQuestions,
-                    source: 'gemini-api'
-                };
+                // Create new variation with AI questions
+                let newVariation;
 
-                // For chronologicalOrder, don't include the old events/correctOrder arrays
-                if (PuzzleType !== 'chronologicalOrder') {
-                    // For other types, preserve additional fields if needed
+                if (['codeBreaking', 'chronologicalOrder', 'scriptureTopics'].includes(PuzzleType)) {
+                    // These are complete objects, use them directly
+                    newVariation = {
+                        ...newQuestions,
+                        source: 'gemini-api'
+                    };
+                } else {
+                    // These are arrays, wrap them in a variation object
+                    newVariation = {
+                        keyword: originalVariation.keyword,
+                        questions: newQuestions,
+                        source: 'gemini-api'
+                    };
+
+                    // Preserve additional fields if needed
                     Object.keys(originalVariation).forEach(key => {
                         if (!['questions', 'source', 'keyword'].includes(key)) {
                             newVariation[key] = originalVariation[key];
@@ -699,7 +760,7 @@ class EnhancedPuzzleManager {
                         <div class="code-input">
                             <input type="text" 
                                    id="revelation${index + 1}" 
-                                   placeholder="Enter answer", 
+                                   placeholder="Enter answer",  
                                    class="revelation-input">
                         </div>
                     </div>
@@ -846,14 +907,16 @@ class EnhancedPuzzleManager {
             });
         });
 
-        // Add distractor verses
-        currentVariation.distractorVerses.forEach(verse => {
-            allVerses.push({
-                text: verse,
-                topicName: 'distractor',
-                isCorrect: false
+        // Add distractor verses (if any)
+        if (currentVariation.distractorVerses && currentVariation.distractorVerses.length > 0) {
+            currentVariation.distractorVerses.forEach(verse => {
+                allVerses.push({
+                    text: verse,
+                    topicName: 'distractor',
+                    isCorrect: false
+                });
             });
-        });
+        }
 
         // Shuffle all verses
         allVerses.sort(() => Math.random() - 0.5);
@@ -919,8 +982,11 @@ class EnhancedPuzzleManager {
         const currentVariation = (window.enhancedPuzzleManager || window.PuzzleManager).getPuzzleVariation('biblicalWisdom') || variation;
         let challengesHtml = '';
 
-        currentVariation.challenges.forEach((challenge, index) => {
-            if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
+        // Handle both AI-generated (questions) and hardcoded (challenges) structures
+        const challengeData = currentVariation.questions || currentVariation.challenges;
+
+        challengeData.forEach((challenge, index) => {
+            if ((challenge.type === 'multiple_choice' || challenge.type === 'synthesis') && challenge.options) {
                 let optionsHtml = '';
                 challenge.options.forEach((option, optIndex) => {
                     optionsHtml += `
@@ -937,6 +1003,7 @@ class EnhancedPuzzleManager {
                             <span class="question-number">Question ${index + 1}:</span>
                         </div>
                         <div class="question-text">${challenge.question}</div>
+                        ${challenge.hint ? `<div class="question-hint" style="color: #17a2b8; font-style: italic; font-size: 0.9em; margin: 5px 0;">💡 ${challenge.hint}</div>` : ''}
                         <div class="wisdom-options">
                             ${optionsHtml}
                         </div>
@@ -949,7 +1016,8 @@ class EnhancedPuzzleManager {
                             <span class="question-number">Question ${index + 1}:</span>
                         </div>
                         <div class="question-text">${challenge.question}</div>
-                        ${challenge.context ? `<div class="question-context" style="font-size: 0.9em; color: #b8a082; margin: 5px 0;">Reference: ${challenge.context || challenge.reference}</div>` : ''}
+                        ${challenge.hint ? `<div class="question-hint" style="color: #17a2b8; font-style: italic; font-size: 0.9em; margin: 5px 0;">💡 ${challenge.hint}</div>` : ''}
+                        ${challenge.context || challenge.reference ? `<div class="question-context" style="font-size: 0.9em; color: #b8a082; margin: 5px 0;">Reference: ${challenge.context || challenge.reference}</div>` : ''}
                         <div class="answer-input">
                             <input type="text" 
                                    id="wisdom${index + 1}" 
@@ -2614,8 +2682,11 @@ function checkBiblicalWisdom() {
     let allCorrect = true;
     const results = [];
 
-    variation.challenges.forEach((challenge, index) => {
-        if (challenge.type === 'multiple_choice' || challenge.type === 'synthesis') {
+    // Handle both AI-generated (questions) and hardcoded (challenges) structures
+    const challengeData = variation.questions || variation.challenges;
+
+    challengeData.forEach((challenge, index) => {
+        if ((challenge.type === 'multiple_choice' || challenge.type === 'synthesis') && challenge.options) {
             const selectedOption = document.querySelector(`input[name="wisdom${index}"]:checked`);
             if (selectedOption && selectedOption.value === challenge.correctAnswer) {
                 results.push(`✅ Question ${index + 1}: Wise choice`);
@@ -2625,7 +2696,9 @@ function checkBiblicalWisdom() {
             }
         } else {
             const userAnswer = document.getElementById(`wisdom${index + 1}`).value.trim();
-            const isCorrect = isAnswerCorrect(userAnswer, challenge.answer) ||
+            // Support both 'answer' and 'correctAnswer' fields
+            const correctAnswer = challenge.answer || challenge.correctAnswer;
+            const isCorrect = isAnswerCorrect(userAnswer, correctAnswer) ||
                 (challenge.alternates && challenge.alternates.some(alt => isAnswerCorrect(userAnswer, alt)));
 
             if (isCorrect) {
