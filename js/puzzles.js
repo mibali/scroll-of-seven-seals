@@ -136,6 +136,12 @@ class EnhancedPuzzleManager {
 
         let apiKey;
         try {
+            // Check if apiUtils is available
+            if (!window.apiUtils || typeof window.apiUtils.fetchApiKey !== 'function') {
+                console.warn('API utilities not available. Skipping dynamic questions.');
+                return;
+            }
+            
             apiKey = await window.apiUtils.fetchApiKey();
             if (!apiKey) {
                 console.warn('Failed to fetch Gemini API key. Skipping dynamic questions.');

@@ -53,13 +53,15 @@ if (typeof document !== 'undefined') {
     }
 }
 
-// Export the functions
-export { fetchApiKey, prefetchApiKey };
-
 // Make functions available globally if running in browser
 if (typeof window !== 'undefined') {
     window.apiUtils = {
         fetchApiKey,
         prefetchApiKey
     };
+}
+
+// Export the functions (for module systems)
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { fetchApiKey, prefetchApiKey };
 }
