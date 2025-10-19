@@ -1,67 +1,52 @@
-// API Utilities for secure API key management
+/**
+ * API Utilities for the Scroll of Seven Seals game
+ * Handles communication with the Gemini proxy server
+ */
 
-let cachedApiKey = null;
+const PROXY_URL = 'https://gemini-proxy-qo9a.onrender.com/api/generate';
 
 /**
- * Fetches the API key from the secure server
- * @returns {Promise<string>} The API key
+ * Calls the Gemini API through the proxy server
+ * @param {string} prompt - The prompt to send to the API
+ * @param {string} puzzleType - The type of puzzle being generated
+ * @param {number} temperature - The temperature for response generation (0-1)
+ * @returns {Promise<Object>} The parsed JSON response from the API
  */
-async function fetchApiKey() {
-    if (cachedApiKey) {
-        return cachedApiKey;
-    }
-
+async function callGeminiAPI(prompt, puzzleType, temperature = 0.7) {
     try {
-        const response = await fetch('https://give-me-my-key.onrender.com/api/key');
-        if (!response.ok) {
-            throw new Error(`Failed to fetch API key: ${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        cachedApiKey = data.key;
-        return cachedApiKey;
-    } catch (error) {
-        console.error('Error fetching API key:', error);
-        throw error; // Re-throw to allow calling code to handle the error
-    }
-}
-
-// Prefetch API key on page load to reduce latency
-function prefetchApiKey() {
-    // Trigger fetch and populate cache; ignore errors here (will be handled on-demand later)
-    return fetchApiKey()
-        .then((key) => {
-            if (key) {
-                console.debug('[api-utils] API key prefetched and cached.');
-                return key;
-            }
-            return null;
-        })
-        .catch((err) => {
-            // Non-fatal: on-demand calls will retry and surface errors appropriately
-            console.warn('[api-utils] API key prefetch failed (will retry on demand):', err?.message || err);
-            return null;
+        const response = await fetch(`${PROXY_URL}?puzzleType=${encodeURIComponent(puzzleType)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{
+                    parts: [{
+                        text: prompt
+                    }]
+                }],
+                temperature
+            })
         });
-}
 
-// Initialize API key prefetching when the module loads
-if (typeof document !== 'undefined') {
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', prefetchApiKey);
-    } else {
-        // Document already loaded
-        prefetchApiKey();
+        if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(`Proxy request failed with status ${response.status}. Response: ${errorBody}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error calling Gemini API:', error);
+        throw error;
     }
 }
 
 // Make functions available globally if running in browser
 if (typeof window !== 'undefined') {
-    window.apiUtils = {
-        fetchApiKey,
-        prefetchApiKey
+    window.ApiUtils = {
+        callGeminiAPI
     };
 }
 
-// Export the functions (for module systems)
+// Export for module systems
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { fetchApiKey, prefetchApiKey };
+    module.exports = { callGeminiAPI };
 }

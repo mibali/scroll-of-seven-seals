@@ -278,28 +278,9 @@ class EnhancedPuzzleManager {
 
         try {
             console.log(`Requesting 3 new '${PuzzleType}' questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
-            const proxyUrl = 'https://gemini-proxy-qo9a.onrender.com/api/generate';
-
-            const response = await fetch(`${proxyUrl}?puzzleType=${encodeURIComponent(PuzzleType)}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    temperature: 0.7
-                })
-            });
-
-            if (!response.ok) {
-                const errorBody = await response.text();
-                throw new Error(`Proxy request failed with status ${response.status}. Response: ${errorBody}`);
-            }
-
-            // The proxy already handles JSON parsing and special case handling
-            const newQuestions = await response.json();
+            
+            // Use the ApiUtils to call the Gemini API through our proxy
+            const newQuestions = await ApiUtils.callGeminiAPI(prompt, PuzzleType, 0.7);
 
             // Validate based on puzzle type - some need extra fields or are objects
             let isValid = false;
