@@ -278,33 +278,28 @@ class EnhancedPuzzleManager {
 
         try {
             console.log(`Requesting 3 new '${PuzzleType}' questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const proxyUrl = 'https://gemini-proxy-qo9a.onrender.com/api/generate';
 
-            const response = await fetch(apiUrl, {
+            const response = await fetch(`${proxyUrl}?puzzleType=${encodeURIComponent(PuzzleType)}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: {
-                        response_mime_type: "application/json",
-                        temperature: 0.7,
-                    }
-                }),
+                    contents: [{
+                        parts: [{
+                            text: prompt
+                        }]
+                    }],
+                    temperature: 0.7
+                })
             });
 
             if (!response.ok) {
                 const errorBody = await response.text();
-                throw new Error(`API request failed with status ${response.status}. Response: ${errorBody}`);
+                throw new Error(`Proxy request failed with status ${response.status}. Response: ${errorBody}`);
             }
 
-            const data = await response.json();
-            const jsonString = data.candidates[0].content.parts[0].text;
-            let newQuestions = JSON.parse(jsonString);
-
-            // If the response for certain puzzle types is an array with one object, extract that object
-            if (Array.isArray(newQuestions) && newQuestions.length === 1 && ['codeBreaking', 'chronologicalOrder', 'scriptureTopics'].includes(PuzzleType)) {
-                newQuestions = newQuestions[0];
-            }
+            // The proxy already handles JSON parsing and special case handling
+            const newQuestions = await response.json();
 
             // Validate based on puzzle type - some need extra fields or are objects
             let isValid = false;

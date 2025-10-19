@@ -39,6 +39,7 @@
     <!-- Additional CSS Files -->
     <link rel="stylesheet" href="enhanced-styles.css">
     <link rel="stylesheet" href="age-adaptive-styles.css">
+    <link rel="stylesheet" href="scroll-seals.css">
 
     <script>
         tailwind.config = {
@@ -139,6 +140,9 @@
         /* Mystical Futuristic Custom Styles */
         .room-input-section {
             display: none;
+        }
+        .scroll-conatiner{
+            background-image: 'assets/scroll.jpg';
         }
         .room-input-section.active {
             display: block;
@@ -1038,6 +1042,7 @@
         }
 
         .seals-grid {
+            background-image: '.assets/scroll.jpg';
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
             gap: 20px;
@@ -2146,7 +2151,23 @@
                 </div>
             </div>
 
-            <div class="seals-grid" id="sealsGrid"></div>
+            <!-- Ancient Scroll with Seven Seals -->
+            <div class="scroll-container">
+                <div class="ancient-scroll">
+                    <div class="scroll-title">The Seven Seals</div>
+                    
+                    <div class="scroll-progress">
+                        <div class="scroll-progress-text" id="scrollProgressText">0 of 7 Seals Opened</div>
+                        <div class="scroll-progress-bar">
+                            <div class="scroll-progress-fill" id="scrollProgressFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="seals-on-scroll" id="sealsOnScroll">
+                        <!-- Seals will be dynamically generated here -->
+                    </div>
+                </div>
+            </div>
 
             <div class="leaderboard">
                 <div class="leaderboard-title">Live Rankings</div>

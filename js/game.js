@@ -529,11 +529,15 @@ class GameController {
         }
     }
 
-    // Render seals grid
+    // Render seals on scroll
     renderSeals() {
-        const container = document.getElementById('sealsGrid');
+        // Try new scroll interface first, fallback to grid
+        const scrollContainer = document.getElementById('sealsOnScroll');
+        const gridContainer = document.getElementById('sealsGrid');
+        const container = scrollContainer || gridContainer;
+        
         if (!container) {
-            console.warn('❌ sealsGrid element not found');
+            console.warn('❌ Seals container not found');
             return;
         }
 
@@ -545,54 +549,81 @@ class GameController {
 
         console.log('🎯 Rendering seals. GameData.seals:', window.GameData.seals.length);
         console.log('🎯 Current completedSeals:', this.gameState.completedSeals);
+        
+        // Update progress indicators
+        this.updateScrollProgress();
+        
         let html = '';
 
-        window.GameData.seals.forEach(seal => {
-            const isCompleted = this.gameState.completedSeals.includes(seal.id);
-            const isLocked = !this.canOpenSeal(seal);
+        // Render seals on scroll
+        if (scrollContainer) {
+            window.GameData.seals.forEach((seal, index) => {
+                const isCompleted = this.gameState.completedSeals.includes(seal.id);
+                const isLocked = !this.canOpenSeal(seal);
+                const isActive = this.gameState.currentSeal?.id === seal.id;
 
-            let statusClass = '';
-            if (isCompleted) statusClass = 'completed';
-            else if (isLocked) statusClass = 'locked';
+                let statusClass = '';
+                if (isCompleted) statusClass = 'completed';
+                else if (isLocked) statusClass = 'locked';
+                else if (isActive) statusClass = 'active';
 
-            console.log(`🔧 Seal ${seal.id} (type: ${typeof seal.id}): completed=${isCompleted}, locked=${isLocked}`);
-            if (seal.id <= 4) { // Only log for first 4 seals to avoid spam
-                console.log(`🔧 Checking if ${seal.id} in [${this.gameState.completedSeals}] = ${this.gameState.completedSeals.includes(seal.id)}`);
-            }
+                console.log(`🔧 Seal ${seal.id}: completed=${isCompleted}, locked=${isLocked}, active=${isActive}`);
 
-            html += `
-                <div class="seal ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}">
-                    <div class="seal-number">${seal.id}</div>
-                    <div class="seal-title">${seal.title}</div>
-                    <div class="seal-theme">${seal.theme}</div>
-                    <div class="seal-description">${seal.description}</div>
-                    ${isCompleted ? '<div class="seal-completed">✅ Completed</div>' : ''}
-                </div>
-            `;
-        });
+                html += `
+                    ${index > 0 ? `<div class="seal-connector ${isCompleted ? 'completed' : ''}"></div>` : ''}
+                    <div class="seal-stamp ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}" data-seal-id="${seal.id}">
+                        <div class="seal-stamp-number">${seal.id}</div>
+                        <div class="seal-info">
+                            <div class="seal-info-title">${seal.title}</div>
+                            <div class="seal-info-theme">${seal.theme}</div>
+                            <div class="seal-info-description">${seal.description}</div>
+                        </div>
+                        ${isCompleted ? '<div class="seal-checkmark"></div>' : ''}
+                    </div>
+                `;
+            });
+        } 
+        // Fallback to grid layout
+        else if (gridContainer) {
+            window.GameData.seals.forEach(seal => {
+                const isCompleted = this.gameState.completedSeals.includes(seal.id);
+                const isLocked = !this.canOpenSeal(seal);
 
-        console.log('🔧 Generated HTML length:', html.length);
-        console.log('🔧 Container before:', container.innerHTML.length);
+                let statusClass = '';
+                if (isCompleted) statusClass = 'completed';
+                else if (isLocked) statusClass = 'locked';
+
+                html += `
+                    <div class="seal ${statusClass}" onclick="${isLocked ? '' : `openSeal(${seal.id})`}">
+                        <div class="seal-number">${seal.id}</div>
+                        <div class="seal-title">${seal.title}</div>
+                        <div class="seal-theme">${seal.theme}</div>
+                        <div class="seal-description">${seal.description}</div>
+                        ${isCompleted ? '<div class="seal-completed">✅ Completed</div>' : ''}
+                    </div>
+                `;
+            });
+        }
 
         container.innerHTML = html;
-
-        console.log('🔧 Container after:', container.innerHTML.length);
-        console.log('🔧 sealsGrid element:', container, 'visible:', container.offsetWidth, 'x', container.offsetHeight);
-        console.log('🔧 Container computed styles:', window.getComputedStyle(container).display, window.getComputedStyle(container).visibility);
-
-        // Force make visible for debugging
-        container.style.display = 'block';
-        container.style.visibility = 'visible';
-        container.style.minHeight = '200px';
-        container.style.backgroundColor = 'rgba(255,0,0,0.1)'; // Red tint for debugging
-
-        // Check parent element
-        const parent = container.parentElement;
-        console.log('🔧 Parent element:', parent, 'visible:', parent ? parent.offsetWidth + 'x' + parent.offsetHeight : 'none');
-        if (parent) {
-            console.log('🔧 Parent computed styles:', window.getComputedStyle(parent).display, window.getComputedStyle(parent).visibility);
-            parent.style.display = 'block';
-            parent.style.visibility = 'visible';
+        console.log('✅ Seals rendered successfully');
+    }
+    
+    // Update scroll progress indicators
+    updateScrollProgress() {
+        const completedCount = this.gameState.completedSeals.length;
+        const totalSeals = window.GameData?.seals?.length || 7;
+        const percentage = (completedCount / totalSeals) * 100;
+        
+        const progressText = document.getElementById('scrollProgressText');
+        const progressFill = document.getElementById('scrollProgressFill');
+        
+        if (progressText) {
+            progressText.textContent = `${completedCount} of ${totalSeals} Seals Opened`;
+        }
+        
+        if (progressFill) {
+            progressFill.style.width = `${percentage}%`;
         }
     }
 
