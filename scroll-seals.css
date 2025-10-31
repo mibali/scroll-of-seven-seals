@@ -131,10 +131,10 @@
 
 /* Seal info panel - appears on hover */
 .seal-info {
-    position: absolute;
+    position: fixed;
     left: 50%;
-    top: 120%;
-    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
     background: rgba(44, 24, 16, 0.95);
     border: 2px solid #d4af37;
     border-radius: 15px;
@@ -145,13 +145,13 @@
     pointer-events: none;
     transition: all 0.3s ease;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-    z-index: 100;
+    z-index: 10000;
     text-align: center;
 }
 
 .seal-stamp:hover .seal-info {
     opacity: 1;
-    top: 140%;
+    transform: translate(-50%, -50%) scale(1);
 }
 
 .seal-info-title {
@@ -386,22 +386,14 @@
     }
     
     .seal-info {
-        position: fixed;
-        left: 50% !important;
-        top: 50% !important;
-        transform: translate(-50%, -50%) !important;
         max-width: 90%;
-        z-index: 1000;
+        z-index: 10000;
     }
-    
-    .seal-stamp:hover .seal-info {
-        left: 50% !important;
-    }
-    
+
         /* Mobile: show info on tap */
     .seal-info.show-mobile {
         opacity: 1;
-        top: 120%;
+        transform: translate(-50%, -50%) scale(1) !important;
     }
 }
 

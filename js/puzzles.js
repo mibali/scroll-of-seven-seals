@@ -134,23 +134,7 @@ class EnhancedPuzzleManager {
             return;
         }
 
-        let apiKey;
-        try {
-            // Check if apiUtils is available
-            if (!window.apiUtils || typeof window.apiUtils.fetchApiKey !== 'function') {
-                console.warn('API utilities not available. Skipping dynamic questions.');
-                return;
-            }
-            
-            apiKey = await window.apiUtils.fetchApiKey();
-            if (!apiKey) {
-                console.warn('Failed to fetch Gemini API key. Skipping dynamic questions.');
-                return;
-            }
-        } catch (error) {
-            console.error('Error fetching API key:', error);
-            return;
-        }
+        // API key not needed - using proxy server
 
         let prompt;
 
@@ -278,9 +262,9 @@ class EnhancedPuzzleManager {
 
         try {
             console.log(`Requesting 3 new '${PuzzleType}' questions for age '${profile.ageGroup}' and difficulty '${profile.difficulty}'...`);
-            
+
             // Use the ApiUtils to call the Gemini API through our proxy
-            const newQuestions = await ApiUtils.callGeminiAPI(prompt, PuzzleType, 0.7);
+            const newQuestions = await window.ApiUtils.callGeminiAPI(prompt, PuzzleType, 0.7);
 
             // Validate based on puzzle type - some need extra fields or are objects
             let isValid = false;
